@@ -32,3 +32,5 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+app/src/main/java/pt/ligix/app/util/Constants.kt

@@ -1,0 +1,6 @@
+package pt.ligix.app.util
+
+object Constants {
+    const val SUPABASE_URL = "https://your-project.supabase.co"
+    const val SUPABASE_KEY = "your-anon-key-here"
+}
