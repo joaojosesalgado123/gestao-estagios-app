@@ -1,9 +1,11 @@
 package pt.ligix.app.model
 
+import com.google.gson.annotations.SerializedName
+
 data class ItemAvaliacao(
-    val idAvaliacao: String = "",
-    val idAvaliador: String = "",
-    val classificacao: Double? = null,
-    val comentario: String? = null,
-    val dataAvaliacao: String = ""
+    @SerializedName("idAvaliacao") val idAvaliacao: String = "",
+    @SerializedName("idAvaliador") val idAvaliador: String = "",
+    @SerializedName("classificacao") val classificacao: Double? = null,
+    @SerializedName("comentario") val comentario: String? = null,
+    @SerializedName("data_avaliacao") val dataAvaliacao: String = ""
 )

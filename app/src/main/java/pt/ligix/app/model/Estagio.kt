@@ -1,13 +1,15 @@
 package pt.ligix.app.model
 
+import com.google.gson.annotations.SerializedName
+
 data class Estagio(
-    val idEstagio: String = "",
-    val startDate: String? = null,
-    val endDate: String? = null,
-    val status: String = "ativo",
-    val classificacaoFinal: Double? = null,
-    val idDocente: String? = null,
-    val idOrientador: String? = null,
-    val idCandidatura: String = "",
-    val createdAt: String = ""
+    @SerializedName("idEstagio") val idEstagio: String = "",
+    @SerializedName("start_date") val startDate: String? = null,
+    @SerializedName("end_date") val endDate: String? = null,
+    @SerializedName("status") val status: String = "ativo",
+    @SerializedName("classificacaoFinal") val classificacaoFinal: Double? = null,
+    @SerializedName("idDocente") val idDocente: String? = null,
+    @SerializedName("idOrientador") val idOrientador: String? = null,
+    @SerializedName("idCandidatura") val idCandidatura: String = "",
+    @SerializedName("created_at") val createdAt: String = ""
 )

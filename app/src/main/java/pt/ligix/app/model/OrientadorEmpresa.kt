@@ -1,9 +1,11 @@
 package pt.ligix.app.model
 
+import com.google.gson.annotations.SerializedName
+
 data class OrientadorEmpresa(
-    val idUtilizador: String = "",
-    val idEmpresa: String = "",
-    val area: String? = null,
-    val status: String = "ativo",
-    val createdAt: String = ""
+    @SerializedName("idUtilizador") val idUtilizador: String = "",
+    @SerializedName("idEmpresa") val idEmpresa: String = "",
+    @SerializedName("area") val area: String? = null,
+    @SerializedName("status") val status: String = "ativo",
+    @SerializedName("created_at") val createdAt: String = ""
 )

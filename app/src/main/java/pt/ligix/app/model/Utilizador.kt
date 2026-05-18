@@ -1,13 +1,15 @@
 package pt.ligix.app.model
 
+import com.google.gson.annotations.SerializedName
+
 data class Utilizador(
-    val idUtilizador: String = "",
-    val username: String = "",
-    val password: String = "",
-    val nome: String = "",
-    val email: String = "",
-    val role: String = "",
-    val language: String = "pt",
-    val fotografia: String? = null,
-    val createdAt: String = ""
+    @SerializedName("idUtilizador") val idUtilizador: String = "",
+    @SerializedName("username") val username: String = "",
+    @SerializedName("password") val password: String = "",
+    @SerializedName("nome") val nome: String = "",
+    @SerializedName("email") val email: String = "",
+    @SerializedName("role") val role: String = "",
+    @SerializedName("language") val language: String = "pt",
+    @SerializedName("fotografia") val fotografia: String? = null,
+    @SerializedName("created_at") val createdAt: String = ""
 )

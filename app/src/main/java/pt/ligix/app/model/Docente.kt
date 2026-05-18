@@ -1,9 +1,11 @@
 package pt.ligix.app.model
 
+import com.google.gson.annotations.SerializedName
+
 data class Docente(
-    val idUtilizador: String = "",
-    val telemovel: String? = null,
-    val area: String? = null,
-    val idInstituicao: String? = null,
-    val createdAt: String = ""
+    @SerializedName("idUtilizador") val idUtilizador: String = "",
+    @SerializedName("telemovel") val telemovel: String? = null,
+    @SerializedName("area") val area: String? = null,
+    @SerializedName("idInstituicao") val idInstituicao: String? = null,
+    @SerializedName("created_at") val createdAt: String = ""
 )

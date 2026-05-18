@@ -1,9 +1,11 @@
 package pt.ligix.app.model
 
+import com.google.gson.annotations.SerializedName
+
 data class Presenca(
-    val idPresenca: String = "",
-    val data: String = "",
-    val status: String = "",
-    val idEstagio: String = "",
-    val createdAt: String = ""
+    @SerializedName("idPresenca") val idPresenca: String = "",
+    @SerializedName("data") val data: String = "",
+    @SerializedName("status") val status: String = "",
+    @SerializedName("idEstagio") val idEstagio: String = "",
+    @SerializedName("created_at") val createdAt: String = ""
 )
