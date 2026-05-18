@@ -1,8 +1,25 @@
 package pt.ligix.app.data.remote
 
-import pt.ligix.app.model.*
+import pt.ligix.app.model.Atividade
+import pt.ligix.app.model.Avaliacao
+import pt.ligix.app.model.Candidatura
+import pt.ligix.app.model.Conversa
+import pt.ligix.app.model.Empresa
+import pt.ligix.app.model.Estagio
+import pt.ligix.app.model.ItemAvaliacao
+import pt.ligix.app.model.Mensagem
+import pt.ligix.app.model.OfertaEstagio
+import pt.ligix.app.model.Presenca
+import pt.ligix.app.model.RelatorioFinal
+import pt.ligix.app.model.Utilizador
 import retrofit2.Response
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.PATCH
+import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface SupabaseApi {
 
@@ -289,28 +306,4 @@ interface SupabaseApi {
         @Query("select") select: String = "*",
         @Query("order") order: String = "data_envio.asc"
     ): Response<List<Mensagem>>
-
-    // ==================== NOTIFICAÇÕES ====================
-    // RF45/RF46/RF47/RF52 - Criar notificação
-    @POST("notificacao")
-    suspend fun createNotificacao(
-        @Header("Prefer") prefer: String = "return=representation",
-        @Body notificacao: Notificacao
-    ): Response<List<Notificacao>>
-
-    // Ver notificações do utilizador
-    @GET("notificacao")
-    suspend fun getNotificacoesByUtilizador(
-        @Query("idUtilizador") idUtilizador: String,
-        @Query("select") select: String = "*",
-        @Query("order") order: String = "created_at.desc"
-    ): Response<List<Notificacao>>
-
-    // Marcar notificação como lida
-    @PATCH("notificacao")
-    suspend fun marcarNotificacaoLida(
-        @Header("Prefer") prefer: String = "return=representation",
-        @Query("idNotificacao") id: String,
-        @Body lida: Map<String, Boolean>
-    ): Response<List<Notificacao>>
 }
