@@ -1,14 +1,17 @@
 package pt.ligix.app.data.remote
 
+import pt.ligix.app.model.Aluno
 import pt.ligix.app.model.Atividade
 import pt.ligix.app.model.Avaliacao
 import pt.ligix.app.model.Candidatura
 import pt.ligix.app.model.Conversa
+import pt.ligix.app.model.Docente
 import pt.ligix.app.model.Empresa
 import pt.ligix.app.model.Estagio
 import pt.ligix.app.model.ItemAvaliacao
 import pt.ligix.app.model.Mensagem
 import pt.ligix.app.model.OfertaEstagio
+import pt.ligix.app.model.OrientadorEmpresa
 import pt.ligix.app.model.Presenca
 import pt.ligix.app.model.RelatorioFinal
 import pt.ligix.app.model.Utilizador
@@ -306,4 +309,25 @@ interface SupabaseApi {
         @Query("select") select: String = "*",
         @Query("order") order: String = "data_envio.asc"
     ): Response<List<Mensagem>>
+
+    // ==================== ALUNO ====================
+    @POST("aluno")
+    suspend fun createAluno(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Body aluno: Aluno
+    ): Response<List<Aluno>>
+
+    // ==================== DOCENTE ====================
+    @POST("docente")
+    suspend fun createDocente(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Body docente: Docente
+    ): Response<List<Docente>>
+
+    // ==================== ORIENTADOR EMPRESA ====================
+    @POST("orientador_empresa")
+    suspend fun createOrientadorEmpresa(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Body orientadorEmpresa: OrientadorEmpresa
+    ): Response<List<OrientadorEmpresa>>
 }

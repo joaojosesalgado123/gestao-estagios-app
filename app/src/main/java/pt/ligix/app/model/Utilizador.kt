@@ -3,7 +3,7 @@ package pt.ligix.app.model
 import com.google.gson.annotations.SerializedName
 
 data class Utilizador(
-    @SerializedName("idUtilizador") val idUtilizador: String = "",
+    @SerializedName("idutilizador") val idUtilizador: String? = null,
     @SerializedName("username") val username: String = "",
     @SerializedName("password") val password: String = "",
     @SerializedName("nome") val nome: String = "",
@@ -11,5 +11,5 @@ data class Utilizador(
     @SerializedName("role") val role: String = "",
     @SerializedName("language") val language: String = "pt",
     @SerializedName("fotografia") val fotografia: String? = null,
-    @SerializedName("created_at") val createdAt: String = ""
+    @SerializedName("created_at") val createdAt: String? = null
 )

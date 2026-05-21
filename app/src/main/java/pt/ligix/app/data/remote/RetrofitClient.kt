@@ -1,5 +1,6 @@
 package pt.ligix.app.data.remote
 
+import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import pt.ligix.app.util.Constants
@@ -21,16 +22,19 @@ object RetrofitClient {
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Accept", "application/json")
                 .build()
-
             chain.proceed(request)
         }
         .build()
+
+    // Gson que NÃO serializa campos nulos
+    private val gson = GsonBuilder()
+        .create()
 
     val api: SupabaseApi by lazy {
         Retrofit.Builder()
             .baseUrl("${Constants.SUPABASE_URL}/rest/v1/")
             .client(httpClient)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
             .create(SupabaseApi::class.java)
     }
