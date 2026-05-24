@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import pt.ligix.app.data.repository.AuthRepository
+import pt.ligix.app.ui.aluno.AlunoMainScreen
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.viewmodel.AuthViewModel
 import pt.ligix.app.viewmodel.AuthViewModelFactory
@@ -17,9 +18,7 @@ import pt.ligix.app.viewmodel.RegistoState
 
 object Routes {
     const val SPLASH = "splash"
-    const val LOGIN = "login?email={email}"
     const val REGISTO = "registo"
-    const val REGISTO_SUCESSO = "registo_sucesso/{email}/{isPendente}"
     const val RECUPERAR_PASSWORD = "recuperar_password"
     const val DASHBOARD_ALUNO = "dashboard_aluno"
     const val DASHBOARD_EMPRESA = "dashboard_empresa"
@@ -39,7 +38,6 @@ fun LigixNavGraph() {
     val loginState by authViewModel.loginState.collectAsState()
     val registoState by authViewModel.registoState.collectAsState()
 
-    // Navegar após login
     LaunchedEffect(loginState) {
         if (loginState is AuthState.Sucesso) {
             val utilizador = (loginState as AuthState.Sucesso).utilizador
@@ -48,7 +46,7 @@ fun LigixNavGraph() {
                 "aluno" -> Routes.DASHBOARD_ALUNO
                 "empresa" -> Routes.DASHBOARD_EMPRESA
                 "docente" -> Routes.DASHBOARD_DOCENTE
-                else -> Routes.LOGIN
+                else -> "login?email="
             }
             navController.navigate(destino) {
                 popUpTo(0) { inclusive = true }
@@ -57,7 +55,6 @@ fun LigixNavGraph() {
         }
     }
 
-    // Navegar após registo
     LaunchedEffect(registoState) {
         if (registoState is RegistoState.Sucesso) {
             val sucesso = registoState as RegistoState.Sucesso
@@ -95,9 +92,7 @@ fun LigixNavGraph() {
 
             LoginScreen(
                 emailInicial = emailPreenchido,
-                onEntrar = { email, password ->
-                    authViewModel.login(email, password)
-                },
+                onEntrar = { email, password -> authViewModel.login(email, password) },
                 onCriarConta = {
                     authViewModel.resetRegistoState()
                     navController.navigate(Routes.REGISTO)
@@ -129,9 +124,7 @@ fun LigixNavGraph() {
                 onRegistarEmpresa = { username, nome, email, password, confirmar, nipc, morada, descricao ->
                     authViewModel.registarEmpresa(username, nome, email, password, confirmar, nipc, morada, descricao)
                 },
-                onEntrar = {
-                    navController.navigateUp()
-                },
+                onEntrar = { navController.navigateUp() },
                 isLoading = loading,
                 erroMensagem = erro
             )
@@ -178,12 +171,14 @@ fun LigixNavGraph() {
         }
 
         composable(Routes.DASHBOARD_ALUNO) {
-            PlaceholderScreen("Dashboard Aluno") {
-                authViewModel.logout()
-                navController.navigate("login?email=") {
-                    popUpTo(0) { inclusive = true }
+            AlunoMainScreen(
+                onLogout = {
+                    authViewModel.logout()
+                    navController.navigate("login?email=") {
+                        popUpTo(0) { inclusive = true }
+                    }
                 }
-            }
+            )
         }
 
         composable(Routes.DASHBOARD_EMPRESA) {
