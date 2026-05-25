@@ -27,15 +27,23 @@ class AlunoRepository {
         return try {
             val response = api.getOfertaById(idOferta = "eq.$idOferta")
             if (response.isSuccessful) {
-                val oferta = response.body()?.firstOrNull {
-                    it.idOferta == idOferta
-                }
-                Result.success(oferta)
+                Result.success(response.body()?.firstOrNull())
             } else {
                 Result.failure(Exception("Erro: ${response.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(Exception("Sem ligação à internet"))
+        }
+    }
+
+    suspend fun verificarCandidaturaExistente(idAluno: String, idOferta: String): Boolean {
+        return try {
+            val response = api.getCandidaturasByAluno(idAluno = "eq.$idAluno")
+            if (response.isSuccessful) {
+                response.body()?.any { it.idOferta == idOferta } ?: false
+            } else false
+        } catch (e: Exception) {
+            false
         }
     }
 
@@ -45,7 +53,6 @@ class AlunoRepository {
             if (responseCandidaturas.isSuccessful) {
                 val aceite = responseCandidaturas.body()
                     ?.firstOrNull { it.status == "aceite" }
-
                 if (aceite?.idCandidatura != null) {
                     val responseEstagio = api.getEstagioByCandidatura(
                         idCandidatura = "eq.${aceite.idCandidatura}"

@@ -1,9 +1,12 @@
 package pt.ligix.app.model
 
+import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class OfertaEstagio(
-    @SerializedName("idOferta") val idOferta: String = "",
+    @SerializedName("idoferta") val idOferta: String = "",
     @SerializedName("titulo") val titulo: String = "",
     @SerializedName("descricao") val descricao: String? = null,
     @SerializedName("area") val area: String? = null,
@@ -11,6 +14,6 @@ data class OfertaEstagio(
     @SerializedName("duracao") val duracao: Int? = null,
     @SerializedName("data_publicacao") val dataPublicacao: String = "",
     @SerializedName("numero_vagas") val numeroVagas: Int = 1,
-    @SerializedName("idEmpresa") val idEmpresa: String = "",
+    @SerializedName("idempresa") val idEmpresa: String = "",
     @SerializedName("created_at") val createdAt: String = ""
-)
+) : Parcelable

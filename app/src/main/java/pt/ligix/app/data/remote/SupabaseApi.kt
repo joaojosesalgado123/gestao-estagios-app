@@ -44,7 +44,7 @@ interface SupabaseApi {
     // RF05 - Ver perfil
     @GET("utilizador")
     suspend fun getUtilizadorById(
-        @Query("idUtilizador") id: String,
+        @Query("idutilizador") id: String,
         @Query("select") select: String = "*"
     ): Response<List<Utilizador>>
 
@@ -52,7 +52,7 @@ interface SupabaseApi {
     @PATCH("utilizador")
     suspend fun updateUtilizador(
         @Header("Prefer") prefer: String = "return=representation",
-        @Query("idUtilizador") id: String,
+        @Query("idutilizador") id: String,
         @Body utilizador: Utilizador
     ): Response<List<Utilizador>>
 
@@ -60,14 +60,14 @@ interface SupabaseApi {
     @PATCH("utilizador")
     suspend fun adminUpdateUtilizador(
         @Header("Prefer") prefer: String = "return=representation",
-        @Query("idUtilizador") id: String,
+        @Query("idutilizador") id: String,
         @Body utilizador: Utilizador
     ): Response<List<Utilizador>>
 
     // RF09 - Admin remover conta
     @DELETE("utilizador")
     suspend fun adminDeleteUtilizador(
-        @Query("idUtilizador") id: String
+        @Query("idutilizador") id: String
     ): Response<Unit>
 
     // ==================== EMPRESA ====================
@@ -82,7 +82,7 @@ interface SupabaseApi {
     @PATCH("empresa")
     suspend fun updateEmpresaStatus(
         @Header("Prefer") prefer: String = "return=representation",
-        @Query("idUtilizador") id: String,
+        @Query("idutilizador") id: String,
         @Body status: Map<String, String>
     ): Response<List<Empresa>>
 
@@ -105,14 +105,14 @@ interface SupabaseApi {
     @PATCH("oferta_estagio")
     suspend fun updateOferta(
         @Header("Prefer") prefer: String = "return=representation",
-        @Query("idOferta") id: String,
+        @Query("idoferta") id: String,
         @Body oferta: OfertaEstagio
     ): Response<List<OfertaEstagio>>
 
     // RF16 - Remover oferta
     @DELETE("oferta_estagio")
     suspend fun deleteOferta(
-        @Query("idOferta") id: String
+        @Query("idoferta") id: String
     ): Response<Unit>
 
     // RF17 - Listar todas as ofertas
@@ -148,7 +148,7 @@ interface SupabaseApi {
     // RF24 - Ver candidaturas do aluno (chamar com "eq.$idAluno")
     @GET("candidatura")
     suspend fun getCandidaturasByAluno(
-        @Query("idAluno") idAluno: String,
+        @Query("idaluno") idAluno: String,
         @Query("select") select: String = "*"
     ): Response<List<Candidatura>>
 
@@ -156,14 +156,14 @@ interface SupabaseApi {
     @PATCH("candidatura")
     suspend fun updateCandidaturaStatus(
         @Header("Prefer") prefer: String = "return=representation",
-        @Query("idCandidatura") id: String,
+        @Query("idcandidatura") id: String,
         @Body status: Map<String, String>
     ): Response<List<Candidatura>>
 
     // Listar candidaturas por oferta (Empresa)
     @GET("candidatura")
     suspend fun getCandidaturasByOferta(
-        @Query("idOferta") idOferta: String,
+        @Query("idoferta") idOferta: String,
         @Query("select") select: String = "*"
     ): Response<List<Candidatura>>
 
@@ -179,21 +179,21 @@ interface SupabaseApi {
     @PATCH("estagio")
     suspend fun updateEstagio(
         @Header("Prefer") prefer: String = "return=representation",
-        @Query("idEstagio") id: String,
+        @Query("idestagio") id: String,
         @Body estagio: Map<String, Any?>
     ): Response<List<Estagio>>
 
     // Ver estágios por docente
     @GET("estagio")
     suspend fun getEstagiosByDocente(
-        @Query("idDocente") idDocente: String,
+        @Query("iddocente") idDocente: String,
         @Query("select") select: String = "*"
     ): Response<List<Estagio>>
 
     // Ver estágio por candidatura
     @GET("estagio")
     suspend fun getEstagioByCandidatura(
-        @Query("idCandidatura") idCandidatura: String,
+        @Query("idcandidatura") idCandidatura: String,
         @Query("select") select: String = "*"
     ): Response<List<Estagio>>
 
@@ -216,14 +216,14 @@ interface SupabaseApi {
     @PATCH("atividade")
     suspend fun updateAtividade(
         @Header("Prefer") prefer: String = "return=representation",
-        @Query("idAtividade") id: String,
+        @Query("idatividade") id: String,
         @Body atividade: Atividade
     ): Response<List<Atividade>>
 
     // RF32 - Ver atividades por estágio
     @GET("atividade")
     suspend fun getAtividadesByEstagio(
-        @Query("idEstagio") idEstagio: String,
+        @Query("idestagio") idEstagio: String,
         @Query("select") select: String = "*"
     ): Response<List<Atividade>>
 
@@ -239,14 +239,14 @@ interface SupabaseApi {
     @PATCH("presenca")
     suspend fun updatePresenca(
         @Header("Prefer") prefer: String = "return=representation",
-        @Query("idPresenca") id: String,
+        @Query("idpresenca") id: String,
         @Body presenca: Presenca
     ): Response<List<Presenca>>
 
     // RF50/RF51 - Ver presenças por estágio
     @GET("presenca")
     suspend fun getPresencasByEstagio(
-        @Query("idEstagio") idEstagio: String,
+        @Query("idestagio") idEstagio: String,
         @Query("select") select: String = "*"
     ): Response<List<Presenca>>
 
@@ -261,7 +261,7 @@ interface SupabaseApi {
     // RF42 - Ver classificação final
     @GET("avaliacao")
     suspend fun getAvaliacaoByEstagio(
-        @Query("idEstagio") idEstagio: String,
+        @Query("idestagio") idEstagio: String,
         @Query("select") select: String = "*"
     ): Response<List<Avaliacao>>
 
@@ -283,7 +283,7 @@ interface SupabaseApi {
     // Ver relatório por estágio
     @GET("relatorio_final")
     suspend fun getRelatorioByEstagio(
-        @Query("idEstagio") idEstagio: String,
+        @Query("idestagio") idEstagio: String,
         @Query("select") select: String = "*"
     ): Response<List<RelatorioFinal>>
 
@@ -298,7 +298,7 @@ interface SupabaseApi {
     // Ver conversa por estágio
     @GET("conversa")
     suspend fun getConversaByEstagio(
-        @Query("idEstagio") idEstagio: String,
+        @Query("idestagio") idEstagio: String,
         @Query("select") select: String = "*"
     ): Response<List<Conversa>>
 
@@ -312,7 +312,7 @@ interface SupabaseApi {
     // RF36 - Ver histórico mensagens ordenado por data
     @GET("mensagem")
     suspend fun getMensagensByConversa(
-        @Query("idConversa") idConversa: String,
+        @Query("idconversa") idConversa: String,
         @Query("select") select: String = "*",
         @Query("order") order: String = "data_envio.asc"
     ): Response<List<Mensagem>>
@@ -337,4 +337,24 @@ interface SupabaseApi {
         @Header("Prefer") prefer: String = "return=representation",
         @Body orientadorEmpresa: OrientadorEmpresa
     ): Response<List<OrientadorEmpresa>>
+
+    // Ofertas - listar todas
+    @GET("oferta_estagio")
+    suspend fun getTodasOfertas(
+        @Query("select") select: String = "*"
+    ): Response<List<OfertaEstagio>>
+
+    // Ofertas - buscar por ID
+    @GET("oferta_estagio")
+    suspend fun getOfertaPorId(
+        @Query("idoferta") idOferta: String,
+        @Query("select") select: String = "*"
+    ): Response<List<OfertaEstagio>>
+
+    // Candidatura - criar
+    @POST("candidatura")
+    suspend fun createCandidatura(
+        @Body candidatura: Map<String, String>
+    ): Response<Unit>
+
 }

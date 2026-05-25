@@ -14,6 +14,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import pt.ligix.app.model.OfertaEstagio
 import pt.ligix.app.ui.auth.DarkBlue
 
 sealed class AlunoTab(
@@ -28,11 +29,20 @@ sealed class AlunoTab(
     object Perfil : AlunoTab("aluno_perfil", "Perfil", Icons.Default.Person)
 }
 
+val bottomNavRoutes = listOf(
+    AlunoTab.Inicio.route,
+    AlunoTab.Procurar.route,
+    AlunoTab.Estagio.route,
+    AlunoTab.Mensagens.route,
+    AlunoTab.Perfil.route
+)
+
 @Composable
 fun AlunoMainScreen(onLogout: () -> Unit) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+    val showBottomBar = currentRoute in bottomNavRoutes
 
     val tabs = listOf(
         AlunoTab.Inicio,
@@ -44,31 +54,33 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
 
     Scaffold(
         bottomBar = {
-            NavigationBar(
-                containerColor = Color.White,
-                contentColor = DarkBlue
-            ) {
-                tabs.forEach { tab ->
-                    NavigationBarItem(
-                        selected = currentRoute == tab.route,
-                        onClick = {
-                            navController.navigate(tab.route) {
-                                popUpTo(AlunoTab.Inicio.route) {
-                                    inclusive = false
+            if (showBottomBar) {
+                NavigationBar(
+                    containerColor = Color.White,
+                    contentColor = DarkBlue
+                ) {
+                    tabs.forEach { tab ->
+                        NavigationBarItem(
+                            selected = currentRoute == tab.route,
+                            onClick = {
+                                navController.navigate(tab.route) {
+                                    popUpTo(AlunoTab.Inicio.route) {
+                                        inclusive = false
+                                    }
+                                    launchSingleTop = true
                                 }
-                                launchSingleTop = true
-                            }
-                        },
-                        icon = { Icon(tab.icon, contentDescription = tab.label) },
-                        label = { Text(tab.label) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = DarkBlue,
-                            selectedTextColor = DarkBlue,
-                            indicatorColor = Color(0xFFE8EAF6),
-                            unselectedIconColor = Color.Gray,
-                            unselectedTextColor = Color.Gray
+                            },
+                            icon = { Icon(tab.icon, contentDescription = tab.label) },
+                            label = { Text(tab.label) },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = DarkBlue,
+                                selectedTextColor = DarkBlue,
+                                indicatorColor = Color(0xFFE8EAF6),
+                                unselectedIconColor = Color.Gray,
+                                unselectedTextColor = Color.Gray
+                            )
                         )
-                    )
+                    }
                 }
             }
         }
@@ -102,7 +114,32 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
             }
 
             composable(AlunoTab.Procurar.route) {
-                AlunoPlaceholderScreen("Procurar Estágios", Icons.Default.Search)
+                AlunoOfertasScreen(
+                    onOfertaClick = { oferta ->
+                        navController.currentBackStackEntry
+                            ?.savedStateHandle
+                            ?.set("oferta", oferta)
+                        navController.navigate("aluno_oferta_detalhe")
+                    }
+                )
+            }
+
+            composable("aluno_oferta_detalhe") {
+                val oferta = navController.previousBackStackEntry
+                    ?.savedStateHandle
+                    ?.get<OfertaEstagio>("oferta")
+
+                if (oferta != null) {
+                    AlunoOfertaDetalheScreen(
+                        oferta = oferta,
+                        onVoltar = { navController.popBackStack() },
+                        onCandidaturaSubmetida = {
+                            navController.navigate(AlunoTab.Inicio.route) {
+                                popUpTo(AlunoTab.Inicio.route) { inclusive = true }
+                            }
+                        }
+                    )
+                }
             }
 
             composable(AlunoTab.Estagio.route) {
@@ -127,12 +164,7 @@ fun AlunoPlaceholderScreen(titulo: String, icon: ImageVector) {
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(
-                icon,
-                contentDescription = null,
-                modifier = Modifier.size(48.dp),
-                tint = Color.LightGray
-            )
+            Icon(icon, contentDescription = null, modifier = Modifier.size(48.dp), tint = Color.LightGray)
             Spacer(modifier = Modifier.height(8.dp))
             Text(titulo, color = Color.Gray)
         }
