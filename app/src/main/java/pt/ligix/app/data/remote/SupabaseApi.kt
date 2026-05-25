@@ -197,6 +197,13 @@ interface SupabaseApi {
         @Query("select") select: String = "*"
     ): Response<List<Estagio>>
 
+    // Buscar oferta por ID
+    @GET("oferta_estagio")
+    suspend fun getOfertaById(
+        @Query("idoferta") idOferta: String,
+        @Query("select") select: String = "*"
+    ): Response<List<OfertaEstagio>>
+
     // ==================== ATIVIDADES ====================
     // RF30 - Registar atividade
     @POST("atividade")
