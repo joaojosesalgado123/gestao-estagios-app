@@ -27,10 +27,13 @@ import pt.ligix.app.ui.auth.LigixGold
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.viewmodel.AlunoDashboardViewModel
 import pt.ligix.app.viewmodel.AlunoDashboardViewModelFactory
-import pt.ligix.app.viewmodel.CandidaturaComDetalhe
+import pt.ligix.app.viewmodel.NotificacaoMsg
 
 @Composable
 fun AlunoDashboardScreen(
+    mensagensNaoVistas: Int = 0,
+    historicoNotificacoes: List<NotificacaoMsg> = emptyList(),
+    onSininho: () -> Unit = {},
     onProcurarEstagios: () -> Unit,
     onRegistarAtividade: () -> Unit,
     onMensagens: () -> Unit
@@ -48,32 +51,35 @@ fun AlunoDashboardScreen(
     val totalHoras by viewModel.totalHoras.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
-    LaunchedEffect(Unit) {
-        viewModel.carregarDados(context)
-    }
+    LaunchedEffect(Unit) { viewModel.carregarDados(context) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF5F5F7))
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
+    Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF5F5F7))) {
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+
+            // Top Bar
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                modifier = Modifier.fillMaxWidth().background(Color.White).padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text("LIGIX", color = DarkBlue, fontSize = 18.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
                 Spacer(modifier = Modifier.weight(1f))
-                IconButton(onClick = {}) {
-                    Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = DarkBlue)
+
+                // Sininho com badge — fora do IconButton
+                Box(contentAlignment = Alignment.TopEnd) {
+                    IconButton(onClick = onSininho) {
+                        Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = DarkBlue)
+                    }
+                    if (historicoNotificacoes.isNotEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .background(Color.Red, CircleShape)
+                                .offset(x = (-4).dp, y = 4.dp)
+                        )
+                    }
                 }
+
+                // Avatar
                 Box(
                     modifier = Modifier.size(36.dp).clip(CircleShape).background(DarkBlue),
                     contentAlignment = Alignment.Center
@@ -123,38 +129,19 @@ fun AlunoDashboardScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                Button(
-                    onClick = onProcurarEstagios,
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
+                Button(onClick = onProcurarEstagios, modifier = Modifier.fillMaxWidth().height(56.dp), colors = ButtonDefaults.buttonColors(containerColor = DarkBlue), shape = RoundedCornerShape(12.dp)) {
                     Icon(Icons.Default.Search, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Procurar Estágios", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
-
                 Spacer(modifier = Modifier.height(12.dp))
-
-                OutlinedButton(
-                    onClick = onRegistarAtividade,
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = DarkBlue)
-                ) {
+                OutlinedButton(onClick = onRegistarAtividade, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.outlinedButtonColors(contentColor = DarkBlue)) {
                     Icon(Icons.Default.Edit, contentDescription = null, tint = DarkBlue)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Registar Atividade", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = DarkBlue)
                 }
-
                 Spacer(modifier = Modifier.height(12.dp))
-
-                OutlinedButton(
-                    onClick = onMensagens,
-                    modifier = Modifier.fillMaxWidth().height(56.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = DarkBlue)
-                ) {
+                OutlinedButton(onClick = onMensagens, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.outlinedButtonColors(contentColor = DarkBlue)) {
                     Icon(Icons.Default.Message, contentDescription = null, tint = DarkBlue)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Mensagens", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = DarkBlue)
@@ -170,24 +157,15 @@ fun AlunoDashboardScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Text("PROGRESSO DE HORAS", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.7f), letterSpacing = 1.sp)
                         Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = LigixGold, modifier = Modifier.size(28.dp))
                     }
-
                     Spacer(modifier = Modifier.height(8.dp))
-
                     val progresso = if (totalHoras > 0) horasAcumuladas.toFloat() / totalHoras.toFloat() else 0f
-
                     Text("$horasAcumuladas / ${if (totalHoras > 0) totalHoras else "—"}", fontSize = 36.sp, fontWeight = FontWeight.Bold, color = Color.White)
                     Text("Horas acumuladas este semestre", fontSize = 13.sp, color = Color.White.copy(alpha = 0.7f))
-
                     Spacer(modifier = Modifier.height(12.dp))
-
                     LinearProgressIndicator(
                         progress = { progresso.coerceIn(0f, 1f) },
                         modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),
@@ -216,15 +194,10 @@ fun CandidaturaCard(candidatura: Candidatura, oferta: OfertaEstagio?) {
         modifier = Modifier.fillMaxWidth().background(Color(0xFFF8F9FA), RoundedCornerShape(10.dp)).padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier.size(40.dp).background(Color(0xFFE8EAF6), RoundedCornerShape(8.dp)),
-            contentAlignment = Alignment.Center
-        ) {
+        Box(modifier = Modifier.size(40.dp).background(Color(0xFFE8EAF6), RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
             Icon(Icons.Default.Work, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(20.dp))
         }
-
         Spacer(modifier = Modifier.width(12.dp))
-
         Column(modifier = Modifier.weight(1f)) {
             Text(oferta?.titulo ?: "Oferta", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
             Text(
@@ -233,14 +206,10 @@ fun CandidaturaCard(candidatura: Candidatura, oferta: OfertaEstagio?) {
                     oferta?.localizacao?.let { if (isNotEmpty()) append(" • "); append(it) }
                     if (isEmpty()) append("Estágio")
                 },
-                fontSize = 12.sp,
-                color = Color.Gray
+                fontSize = 12.sp, color = Color.Gray
             )
         }
-
-        Box(
-            modifier = Modifier.background(statusColor, RoundedCornerShape(6.dp)).padding(horizontal = 8.dp, vertical = 4.dp)
-        ) {
+        Box(modifier = Modifier.background(statusColor, RoundedCornerShape(6.dp)).padding(horizontal = 8.dp, vertical = 4.dp)) {
             Text(statusLabel, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
     }

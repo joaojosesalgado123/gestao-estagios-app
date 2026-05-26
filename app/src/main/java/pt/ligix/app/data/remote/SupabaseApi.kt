@@ -297,25 +297,19 @@ interface SupabaseApi {
 
     // Ver conversa por estágio
     @GET("conversa")
-    suspend fun getConversaByEstagio(
-        @Query("idestagio") idEstagio: String,
-        @Query("select") select: String = "*"
-    ): Response<List<Conversa>>
+    suspend fun getConversaByEstagio(@Query("idestagio") idEstagio: String, @Query("select") select: String = "*"): Response<List<Conversa>>
+
+    // Enviar mensagem (map)
+    @POST("mensagem")
+    suspend fun createMensagemMap(@Body mensagem: Map<String, String>): Response<Unit>
 
     // RF33/RF34/RF35 - Enviar mensagem
     @POST("mensagem")
-    suspend fun createMensagem(
-        @Header("Prefer") prefer: String = "return=representation",
-        @Body mensagem: Mensagem
-    ): Response<List<Mensagem>>
+    suspend fun createMensagem(@Header("Prefer") prefer: String = "return=representation", @Body mensagem: Mensagem): Response<List<Mensagem>>
 
     // RF36 - Ver histórico mensagens ordenado por data
     @GET("mensagem")
-    suspend fun getMensagensByConversa(
-        @Query("idconversa") idConversa: String,
-        @Query("select") select: String = "*",
-        @Query("order") order: String = "data_envio.asc"
-    ): Response<List<Mensagem>>
+    suspend fun getMensagensByConversa(@Query("idconversa") idConversa: String, @Query("select") select: String = "*", @Query("order") order: String = "data_envio.asc"): Response<List<Mensagem>>
 
     // ==================== ALUNO ====================
     @POST("aluno")
