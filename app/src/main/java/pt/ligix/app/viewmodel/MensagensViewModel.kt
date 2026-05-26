@@ -4,12 +4,16 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.model.Conversa
 import pt.ligix.app.model.Mensagem
@@ -49,29 +53,43 @@ class MensagensViewModel : ViewModel() {
     private val _mensagensNaoVistas = MutableStateFlow(0)
     val mensagensNaoVistas: StateFlow<Int> = _mensagensNaoVistas
 
-    // Popup de notificação
     private val _novaNotificacao = MutableStateFlow<NotificacaoMsg?>(null)
     val novaNotificacao: StateFlow<NotificacaoMsg?> = _novaNotificacao
 
-    // Histórico para o sininho
     private val _historicoNotificacoes = MutableStateFlow<List<NotificacaoMsg>>(emptyList())
     val historicoNotificacoes: StateFlow<List<NotificacaoMsg>> = _historicoNotificacoes
 
-    // Flag para abrir o chat diretamente
-    private val _deveAbrirChat = MutableStateFlow(false)
-    val deveAbrirChat: StateFlow<Boolean> = _deveAbrirChat
+    // Estado do chat movido para o ViewModel
+    private val _mostrarChat = MutableStateFlow(false)
+    val mostrarChat: StateFlow<Boolean> = _mostrarChat
 
     private var ultimoCountVisto = 0
     private var chatEstaAberto = false
     private val idsJaNotificados = mutableSetOf<String>()
 
-    fun abrirChatDirectamente() {
-        _deveAbrirChat.value = true
+    fun abrirChat() {
+        _mostrarChat.value = true
+        marcarComoVisto()
     }
 
-    fun resetAbrirChat() {
-        _deveAbrirChat.value = false
+    fun fecharChat() {
+        _mostrarChat.value = false
+        chatEstaAberto = false
     }
+
+    fun onEcraVisivel() {
+        if (_mostrarChat.value) {
+            chatEstaAberto = true
+            marcarComoVisto()
+        }
+    }
+
+    fun onEcraEscondido() {
+        chatEstaAberto = false
+    }
+
+    fun dispensarNotificacao() { _novaNotificacao.value = null }
+    fun limparHistoricoNotificacoes() { _historicoNotificacoes.value = emptyList() }
 
     fun marcarComoVisto() {
         _historicoNotificacoes.value = emptyList()
@@ -81,18 +99,6 @@ class MensagensViewModel : ViewModel() {
         _mensagensNaoVistas.value = 0
         _novaNotificacao.value = null
         _mensagens.value.forEach { idsJaNotificados.add(it.idMensagem) }
-    }
-
-    fun fecharChat() {
-        chatEstaAberto = false
-    }
-
-    fun dispensarNotificacao() {
-        _novaNotificacao.value = null
-    }
-
-    fun limparHistoricoNotificacoes() {
-        _historicoNotificacoes.value = emptyList()
     }
 
     fun carregarConversa(context: Context) {
@@ -154,15 +160,13 @@ class MensagensViewModel : ViewModel() {
                         nova.idRemetente != _idUtilizador.value &&
                         nova.idMensagem !in idsJaNotificados
                     }
-
                     if (novas.isNotEmpty()) {
                         val mensagensDeOutros = novasMensagens.count { it.idRemetente != _idUtilizador.value }
                         _mensagensNaoVistas.value = mensagensDeOutros - ultimoCountVisto
-
                         val ultima = novas.last()
                         val nome = _nomesParticipantes.value[ultima.idRemetente] ?: "Desconhecido"
-                        val notif = NotificacaoMsg(nomeRemetente = nome, conteudo = ultima.conteudo, idMensagem = ultima.idMensagem)
-
+                        val conteudoNotif = if (ultima.ficheiroNome != null) "📎 ${ultima.ficheiroNome}" else ultima.conteudo
+                        val notif = NotificacaoMsg(nomeRemetente = nome, conteudo = conteudoNotif, idMensagem = ultima.idMensagem)
                         _novaNotificacao.value = notif
                         _historicoNotificacoes.value = (_historicoNotificacoes.value + notif).takeLast(10)
                         novas.forEach { idsJaNotificados.add(it.idMensagem) }
@@ -198,7 +202,45 @@ class MensagensViewModel : ViewModel() {
                     "data_envio" to java.time.Instant.now().toString()
                 )
                 val resp = api.createMensagemMap(mensagem)
-                if (resp.isSuccessful || resp.code() == 201) {
+                if (resp.isSuccessful || resp.code() == 201) carregarMensagens(idConversa)
+            } catch (_: Exception) {}
+            _isSending.value = false
+        }
+    }
+
+    fun enviarFicheiro(bytes: ByteArray, nomeOriginal: String) {
+        val idConversa = _conversa.value?.idConversa ?: return
+        val idRemetente = _idUtilizador.value.ifBlank { return }
+        viewModelScope.launch {
+            _isSending.value = true
+            try {
+                val path = "mensagens/$idConversa/${System.currentTimeMillis()}_$nomeOriginal"
+                val uploadUrl = "${pt.ligix.app.util.Constants.SUPABASE_URL}/storage/v1/object/mensagens/$path"
+                val client = okhttp3.OkHttpClient.Builder()
+                    .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+                    .writeTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+                    .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+                    .build()
+                val requestBody = bytes.toRequestBody("application/pdf".toMediaType())
+                val request = okhttp3.Request.Builder()
+                    .url(uploadUrl)
+                    .header("apikey", pt.ligix.app.util.Constants.SUPABASE_KEY)
+                    .header("Authorization", "Bearer ${pt.ligix.app.util.Constants.SUPABASE_KEY}")
+                    .header("Content-Type", "application/pdf")
+                    .post(requestBody)
+                    .build()
+                val response = withContext(Dispatchers.IO) { client.newCall(request).execute() }
+                if (response.isSuccessful) {
+                    val publicUrl = "${pt.ligix.app.util.Constants.SUPABASE_URL}/storage/v1/object/public/mensagens/$path"
+                    val mensagem = mapOf(
+                        "idremetente" to idRemetente,
+                        "conteudo" to "",
+                        "idconversa" to idConversa,
+                        "data_envio" to java.time.Instant.now().toString(),
+                        "ficheiro_url" to publicUrl,
+                        "ficheiro_nome" to nomeOriginal
+                    )
+                    api.createMensagemMap(mensagem)
                     carregarMensagens(idConversa)
                 }
             } catch (_: Exception) {}

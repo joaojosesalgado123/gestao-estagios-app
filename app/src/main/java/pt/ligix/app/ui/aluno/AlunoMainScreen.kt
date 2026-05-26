@@ -82,11 +82,8 @@ sealed class AlunoTab(val route: String, val label: String, val icon: ImageVecto
 }
 
 val bottomNavRoutes = listOf(
-    AlunoTab.Inicio.route,
-    AlunoTab.Procurar.route,
-    AlunoTab.Estagio.route,
-    AlunoTab.Mensagens.route,
-    AlunoTab.Perfil.route
+    AlunoTab.Inicio.route, AlunoTab.Procurar.route, AlunoTab.Estagio.route,
+    AlunoTab.Mensagens.route, AlunoTab.Perfil.route
 )
 
 @Composable
@@ -104,9 +101,7 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
 
     var mostrarSininho by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        mensagensViewModel.carregarConversa(context)
-    }
+    LaunchedEffect(Unit) { mensagensViewModel.carregarConversa(context) }
 
     LaunchedEffect(novaNotificacao) {
         if (novaNotificacao != null) {
@@ -116,7 +111,7 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
     }
 
     fun navegarParaChat() {
-        mensagensViewModel.abrirChatDirectamente()
+        mensagensViewModel.abrirChat()
         mensagensViewModel.dispensarNotificacao()
         navController.navigate(AlunoTab.Mensagens.route) {
             popUpTo(AlunoTab.Inicio.route) { inclusive = false }
@@ -124,28 +119,13 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
         }
     }
 
-    val tabs = listOf(
-        AlunoTab.Inicio,
-        AlunoTab.Procurar,
-        AlunoTab.Estagio,
-        AlunoTab.Mensagens,
-        AlunoTab.Perfil
-    )
+    val tabs = listOf(AlunoTab.Inicio, AlunoTab.Procurar, AlunoTab.Estagio, AlunoTab.Mensagens, AlunoTab.Perfil)
 
-    // Dialog do sininho
     if (mostrarSininho) {
         Dialog(onDismissRequest = { mostrarSininho = false }) {
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Color.White), modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(20.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Text("Notificações", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
                         if (historicoNotificacoes.isNotEmpty()) {
                             TextButton(onClick = { mensagensViewModel.limparHistoricoNotificacoes() }) {
@@ -153,14 +133,9 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
                             }
                         }
                     }
-
                     Spacer(modifier = Modifier.height(12.dp))
-
                     if (historicoNotificacoes.isEmpty()) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Default.NotificationsNone, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(48.dp))
                             Spacer(modifier = Modifier.height(8.dp))
                             Text("Sem notificações", color = Color.Gray, fontSize = 14.sp)
@@ -169,19 +144,10 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
                         LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
                             items(historicoNotificacoes.reversed()) { notif ->
                                 Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable {
-                                            mostrarSininho = false
-                                            navegarParaChat()
-                                        }
-                                        .padding(vertical = 10.dp),
+                                    modifier = Modifier.fillMaxWidth().clickable { mostrarSininho = false; navegarParaChat() }.padding(vertical = 10.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Box(
-                                        modifier = Modifier.size(36.dp).clip(CircleShape).background(Color(0xFFE8EAF6)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
+                                    Box(modifier = Modifier.size(36.dp).clip(CircleShape).background(Color(0xFFE8EAF6)), contentAlignment = Alignment.Center) {
                                         Text(notif.nomeRemetente.firstOrNull()?.toString() ?: "?", color = DarkBlue, fontWeight = FontWeight.Bold)
                                     }
                                     Spacer(modifier = Modifier.width(12.dp))
@@ -217,22 +183,14 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
                                     Box {
                                         Icon(tab.icon, contentDescription = tab.label)
                                         if (tab == AlunoTab.Mensagens && historicoNotificacoes.isNotEmpty()) {
-                                            Box(
-                                                modifier = Modifier
-                                                    .size(8.dp)
-                                                    .background(Color.Red, CircleShape)
-                                                    .align(Alignment.TopEnd)
-                                            )
+                                            Box(modifier = Modifier.size(8.dp).background(Color.Red, CircleShape).align(Alignment.TopEnd))
                                         }
                                     }
                                 },
                                 label = { Text(tab.label) },
                                 colors = NavigationBarItemDefaults.colors(
-                                    selectedIconColor = DarkBlue,
-                                    selectedTextColor = DarkBlue,
-                                    indicatorColor = Color(0xFFE8EAF6),
-                                    unselectedIconColor = Color.Gray,
-                                    unselectedTextColor = Color.Gray
+                                    selectedIconColor = DarkBlue, selectedTextColor = DarkBlue,
+                                    indicatorColor = Color(0xFFE8EAF6), unselectedIconColor = Color.Gray, unselectedTextColor = Color.Gray
                                 )
                             )
                         }
@@ -240,37 +198,17 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
                 }
             }
         ) { innerPadding ->
-            NavHost(
-                navController = navController,
-                startDestination = AlunoTab.Inicio.route,
-                modifier = Modifier.padding(innerPadding)
-            ) {
+            NavHost(navController = navController, startDestination = AlunoTab.Inicio.route, modifier = Modifier.padding(innerPadding)) {
                 composable(AlunoTab.Inicio.route) {
                     AlunoDashboardScreen(
                         mensagensNaoVistas = mensagensNaoVistas,
                         historicoNotificacoes = historicoNotificacoes,
                         onSininho = { mostrarSininho = true },
-                        onProcurarEstagios = {
-                            navController.navigate(AlunoTab.Procurar.route) {
-                                popUpTo(AlunoTab.Inicio.route) { inclusive = false }
-                                launchSingleTop = true
-                            }
-                        },
-                        onRegistarAtividade = {
-                            navController.navigate(AlunoTab.Estagio.route) {
-                                popUpTo(AlunoTab.Inicio.route) { inclusive = false }
-                                launchSingleTop = true
-                            }
-                        },
-                        onMensagens = {
-                            navController.navigate(AlunoTab.Mensagens.route) {
-                                popUpTo(AlunoTab.Inicio.route) { inclusive = false }
-                                launchSingleTop = true
-                            }
-                        }
+                        onProcurarEstagios = { navController.navigate(AlunoTab.Procurar.route) { popUpTo(AlunoTab.Inicio.route) { inclusive = false }; launchSingleTop = true } },
+                        onRegistarAtividade = { navController.navigate(AlunoTab.Estagio.route) { popUpTo(AlunoTab.Inicio.route) { inclusive = false }; launchSingleTop = true } },
+                        onMensagens = { navController.navigate(AlunoTab.Mensagens.route) { popUpTo(AlunoTab.Inicio.route) { inclusive = false }; launchSingleTop = true } }
                     )
                 }
-
                 composable(AlunoTab.Procurar.route) {
                     AlunoOfertasScreen(
                         historicoNotificacoes = historicoNotificacoes,
@@ -281,60 +219,34 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
                         }
                     )
                 }
-
                 composable("aluno_oferta_detalhe") {
                     val oferta = navController.previousBackStackEntry?.savedStateHandle?.get<OfertaEstagio>("oferta")
                     if (oferta != null) {
                         AlunoOfertaDetalheScreen(
                             oferta = oferta,
                             onVoltar = { navController.popBackStack() },
-                            onCandidaturaSubmetida = {
-                                navController.navigate(AlunoTab.Inicio.route) {
-                                    popUpTo(AlunoTab.Inicio.route) { inclusive = true }
-                                }
-                            }
+                            onCandidaturaSubmetida = { navController.navigate(AlunoTab.Inicio.route) { popUpTo(AlunoTab.Inicio.route) { inclusive = true } } }
                         )
                     }
                 }
-
-                composable(AlunoTab.Estagio.route) {
-                    AlunoPlaceholderScreen("Estágio", Icons.Default.Assignment)
-                }
-
-                composable(AlunoTab.Mensagens.route) {
-                    AlunoMensagensScreen(viewModel = mensagensViewModel, onSininho = { mostrarSininho = true })
-                }
-
-                composable(AlunoTab.Perfil.route) {
-                    AlunoPerfilScreen(onLogout = onLogout)
-                }
+                composable(AlunoTab.Estagio.route) { AlunoPlaceholderScreen("Estágio", Icons.Default.Assignment) }
+                composable(AlunoTab.Mensagens.route) { AlunoMensagensScreen(viewModel = mensagensViewModel, onSininho = { mostrarSininho = true }) }
+                composable(AlunoTab.Perfil.route) { AlunoPerfilScreen(onLogout = onLogout) }
             }
         }
 
-        // Popup de notificação no topo
         AnimatedVisibility(
             visible = novaNotificacao != null,
             enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
             exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut(),
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .zIndex(10f)
-                .padding(top = 8.dp, start = 12.dp, end = 12.dp)
+            modifier = Modifier.align(Alignment.TopCenter).zIndex(10f).padding(top = 8.dp, start = 12.dp, end = 12.dp)
         ) {
             novaNotificacao?.let { notif ->
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .shadow(8.dp, RoundedCornerShape(16.dp))
-                        .background(Color.White, RoundedCornerShape(16.dp))
-                        .clickable { navegarParaChat() }
-                        .padding(12.dp),
+                    modifier = Modifier.fillMaxWidth().shadow(8.dp, RoundedCornerShape(16.dp)).background(Color.White, RoundedCornerShape(16.dp)).clickable { navegarParaChat() }.padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)).background(DarkBlue),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    Box(modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)).background(DarkBlue), contentAlignment = Alignment.Center) {
                         Icon(Icons.Default.Message, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
                     }
                     Spacer(modifier = Modifier.width(12.dp))

@@ -8,5 +8,7 @@ data class Mensagem(
     @SerializedName("conteudo") val conteudo: String = "",
     @SerializedName("data_envio") val dataEnvio: String = "",
     @SerializedName("idconversa") val idConversa: String = "",
-    @SerializedName("created_at") val createdAt: String = ""
+    @SerializedName("ficheiro_url") val ficheiroUrl: String? = null,
+    @SerializedName("ficheiro_nome") val ficheiroNome: String? = null,
+    @SerializedName("created_at") val createdAt: String? = null
 )
