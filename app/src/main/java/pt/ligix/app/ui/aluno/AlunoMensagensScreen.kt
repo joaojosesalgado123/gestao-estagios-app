@@ -15,21 +15,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import pt.ligix.app.model.Mensagem
 import pt.ligix.app.ui.auth.DarkBlue
-import pt.ligix.app.ui.auth.LigixGold
 import pt.ligix.app.viewmodel.MensagensViewModel
-import pt.ligix.app.viewmodel.MensagensViewModelFactory
 
 @Composable
-fun AlunoMensagensScreen() {
-    val context = LocalContext.current
-    val viewModel: MensagensViewModel = viewModel(factory = MensagensViewModelFactory())
+fun AlunoMensagensScreen(viewModel: MensagensViewModel) {
 
     val conversa by viewModel.conversa.collectAsState()
     val mensagens by viewModel.mensagens.collectAsState()
@@ -38,12 +32,21 @@ fun AlunoMensagensScreen() {
     val idUtilizador by viewModel.idUtilizador.collectAsState()
     val nomeEstagio by viewModel.nomeEstagio.collectAsState()
     val nomesParticipantes by viewModel.nomesParticipantes.collectAsState()
+    val mensagensNaoVistas by viewModel.mensagensNaoVistas.collectAsState()
 
     var textoMensagem by remember { mutableStateOf("") }
     var mostrarChat by remember { mutableStateOf(false) }
-    val listState = rememberLazyListState()
+    val deveAbrirChat by viewModel.deveAbrirChat.collectAsState()
 
-    LaunchedEffect(Unit) { viewModel.carregarConversa(context) }
+    LaunchedEffect(deveAbrirChat) {
+        if (deveAbrirChat) {
+            mostrarChat = true
+            viewModel.marcarComoVisto()
+            viewModel.resetAbrirChat()
+        }
+    }
+    var pesquisa by remember { mutableStateOf("") }
+    val listState = rememberLazyListState()
 
     LaunchedEffect(mensagens.size) {
         if (mensagens.isNotEmpty()) listState.animateScrollToItem(mensagens.size - 1)
@@ -53,33 +56,47 @@ fun AlunoMensagensScreen() {
 
         if (!mostrarChat) {
             Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
+
+                // Top Bar — sem ícone de lupa
                 Row(
                     modifier = Modifier.fillMaxWidth().background(Color.White).padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text("LIGIX", color = DarkBlue, fontSize = 18.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
                     Spacer(modifier = Modifier.weight(1f))
-                    IconButton(onClick = {}) { Icon(Icons.Default.Search, contentDescription = null, tint = DarkBlue) }
-                    IconButton(onClick = {}) { Icon(Icons.Default.Notifications, contentDescription = null, tint = DarkBlue) }
+                    // Sininho com badge
+                    Box {
+                        IconButton(onClick = {}) {
+                            Icon(Icons.Default.Notifications, contentDescription = null, tint = DarkBlue)
+                        }
+                        if (mensagensNaoVistas > 0) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .background(Color.Red, CircleShape)
+                                    .align(Alignment.TopEnd)
+                                    .offset(x = (-4).dp, y = 4.dp)
+                            )
+                        }
+                    }
                 }
 
-                Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
-                    OutlinedTextField(
-                        value = "",
-                        onValueChange = {},
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Procurar conversas ou contactos...", color = Color.Gray, fontSize = 14.sp) },
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedContainerColor = Color(0xFFF0F0F0),
-                            focusedContainerColor = Color(0xFFF0F0F0),
-                            unfocusedBorderColor = Color.Transparent,
-                            focusedBorderColor = DarkBlue
-                        ),
-                        shape = RoundedCornerShape(24.dp),
-                        singleLine = true
-                    )
-                }
+                // Barra de pesquisa funcional
+                OutlinedTextField(
+                    value = pesquisa,
+                    onValueChange = { pesquisa = it },
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    placeholder = { Text("Procurar conversas ou contactos...", color = Color.Gray, fontSize = 14.sp) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedContainerColor = Color(0xFFF0F0F0),
+                        focusedContainerColor = Color(0xFFF0F0F0),
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedBorderColor = DarkBlue
+                    ),
+                    shape = RoundedCornerShape(24.dp),
+                    singleLine = true
+                )
 
                 Divider(color = Color(0xFFEEEEEE))
 
@@ -93,22 +110,43 @@ fun AlunoMensagensScreen() {
                             Icon(Icons.Default.ChatBubbleOutline, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(64.dp))
                             Spacer(modifier = Modifier.height(12.dp))
                             Text("Sem conversas ativas", color = Color.Gray, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                            Text("As mensagens aparecerão quando tiveres um estágio ativo.", color = Color.LightGray, fontSize = 13.sp, modifier = Modifier.padding(horizontal = 32.dp), textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                            Text(
+                                "As mensagens aparecerão quando tiveres um estágio ativo.",
+                                color = Color.LightGray,
+                                fontSize = 13.sp,
+                                modifier = Modifier.padding(horizontal = 32.dp),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                            )
                         }
                     }
                 } else {
-                    Surface(onClick = { mostrarChat = true }, color = Color.White, modifier = Modifier.fillMaxWidth()) {
-                        Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Box(modifier = Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)).background(DarkBlue), contentAlignment = Alignment.Center) {
+                    Surface(
+                        onClick = {
+                            mostrarChat = true
+                            viewModel.marcarComoVisto()
+                        },
+                        color = Color.White,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)).background(DarkBlue),
+                                contentAlignment = Alignment.Center
+                            ) {
                                 Icon(Icons.Default.Work, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(nomeEstagio, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                                 val ultimaMensagem = mensagens.lastOrNull()
-                                val nomeRemetente = ultimaMensagem?.let { nomesParticipantes[it.idRemetente]?.split(" ")?.firstOrNull() ?: "" }
+                                val nomeRemetente = ultimaMensagem?.let {
+                                    nomesParticipantes[it.idRemetente]?.split(" ")?.firstOrNull() ?: ""
+                                }
                                 Text(
-                                    text = if (ultimaMensagem != null) "${nomeRemetente}: ${ultimaMensagem.conteudo.take(40)}" else "Sem mensagens ainda",
+                                    text = if (ultimaMensagem != null) "$nomeRemetente: ${ultimaMensagem.conteudo.take(40)}" else "Sem mensagens ainda",
                                     fontSize = 13.sp,
                                     color = Color.Gray,
                                     maxLines = 1
@@ -118,10 +156,22 @@ fun AlunoMensagensScreen() {
                             Column(horizontalAlignment = Alignment.End) {
                                 val hora = mensagens.lastOrNull()?.dataEnvio?.take(16)?.takeLast(5) ?: ""
                                 if (hora.isNotEmpty()) Text(hora, fontSize = 12.sp, color = DarkBlue, fontWeight = FontWeight.Medium)
-                                if (mensagens.isNotEmpty()) {
+                                // Badge só aparece se houver mensagens não vistas
+                                if (mensagensNaoVistas > 0) {
                                     Spacer(modifier = Modifier.height(4.dp))
-                                    Box(modifier = Modifier.size(22.dp).clip(CircleShape).background(LigixGold), contentAlignment = Alignment.Center) {
-                                        Text(mensagens.size.coerceAtMost(99).toString(), color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    Box(
+                                        modifier = Modifier
+                                            .size(22.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0xFFF5A623)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            mensagensNaoVistas.coerceAtMost(99).toString(),
+                                            color = Color.White,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
                                     }
                                 }
                             }
@@ -131,15 +181,19 @@ fun AlunoMensagensScreen() {
                 }
             }
         } else {
+            // ---- ECRÃ DE CHAT ----
             Column(modifier = Modifier.fillMaxSize()) {
                 Row(
                     modifier = Modifier.fillMaxWidth().background(Color.White).padding(horizontal = 8.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(onClick = { mostrarChat = false }) {
+                    IconButton(onClick = { mostrarChat = false; viewModel.fecharChat() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Voltar", tint = DarkBlue)
                     }
-                    Box(modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)).background(DarkBlue), contentAlignment = Alignment.Center) {
+                    Box(
+                        modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)).background(DarkBlue),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Icon(Icons.Default.Work, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
                     }
                     Spacer(modifier = Modifier.width(10.dp))
@@ -201,7 +255,10 @@ fun AlunoMensagensScreen() {
                             }
                         },
                         enabled = !isSending && textoMensagem.isNotBlank(),
-                        modifier = Modifier.size(48.dp).clip(CircleShape).background(if (textoMensagem.isNotBlank()) DarkBlue else Color.LightGray)
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(if (textoMensagem.isNotBlank()) DarkBlue else Color.LightGray)
                     ) {
                         if (isSending) {
                             CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
@@ -226,12 +283,7 @@ fun BolhaMensagem(mensagem: Mensagem, isMinha: Boolean, nomeRemetente: String) {
                 modifier = Modifier.size(32.dp).clip(CircleShape).background(Color(0xFFE8EAF6)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = nomeRemetente.firstOrNull()?.toString() ?: "?",
-                    color = DarkBlue,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Text(nomeRemetente.firstOrNull()?.toString() ?: "?", color = DarkBlue, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             }
             Spacer(modifier = Modifier.width(8.dp))
         }
