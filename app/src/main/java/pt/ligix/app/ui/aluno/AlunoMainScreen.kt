@@ -151,7 +151,7 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
             }
 
             composable(AlunoTab.Perfil.route) {
-                AlunoPerfilPlaceholderScreen(onLogout = onLogout)
+                AlunoPerfilScreen(onLogout = onLogout)
             }
         }
     }

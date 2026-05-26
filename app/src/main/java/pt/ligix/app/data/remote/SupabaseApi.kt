@@ -338,6 +338,21 @@ interface SupabaseApi {
         @Body orientadorEmpresa: OrientadorEmpresa
     ): Response<List<OrientadorEmpresa>>
 
+    // Aluno - atualizar
+    @retrofit2.http.PATCH("aluno")
+    suspend fun updateAluno(
+        @retrofit2.http.Header("Prefer") prefer: String = "return=representation",
+        @Query("idutilizador") id: String,
+        @Body aluno: Aluno
+    ): Response<List<Aluno>>
+
+    // Aluno por ID
+    @GET("aluno")
+    suspend fun getAlunoById(
+        @Query("idutilizador") idUtilizador: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Aluno>>
+
     // Ofertas - listar todas
     @GET("oferta_estagio")
     suspend fun getTodasOfertas(
