@@ -147,7 +147,7 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
             }
 
             composable(AlunoTab.Mensagens.route) {
-                AlunoPlaceholderScreen("Mensagens", Icons.Default.Message)
+                AlunoMensagensScreen()
             }
 
             composable(AlunoTab.Perfil.route) {
