@@ -302,7 +302,7 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
                 }
 
                 composable(AlunoTab.Mensagens.route) {
-                    AlunoMensagensScreen(viewModel = mensagensViewModel)
+                    AlunoMensagensScreen(viewModel = mensagensViewModel, onSininho = { mostrarSininho = true })
                 }
 
                 composable(AlunoTab.Perfil.route) {
