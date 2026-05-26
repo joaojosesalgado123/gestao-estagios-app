@@ -112,7 +112,7 @@ fun AlunoDashboardScreen(
                             Text("Procura estágios e submete a tua candidatura!", color = Color.LightGray, fontSize = 12.sp)
                         }
                     } else {
-                        candidaturas.take(3).forEach { item ->
+                        candidaturas.forEach { item ->
                             CandidaturaCard(candidatura = item.candidatura, oferta = item.oferta)
                             Spacer(modifier = Modifier.height(8.dp))
                         }
