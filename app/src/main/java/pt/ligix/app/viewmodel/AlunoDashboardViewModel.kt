@@ -85,7 +85,9 @@ class AlunoDashboardViewModel(
             repository.getEstagioDoAluno(idAluno).onSuccess { estagio ->
                 if (estagio?.idEstagio != null) {
                     repository.getPresencas(estagio.idEstagio).onSuccess { presencas ->
-                        _horasAcumuladas.value = presencas.count { it.status == "presente" } * 8
+                        _horasAcumuladas.value = presencas.count {
+                            it.status.equals("presente", ignoreCase = true)
+                        } * 8
                     }
                 }
             }

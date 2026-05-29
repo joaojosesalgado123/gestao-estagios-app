@@ -100,6 +100,7 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
     val historicoNotificacoes by mensagensViewModel.historicoNotificacoes.collectAsState()
 
     var mostrarSininho by remember { mutableStateOf(false) }
+    var abrirRegistoAtividade by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { mensagensViewModel.carregarConversa(context) }
 
@@ -205,7 +206,13 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
                         historicoNotificacoes = historicoNotificacoes,
                         onSininho = { mostrarSininho = true },
                         onProcurarEstagios = { navController.navigate(AlunoTab.Procurar.route) { popUpTo(AlunoTab.Inicio.route) { inclusive = false }; launchSingleTop = true } },
-                        onRegistarAtividade = { navController.navigate(AlunoTab.Estagio.route) { popUpTo(AlunoTab.Inicio.route) { inclusive = false }; launchSingleTop = true } },
+                        onRegistarAtividade = {
+                            abrirRegistoAtividade = true
+                            navController.navigate(AlunoTab.Estagio.route) {
+                                popUpTo(AlunoTab.Inicio.route) { inclusive = false }
+                                launchSingleTop = true
+                            }
+                        },
                         onMensagens = { navController.navigate(AlunoTab.Mensagens.route) { popUpTo(AlunoTab.Inicio.route) { inclusive = false }; launchSingleTop = true } }
                     )
                 }
@@ -229,7 +236,14 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
                         )
                     }
                 }
-                composable(AlunoTab.Estagio.route) { AlunoPlaceholderScreen("Estágio", Icons.Default.Assignment) }
+                composable(AlunoTab.Estagio.route) {
+                    AlunoEstagioScreen(
+                        historicoNotificacoes = historicoNotificacoes,
+                        abrirNovaAtividade = abrirRegistoAtividade,
+                        onNovaAtividadeAberta = { abrirRegistoAtividade = false },
+                        onSininho = { mostrarSininho = true }
+                    )
+                }
                 composable(AlunoTab.Mensagens.route) { AlunoMensagensScreen(viewModel = mensagensViewModel, onSininho = { mostrarSininho = true }) }
                 composable(AlunoTab.Perfil.route) { AlunoPerfilScreen(onLogout = onLogout) }
             }

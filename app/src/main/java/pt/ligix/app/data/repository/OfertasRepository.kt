@@ -61,7 +61,7 @@ class OfertasRepository {
                 "carta_motivacao_ficheiro" to cartaFicheiro,
                 "data" to java.time.LocalDate.now().toString()
             )
-            val response = api.createCandidatura(body)
+            val response = api.createCandidaturaMap(body)
             if (response.isSuccessful || response.code() == 201) {
                 Result.success(Unit)
             } else {
