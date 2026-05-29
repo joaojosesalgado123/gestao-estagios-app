@@ -41,6 +41,9 @@ class MensagensViewModel : ViewModel() {
     private val _isSending = MutableStateFlow(false)
     val isSending: StateFlow<Boolean> = _isSending
 
+    private val _erro = MutableStateFlow<String?>(null)
+    val erro: StateFlow<String?> = _erro
+
     private val _idUtilizador = MutableStateFlow("")
     val idUtilizador: StateFlow<String> = _idUtilizador
 
@@ -104,16 +107,33 @@ class MensagensViewModel : ViewModel() {
     fun carregarConversa(context: Context) {
         viewModelScope.launch {
             _isLoading.value = true
+            _erro.value = null
             val sessionManager = SessionManager(context)
-            val idAluno = sessionManager.idUtilizador.first() ?: return@launch
+            val idAluno = sessionManager.idUtilizador.first() ?: run {
+                _erro.value = "Sessão inválida."
+                _isLoading.value = false
+                return@launch
+            }
             _idUtilizador.value = idAluno
 
             try {
                 val respCand = api.getCandidaturasByAluno(idAluno = "eq.$idAluno")
+                if (!respCand.isSuccessful) {
+                    _erro.value = "Não foi possível carregar candidaturas."
+                    _isLoading.value = false
+                    return@launch
+                }
+
                 val candidaturaAceite = respCand.body()?.firstOrNull { it.status == "aceite" }
                     ?: run { _isLoading.value = false; return@launch }
 
                 val respEstagio = api.getEstagioByCandidatura(idCandidatura = "eq.${candidaturaAceite.idCandidatura}")
+                if (!respEstagio.isSuccessful) {
+                    _erro.value = "Não foi possível carregar o estágio."
+                    _isLoading.value = false
+                    return@launch
+                }
+
                 val estagio = respEstagio.body()?.firstOrNull()
                     ?: run { _isLoading.value = false; return@launch }
 
@@ -127,6 +147,11 @@ class MensagensViewModel : ViewModel() {
                 _nomesParticipantes.value = nomes
 
                 val respConversa = api.getConversaByEstagio(idEstagio = "eq.${estagio.idEstagio}")
+                if (!respConversa.isSuccessful) {
+                    _erro.value = "Não foi possível carregar conversas."
+                    _isLoading.value = false
+                    return@launch
+                }
                 val conversa = respConversa.body()?.firstOrNull()
 
                 if (conversa != null) {
@@ -134,7 +159,9 @@ class MensagensViewModel : ViewModel() {
                     carregarMensagens(conversa.idConversa, primeiraVez = true)
                     iniciarPolling(conversa.idConversa)
                 }
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+                _erro.value = "Não foi possível carregar mensagens."
+            }
 
             _isLoading.value = false
         }
@@ -144,6 +171,7 @@ class MensagensViewModel : ViewModel() {
         try {
             val resp = api.getMensagensByConversa(idConversa = "eq.$idConversa")
             if (resp.isSuccessful) {
+                _erro.value = null
                 val novasMensagens = resp.body() ?: emptyList()
 
                 if (primeiraVez) {
@@ -177,7 +205,9 @@ class MensagensViewModel : ViewModel() {
                     novasMensagens.forEach { idsJaNotificados.add(it.idMensagem) }
                 }
             }
-        } catch (_: Exception) {}
+        } catch (_: Exception) {
+            _erro.value = "Erro ao atualizar mensagens."
+        }
     }
 
     private fun iniciarPolling(idConversa: String) {
@@ -195,6 +225,7 @@ class MensagensViewModel : ViewModel() {
         viewModelScope.launch {
             _isSending.value = true
             try {
+                _erro.value = null
                 val mensagem = mapOf(
                     "idremetente" to idRemetente,
                     "conteudo" to texto,
@@ -203,7 +234,10 @@ class MensagensViewModel : ViewModel() {
                 )
                 val resp = api.createMensagemMap(mensagem)
                 if (resp.isSuccessful || resp.code() == 201) carregarMensagens(idConversa)
-            } catch (_: Exception) {}
+                else _erro.value = "Erro ao enviar mensagem."
+            } catch (_: Exception) {
+                _erro.value = "Erro ao enviar mensagem."
+            }
             _isSending.value = false
         }
     }
@@ -214,6 +248,7 @@ class MensagensViewModel : ViewModel() {
         viewModelScope.launch {
             _isSending.value = true
             try {
+                _erro.value = null
                 val path = "mensagens/$idConversa/${System.currentTimeMillis()}_$nomeOriginal"
                 val uploadUrl = "${pt.ligix.app.util.Constants.SUPABASE_URL}/storage/v1/object/mensagens/$path"
                 val client = okhttp3.OkHttpClient.Builder()
@@ -242,8 +277,12 @@ class MensagensViewModel : ViewModel() {
                     )
                     api.createMensagemMap(mensagem)
                     carregarMensagens(idConversa)
+                } else {
+                    _erro.value = "Erro no upload do ficheiro."
                 }
-            } catch (_: Exception) {}
+            } catch (_: Exception) {
+                _erro.value = "Erro no upload do ficheiro."
+            }
             _isSending.value = false
         }
     }

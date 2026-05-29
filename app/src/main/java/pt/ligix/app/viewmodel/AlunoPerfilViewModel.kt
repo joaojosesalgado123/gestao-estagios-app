@@ -40,7 +40,11 @@ class AlunoPerfilViewModel : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
             val sessionManager = SessionManager(context)
-            val idUtilizador = sessionManager.idUtilizador.first() ?: return@launch
+            val idUtilizador = sessionManager.idUtilizador.first() ?: run {
+                _erroGuardar.value = "Sessão inválida."
+                _isLoading.value = false
+                return@launch
+            }
             idUtilizadorAtual = idUtilizador
 
             try {
@@ -64,9 +68,15 @@ class AlunoPerfilViewModel : ViewModel() {
             _guardadoComSucesso.value = false
 
             try {
+                val utilizadorAtual = _utilizador.value ?: run {
+                    _erroGuardar.value = "Não foi possível carregar os dados do utilizador."
+                    _isSaving.value = false
+                    return@launch
+                }
+
                 val respUtil = api.updateUtilizador(
                     id = "eq.$idUtilizadorAtual",
-                    utilizador = _utilizador.value!!.copy(nome = nome)
+                    utilizador = utilizadorAtual.copy(nome = nome)
                 )
                 if (!respUtil.isSuccessful) {
                     _erroGuardar.value = "Erro ao guardar nome."
@@ -80,9 +90,15 @@ class AlunoPerfilViewModel : ViewModel() {
             }
 
             try {
+                val alunoAtual = _aluno.value ?: run {
+                    _erroGuardar.value = "Não foi possível carregar os dados académicos."
+                    _isSaving.value = false
+                    return@launch
+                }
+
                 val respAluno = api.updateAluno(
                     id = "eq.$idUtilizadorAtual",
-                    aluno = _aluno.value!!.copy(
+                    aluno = alunoAtual.copy(
                         curso = curso,
                         numeroAluno = numeroAluno,
                         telemovel = telemovel.ifBlank { null }

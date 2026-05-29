@@ -52,6 +52,7 @@ class OfertasViewModel(
     fun carregarOfertas() {
         viewModelScope.launch {
             _isLoading.value = true
+            _erro.value = null
             repository.getOfertas().onSuccess { lista ->
                 _todasOfertas.value = lista
                 _areas.value = lista.mapNotNull { it.area }.distinct().sorted()

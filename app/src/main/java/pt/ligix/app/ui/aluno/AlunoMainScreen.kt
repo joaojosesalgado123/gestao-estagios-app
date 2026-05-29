@@ -231,6 +231,8 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
                     if (oferta != null) {
                         AlunoOfertaDetalheScreen(
                             oferta = oferta,
+                            historicoNotificacoes = historicoNotificacoes,
+                            onSininho = { mostrarSininho = true },
                             onVoltar = { navController.popBackStack() },
                             onCandidaturaSubmetida = { navController.navigate(AlunoTab.Inicio.route) { popUpTo(AlunoTab.Inicio.route) { inclusive = true } } }
                         )
@@ -245,7 +247,13 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
                     )
                 }
                 composable(AlunoTab.Mensagens.route) { AlunoMensagensScreen(viewModel = mensagensViewModel, onSininho = { mostrarSininho = true }) }
-                composable(AlunoTab.Perfil.route) { AlunoPerfilScreen(onLogout = onLogout) }
+                composable(AlunoTab.Perfil.route) {
+                    AlunoPerfilScreen(
+                        historicoNotificacoes = historicoNotificacoes,
+                        onSininho = { mostrarSininho = true },
+                        onLogout = onLogout
+                    )
+                }
             }
         }
 

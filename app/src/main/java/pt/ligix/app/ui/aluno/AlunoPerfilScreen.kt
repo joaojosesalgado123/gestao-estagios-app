@@ -23,9 +23,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.viewmodel.AlunoPerfilViewModel
 import pt.ligix.app.viewmodel.AlunoPerfilViewModelFactory
+import pt.ligix.app.viewmodel.NotificacaoMsg
 
 @Composable
-fun AlunoPerfilScreen(onLogout: () -> Unit) {
+fun AlunoPerfilScreen(
+    historicoNotificacoes: List<NotificacaoMsg> = emptyList(),
+    onSininho: () -> Unit = {},
+    onLogout: () -> Unit
+) {
     val context = LocalContext.current
     val viewModel: AlunoPerfilViewModel = viewModel(factory = AlunoPerfilViewModelFactory())
 
@@ -74,7 +79,19 @@ fun AlunoPerfilScreen(onLogout: () -> Unit) {
         ) {
             Text("LIGIX", color = DarkBlue, fontSize = 18.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
             Spacer(modifier = Modifier.weight(1f))
-            IconButton(onClick = {}) { Icon(Icons.Default.Notifications, contentDescription = null, tint = DarkBlue) }
+            Box(contentAlignment = Alignment.TopEnd) {
+                IconButton(onClick = onSininho) {
+                    Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = DarkBlue)
+                }
+                if (historicoNotificacoes.isNotEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .background(Color.Red, CircleShape)
+                            .offset(x = (-4).dp, y = 4.dp)
+                    )
+                }
+            }
         }
 
         if (isLoading) {
