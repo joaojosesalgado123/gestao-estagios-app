@@ -51,6 +51,7 @@ fun AlunoOfertasScreen(
     val localizacoes by viewModel.localizacoes.collectAsState()
     val duracoes by viewModel.duracoes.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val erro by viewModel.erro.collectAsState()
 
     // Nome do utilizador para o avatar
     var nomeUtilizador by remember { mutableStateOf("A") }
@@ -182,6 +183,18 @@ fun AlunoOfertasScreen(
         if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = DarkBlue)
+            }
+        } else if (erro != null) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(
+                    modifier = Modifier.padding(horizontal = 32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(Icons.Default.CloudOff, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(64.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Não foi possível carregar ofertas", color = Color.Gray, fontWeight = FontWeight.SemiBold)
+                    Text(erro.orEmpty(), color = Color.LightGray, fontSize = 13.sp)
+                }
             }
         } else if (ofertas.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

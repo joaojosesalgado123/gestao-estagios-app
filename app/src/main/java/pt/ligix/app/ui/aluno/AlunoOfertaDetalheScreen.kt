@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -22,17 +23,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import pt.ligix.app.data.repository.AlunoRepository
 import pt.ligix.app.data.repository.OfertasRepository
 import pt.ligix.app.model.OfertaEstagio
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.auth.LigixGold
 import pt.ligix.app.util.SessionManager
+import pt.ligix.app.viewmodel.NotificacaoMsg
 
 @Composable
 fun AlunoOfertaDetalheScreen(
     oferta: OfertaEstagio,
+    historicoNotificacoes: List<NotificacaoMsg> = emptyList(),
+    onSininho: () -> Unit = {},
     onVoltar: () -> Unit,
     onCandidaturaSubmetida: () -> Unit
 ) {
@@ -95,7 +101,26 @@ fun AlunoOfertaDetalheScreen(
             IconButton(onClick = onVoltar) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Voltar", tint = DarkBlue)
             }
-            Text("Detalhe da Oferta", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
+            Text(
+                "Detalhe da Oferta",
+                modifier = Modifier.weight(1f),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = DarkBlue
+            )
+            Box(contentAlignment = Alignment.TopEnd) {
+                IconButton(onClick = onSininho) {
+                    Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = DarkBlue)
+                }
+                if (historicoNotificacoes.isNotEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .background(Color.Red, CircleShape)
+                            .offset(x = (-4).dp, y = 4.dp)
+                    )
+                }
+            }
         }
 
         Column(
@@ -216,8 +241,12 @@ fun AlunoOfertaDetalheScreen(
                                         return@launch
                                     }
 
-                                    val cvBytes = context.contentResolver.openInputStream(cvUri!!)?.readBytes()
-                                    val cartaBytes = context.contentResolver.openInputStream(cartaUri!!)?.readBytes()
+                                    val cvBytes = withContext(Dispatchers.IO) {
+                                        context.contentResolver.openInputStream(cvUri!!)?.use { it.readBytes() }
+                                    }
+                                    val cartaBytes = withContext(Dispatchers.IO) {
+                                        context.contentResolver.openInputStream(cartaUri!!)?.use { it.readBytes() }
+                                    }
 
                                     if (cvBytes == null || cartaBytes == null) {
                                         erro = "Erro ao ler os ficheiros."
@@ -225,8 +254,15 @@ fun AlunoOfertaDetalheScreen(
                                         return@launch
                                     }
 
-                                    val cvPath = "$idAluno/${oferta.idOferta}/cv.pdf"
-                                    val cartaPath = "$idAluno/${oferta.idOferta}/carta.pdf"
+                                    if (cvBytes.size > 25L * 1024L * 1024L || cartaBytes.size > 25L * 1024L * 1024L) {
+                                        erro = "Os ficheiros não podem ultrapassar 25MB."
+                                        isLoading = false
+                                        return@launch
+                                    }
+
+                                    val timestamp = System.currentTimeMillis()
+                                    val cvPath = "$idAluno/${oferta.idOferta}/cv-$timestamp.pdf"
+                                    val cartaPath = "$idAluno/${oferta.idOferta}/carta-$timestamp.pdf"
 
                                     val cvUpload = repository.uploadFicheiro("candidaturas", cvPath, cvBytes)
                                     val cartaUpload = repository.uploadFicheiro("candidaturas", cartaPath, cartaBytes)

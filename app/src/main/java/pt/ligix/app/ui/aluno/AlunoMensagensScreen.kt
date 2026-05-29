@@ -49,6 +49,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,6 +59,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import pt.ligix.app.model.Mensagem
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.viewmodel.MensagensViewModel
@@ -75,20 +79,33 @@ fun AlunoMensagensScreen(viewModel: MensagensViewModel, onSininho: () -> Unit = 
     val nomesParticipantes by viewModel.nomesParticipantes.collectAsState()
     val mensagensNaoVistas by viewModel.mensagensNaoVistas.collectAsState()
     val mostrarChat by viewModel.mostrarChat.collectAsState()
+    val erro by viewModel.erro.collectAsState()
 
     var textoMensagem by remember { mutableStateOf("") }
     var pesquisa by remember { mutableStateOf("") }
+    var erroLocal by remember { mutableStateOf<String?>(null) }
     val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    val mensagemErro = erroLocal ?: erro
 
     val ficheiroLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let {
-            val bytes = context.contentResolver.openInputStream(it)?.readBytes()
-            val nome = context.contentResolver.query(it, null, null, null, null)?.use { cursor ->
-                val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
-                cursor.moveToFirst()
-                cursor.getString(nameIndex)
-            } ?: "ficheiro.pdf"
-            if (bytes != null) viewModel.enviarFicheiro(bytes, nome)
+        uri?.let { selecionado ->
+            scope.launch {
+                erroLocal = null
+                val bytes = withContext(Dispatchers.IO) {
+                    context.contentResolver.openInputStream(selecionado)?.use { it.readBytes() }
+                }
+                val nome = context.contentResolver.query(selecionado, null, null, null, null)?.use { cursor ->
+                    val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                    if (cursor.moveToFirst() && nameIndex >= 0) cursor.getString(nameIndex) else null
+                } ?: "ficheiro.pdf"
+
+                when {
+                    bytes == null -> erroLocal = "Erro ao ler o ficheiro."
+                    bytes.size > 25L * 1024L * 1024L -> erroLocal = "O ficheiro não pode ultrapassar 25MB."
+                    else -> viewModel.enviarFicheiro(bytes, nome)
+                }
+            }
         }
     }
 
@@ -152,6 +169,15 @@ fun AlunoMensagensScreen(viewModel: MensagensViewModel, onSininho: () -> Unit = 
                 )
 
                 Divider(color = Color(0xFFEEEEEE))
+
+                mensagemErro?.let {
+                    Text(
+                        it,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        color = Color.Red,
+                        fontSize = 13.sp
+                    )
+                }
 
                 if (isLoading) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -250,6 +276,18 @@ fun AlunoMensagensScreen(viewModel: MensagensViewModel, onSininho: () -> Unit = 
                             BolhaMensagem(mensagem = mensagem, isMinha = mensagem.idRemetente == idUtilizador, nomeRemetente = nomesParticipantes[mensagem.idRemetente] ?: "Desconhecido")
                         }
                     }
+                }
+
+                mensagemErro?.let {
+                    Text(
+                        it,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.White)
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
+                        color = Color.Red,
+                        fontSize = 13.sp
+                    )
                 }
 
                 Row(
