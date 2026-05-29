@@ -74,7 +74,6 @@ fun AlunoPerfilScreen(onLogout: () -> Unit) {
         ) {
             Text("LIGIX", color = DarkBlue, fontSize = 18.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
             Spacer(modifier = Modifier.weight(1f))
-            IconButton(onClick = {}) { Icon(Icons.Default.Search, contentDescription = null, tint = DarkBlue) }
             IconButton(onClick = {}) { Icon(Icons.Default.Notifications, contentDescription = null, tint = DarkBlue) }
         }
 
