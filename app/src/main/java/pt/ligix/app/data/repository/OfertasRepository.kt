@@ -8,6 +8,7 @@ import okhttp3.OkHttpClient
 import okhttp3.RequestBody.Companion.toRequestBody
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.model.OfertaEstagio
+import pt.ligix.app.util.SessionTokenProvider
 import java.util.concurrent.TimeUnit
 
 class OfertasRepository {
@@ -83,13 +84,17 @@ class OfertasRepository {
             Log.d("UPLOAD", "A fazer upload para: $url (${bytes.size} bytes)")
 
             val requestBody = bytes.toRequestBody(contentType.toMediaType())
-            val request = okhttp3.Request.Builder()
+            val requestBuilder = okhttp3.Request.Builder()
                 .url(url)
                 .header("apikey", pt.ligix.app.util.Constants.SUPABASE_KEY)
-                .header("Authorization", "Bearer ${pt.ligix.app.util.Constants.SUPABASE_KEY}")
                 .header("Content-Type", contentType)
                 .post(requestBody)
-                .build()
+
+            SessionTokenProvider.accessToken?.let { token ->
+                requestBuilder.header("Authorization", "Bearer $token")
+            }
+
+            val request = requestBuilder.build()
 
             val response = uploadClient.newCall(request).execute()
             val responseBody = response.body?.string()

@@ -18,6 +18,7 @@ import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.model.Conversa
 import pt.ligix.app.model.Mensagem
 import pt.ligix.app.util.SessionManager
+import pt.ligix.app.util.SessionTokenProvider
 
 data class NotificacaoMsg(
     val nomeRemetente: String,
@@ -257,13 +258,15 @@ class MensagensViewModel : ViewModel() {
                     .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
                     .build()
                 val requestBody = bytes.toRequestBody("application/pdf".toMediaType())
-                val request = okhttp3.Request.Builder()
+                val requestBuilder = okhttp3.Request.Builder()
                     .url(uploadUrl)
                     .header("apikey", pt.ligix.app.util.Constants.SUPABASE_KEY)
-                    .header("Authorization", "Bearer ${pt.ligix.app.util.Constants.SUPABASE_KEY}")
                     .header("Content-Type", "application/pdf")
                     .post(requestBody)
-                    .build()
+                SessionTokenProvider.accessToken?.let { token ->
+                    requestBuilder.header("Authorization", "Bearer $token")
+                }
+                val request = requestBuilder.build()
                 val response = withContext(Dispatchers.IO) { client.newCall(request).execute() }
                 if (response.isSuccessful) {
                     val publicUrl = "${pt.ligix.app.util.Constants.SUPABASE_URL}/storage/v1/object/public/mensagens/$path"

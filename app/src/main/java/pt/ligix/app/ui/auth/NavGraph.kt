@@ -11,6 +11,7 @@ import androidx.navigation.navArgument
 import pt.ligix.app.data.repository.AuthRepository
 import pt.ligix.app.ui.aluno.AlunoMainScreen
 import pt.ligix.app.util.SessionManager
+import pt.ligix.app.util.SessionTokenProvider
 import pt.ligix.app.viewmodel.AuthViewModel
 import pt.ligix.app.viewmodel.AuthViewModelFactory
 import pt.ligix.app.viewmodel.AuthState
@@ -37,6 +38,12 @@ fun LigixNavGraph() {
 
     val loginState by authViewModel.loginState.collectAsState()
     val registoState by authViewModel.registoState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        sessionManager.accessToken.collect { token ->
+            SessionTokenProvider.update(token)
+        }
+    }
 
     LaunchedEffect(loginState) {
         if (loginState is AuthState.Sucesso) {
@@ -140,9 +147,9 @@ fun LigixNavGraph() {
             val email = backStackEntry.arguments?.getString("email") ?: ""
             val isPendente = backStackEntry.arguments?.getString("isPendente") == "true"
             val mensagem = if (isPendente)
-                "Registo submetido! A sua conta está pendente de aprovação pelo administrador."
+                "Registo submetido! Confirme o email; a sua conta fica pendente de aprovação pelo administrador."
             else
-                "Conta criada com sucesso! Faça login para continuar."
+                "Conta criada com sucesso! Confirme o email antes de iniciar sessão."
 
             RegistoSucessoScreen(
                 email = email,

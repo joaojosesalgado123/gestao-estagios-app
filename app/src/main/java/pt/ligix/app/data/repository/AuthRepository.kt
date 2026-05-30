@@ -1,35 +1,59 @@
 package pt.ligix.app.data.repository
 
+import pt.ligix.app.data.remote.AuthenticatedUtilizador
 import pt.ligix.app.data.remote.RetrofitClient
-import pt.ligix.app.model.Aluno
-import pt.ligix.app.model.Docente
-import pt.ligix.app.model.Empresa
+import pt.ligix.app.data.remote.SupabaseAuthClient
+import pt.ligix.app.data.remote.SupabasePasswordLoginRequest
+import pt.ligix.app.data.remote.SupabaseRecoverPasswordRequest
+import pt.ligix.app.data.remote.SupabaseSignUpRequest
 import pt.ligix.app.model.Utilizador
+import pt.ligix.app.util.SessionTokenProvider
 
 class AuthRepository {
 
     private val api = RetrofitClient.api
+    private val authApi = SupabaseAuthClient.api
 
     // RF02 - Login
-    suspend fun login(email: String, password: String): Result<Utilizador> {
+    suspend fun login(email: String, password: String): Result<AuthenticatedUtilizador> {
         return try {
-            val response = api.getUtilizadorByEmail(
-                email = "eq.$email"
+            val authResponse = authApi.loginWithPassword(
+                request = SupabasePasswordLoginRequest(
+                    email = email,
+                    password = password
+                )
             )
-            if (response.isSuccessful) {
-                val utilizadores = response.body()
-                if (!utilizadores.isNullOrEmpty()) {
-                    val utilizador = utilizadores[0]
-                    if (utilizador.password == password) {
-                        Result.success(utilizador)
-                    } else {
-                        Result.failure(Exception("Password incorreta"))
-                    }
+
+            if (!authResponse.isSuccessful) {
+                val errorBody = authResponse.errorBody()?.string().orEmpty()
+                val message = if (errorBody.contains("email_not_confirmed", ignoreCase = true)) {
+                    "Confirme o seu email antes de iniciar sessão"
                 } else {
-                    Result.failure(Exception("Email não encontrado"))
+                    "Email ou password inválidos"
                 }
+                return Result.failure(Exception(message))
+            }
+
+            val authBody = authResponse.body()
+                ?: return Result.failure(Exception("Resposta de autenticação inválida"))
+            val authUserId = authBody.user?.id.orEmpty()
+            val session = authBody.resolvedSession()
+                ?: return Result.failure(Exception("Não foi possível obter o JWT da sessão"))
+
+            SessionTokenProvider.update(session.accessToken)
+
+            val perfilResponse = api.getUtilizadorById(id = "eq.$authUserId")
+            if (perfilResponse.isSuccessful) {
+                val utilizador = perfilResponse.body()?.firstOrNull()
+                    ?: return Result.failure(Exception("Perfil de utilizador não encontrado"))
+                Result.success(
+                    AuthenticatedUtilizador(
+                        utilizador = utilizador,
+                        session = session
+                    )
+                )
             } else {
-                Result.failure(Exception("Erro ao fazer login: ${response.code()}"))
+                Result.failure(Exception("Erro ao obter perfil: ${perfilResponse.code()}"))
             }
         } catch (e: Exception) {
             Result.failure(Exception("Sem ligação à internet"))
@@ -47,34 +71,31 @@ class AuthRepository {
         numeroAluno: String
     ): Result<Utilizador> {
         return try {
-            val utilizador = Utilizador(
-                username = username,
-                nome = nome,
+            val idGerado = criarContaAuth(
                 email = email,
                 password = password,
-                role = "aluno"
-            )
-            val responseUtilizador = api.createUtilizador(utilizador = utilizador)
-
-            if (responseUtilizador.isSuccessful) {
-                val novoUtilizador = responseUtilizador.body()?.firstOrNull()
-                    ?: return Result.failure(Exception("Erro ao criar utilizador"))
-
-                val idGerado = novoUtilizador.idUtilizador
-                    ?: return Result.failure(Exception("ID do utilizador não foi gerado"))
-
-                val aluno = Aluno(
-                    idUtilizador = idGerado,
-                    numeroAluno = numeroAluno,
-                    curso = curso,
-                    telemovel = telemovel
+                metadata = mapOf(
+                    "role" to "aluno",
+                    "nome" to nome,
+                    "username" to username,
+                    "numero_aluno" to numeroAluno,
+                    "curso" to curso,
+                    "telemovel" to telemovel
                 )
-                api.createAluno(aluno = aluno)
-
-                Result.success(novoUtilizador)
-            } else {
-                Result.failure(Exception("Erro ao registar: ${responseUtilizador.code()}"))
+            ).getOrElse { erro ->
+                return Result.failure(erro)
             }
+
+            SessionTokenProvider.clear()
+            Result.success(
+                Utilizador(
+                    idUtilizador = idGerado,
+                    username = username,
+                    nome = nome,
+                    email = email,
+                    role = "aluno"
+                )
+            )
         } catch (e: Exception) {
             Result.failure(Exception("Sem ligação à internet"))
         }
@@ -90,33 +111,30 @@ class AuthRepository {
         area: String
     ): Result<Utilizador> {
         return try {
-            val utilizador = Utilizador(
-                username = username,
-                nome = nome,
+            val idGerado = criarContaAuth(
                 email = email,
                 password = password,
-                role = "docente"
-            )
-            val responseUtilizador = api.createUtilizador(utilizador = utilizador)
-
-            if (responseUtilizador.isSuccessful) {
-                val novoUtilizador = responseUtilizador.body()?.firstOrNull()
-                    ?: return Result.failure(Exception("Erro ao criar utilizador"))
-
-                val idGerado = novoUtilizador.idUtilizador
-                    ?: return Result.failure(Exception("ID do utilizador não foi gerado"))
-
-                val docente = Docente(
-                    idUtilizador = idGerado,
-                    telemovel = telemovel,
-                    area = area
+                metadata = mapOf(
+                    "role" to "docente",
+                    "nome" to nome,
+                    "username" to username,
+                    "telemovel" to telemovel,
+                    "area" to area
                 )
-                api.createDocente(docente = docente)
-
-                Result.success(novoUtilizador)
-            } else {
-                Result.failure(Exception("Erro ao registar: ${responseUtilizador.code()}"))
+            ).getOrElse { erro ->
+                return Result.failure(erro)
             }
+
+            SessionTokenProvider.clear()
+            Result.success(
+                Utilizador(
+                    idUtilizador = idGerado,
+                    username = username,
+                    nome = nome,
+                    email = email,
+                    role = "docente"
+                )
+            )
         } catch (e: Exception) {
             Result.failure(Exception("Sem ligação à internet"))
         }
@@ -133,35 +151,32 @@ class AuthRepository {
         descricao: String
     ): Result<Utilizador> {
         return try {
-            val utilizador = Utilizador(
-                username = username,
-                nome = nome,
+            val idGerado = criarContaAuth(
                 email = email,
                 password = password,
-                role = "empresa"
-            )
-            val responseUtilizador = api.createUtilizador(utilizador = utilizador)
-
-            if (responseUtilizador.isSuccessful) {
-                val novoUtilizador = responseUtilizador.body()?.firstOrNull()
-                    ?: return Result.failure(Exception("Erro ao criar utilizador"))
-
-                val idGerado = novoUtilizador.idUtilizador
-                    ?: return Result.failure(Exception("ID do utilizador não foi gerado"))
-
-                val empresa = Empresa(
-                    idUtilizador = idGerado,
-                    nipc = nipc,
-                    morada = morada,
-                    descricao = descricao,
-                    status = "pendente"
+                metadata = mapOf(
+                    "role" to "empresa",
+                    "nome" to nome,
+                    "username" to username,
+                    "nipc" to nipc,
+                    "morada" to morada,
+                    "descricao" to descricao,
+                    "status" to "pendente"
                 )
-                api.createEmpresa(empresa = empresa)
-
-                Result.success(novoUtilizador)
-            } else {
-                Result.failure(Exception("Erro ao registar: ${responseUtilizador.code()}"))
+            ).getOrElse { erro ->
+                return Result.failure(erro)
             }
+
+            SessionTokenProvider.clear()
+            Result.success(
+                Utilizador(
+                    idUtilizador = idGerado,
+                    username = username,
+                    nome = nome,
+                    email = email,
+                    role = "empresa"
+                )
+            )
         } catch (e: Exception) {
             Result.failure(Exception("Sem ligação à internet"))
         }
@@ -170,14 +185,43 @@ class AuthRepository {
     // RF04 - Recuperar password
     suspend fun recuperarPassword(email: String): Result<Boolean> {
         return try {
-            val response = api.getUtilizadorByEmail(email = "eq.$email")
-            if (response.isSuccessful && !response.body().isNullOrEmpty()) {
+            val response = authApi.recoverPassword(
+                request = SupabaseRecoverPasswordRequest(email = email)
+            )
+            if (response.isSuccessful) {
                 Result.success(true)
             } else {
-                Result.failure(Exception("Email não encontrado"))
+                Result.failure(Exception("Não foi possível enviar recuperação de password"))
             }
         } catch (e: Exception) {
             Result.failure(Exception("Sem ligação à internet"))
         }
+    }
+
+    private suspend fun criarContaAuth(
+        email: String,
+        password: String,
+        metadata: Map<String, String>
+    ): Result<String> {
+        val response = authApi.signUp(
+            request = SupabaseSignUpRequest(
+                email = email,
+                password = password,
+                data = metadata
+            )
+        )
+
+        if (!response.isSuccessful) {
+            return Result.failure(Exception("Erro ao criar conta Auth: ${response.code()}"))
+        }
+
+        val body = response.body()
+            ?: return Result.failure(Exception("Resposta de registo inválida"))
+        val id = body.user?.id?.takeIf { it.isNotBlank() }
+            ?: body.id?.takeIf { it.isNotBlank() }
+            ?: return Result.failure(Exception("ID do utilizador Auth não foi gerado"))
+
+        SessionTokenProvider.update(body.resolvedSession()?.accessToken)
+        return Result.success(id)
     }
 }

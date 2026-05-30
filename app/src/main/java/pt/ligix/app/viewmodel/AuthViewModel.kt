@@ -30,13 +30,18 @@ class AuthViewModel(
             _loginState.value = AuthState.Loading
             val result = repository.login(email, password)
             result.fold(
-                onSuccess = { utilizador ->
+                onSuccess = { authResult ->
+                    val utilizador = authResult.utilizador
+                    val session = authResult.session
                     sessionManager.guardarSessao(
                         idUtilizador = utilizador.idUtilizador ?: "",
                         nome = utilizador.nome,
                         email = utilizador.email,
                         role = utilizador.role,
-                        username = utilizador.username
+                        username = utilizador.username,
+                        accessToken = session.accessToken,
+                        refreshToken = session.refreshToken,
+                        expiresAt = session.expiresAt
                     )
                     _loginState.value = AuthState.Sucesso(utilizador)
                 },
@@ -70,7 +75,7 @@ class AuthViewModel(
                 onSuccess = {
                     _registoState.value = RegistoState.Sucesso(
                         email = email,
-                        mensagem = "Conta criada com sucesso! Faça login para continuar.",
+                        mensagem = "Conta criada com sucesso! Confirme o email antes de iniciar sessão.",
                         isPendente = false
                     )
                 },
@@ -103,7 +108,7 @@ class AuthViewModel(
                 onSuccess = {
                     _registoState.value = RegistoState.Sucesso(
                         email = email,
-                        mensagem = "Conta criada com sucesso! Faça login para continuar.",
+                        mensagem = "Conta criada com sucesso! Confirme o email antes de iniciar sessão.",
                         isPendente = false
                     )
                 },
@@ -138,7 +143,7 @@ class AuthViewModel(
                     // Por agora pendente - depois terá FLAG de auto-aprovação
                     _registoState.value = RegistoState.Sucesso(
                         email = email,
-                        mensagem = "Registo submetido! A sua conta está pendente de aprovação.",
+                        mensagem = "Registo submetido! Confirme o email; a conta fica pendente de aprovação.",
                         isPendente = true
                     )
                 },
@@ -161,7 +166,7 @@ class AuthViewModel(
             result.fold(
                 onSuccess = {
                     _loginState.value = AuthState.Erro(
-                        "Contacte o administrador para recuperar a sua password"
+                        "Verifique o seu email para recuperar a password"
                     )
                 },
                 onFailure = { erro ->
