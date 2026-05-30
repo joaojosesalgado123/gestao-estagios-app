@@ -203,6 +203,13 @@ interface SupabaseApi {
         @Body atividade: Map<String, String>
     ): Response<Unit>
 
+    @POST("atividade")
+    suspend fun upsertAtividade(
+        @Header("Prefer") prefer: String = "resolution=merge-duplicates,return=minimal",
+        @Query("on_conflict") onConflict: String = "idatividade",
+        @Body atividade: Map<String, String>
+    ): Response<Unit>
+
     @PATCH("atividade")
     suspend fun updateAtividade(
         @Header("Prefer") prefer: String = "return=minimal",

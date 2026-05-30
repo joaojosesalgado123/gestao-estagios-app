@@ -42,6 +42,7 @@ class AuthViewModel(
                         accessToken = session.accessToken,
                         refreshToken = session.refreshToken,
                         expiresAt = session.expiresAt
+                            ?: session.expiresIn?.let { System.currentTimeMillis() / 1000 + it }
                     )
                     _loginState.value = AuthState.Sucesso(utilizador)
                 },

@@ -45,6 +45,7 @@ import pt.ligix.app.model.ATIVIDADE_CATEGORIA_DESENVOLVIMENTO
 import pt.ligix.app.model.ATIVIDADE_CATEGORIA_IMPORTANTE
 import pt.ligix.app.model.ATIVIDADE_CATEGORIA_REUNIAO
 import pt.ligix.app.model.Atividade
+import pt.ligix.app.model.AtividadeSyncStatus
 import pt.ligix.app.model.RelatorioFinal
 import pt.ligix.app.model.categoriaAtividade
 import pt.ligix.app.model.descricaoVisivel
@@ -1685,6 +1686,31 @@ fun AtividadeCard(
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(desc, fontSize = 13.sp, color = Color(0xFF666666), maxLines = 3)
             }
+            when (atividade.syncStatus) {
+                AtividadeSyncStatus.PENDING -> {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    EstadoSincronizacaoAtividade("Pendente de sincronização", Amarelo)
+                }
+                AtividadeSyncStatus.ERROR -> {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    EstadoSincronizacaoAtividade("A aguardar nova tentativa", VermelhoAusencia)
+                }
+                AtividadeSyncStatus.SYNCED -> Unit
+            }
         }
+    }
+}
+
+@Composable
+private fun EstadoSincronizacaoAtividade(texto: String, cor: Color) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            Icons.Default.CloudUpload,
+            contentDescription = null,
+            tint = cor,
+            modifier = Modifier.size(14.dp)
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(texto, fontSize = 11.sp, color = cor, fontWeight = FontWeight.Medium)
     }
 }
