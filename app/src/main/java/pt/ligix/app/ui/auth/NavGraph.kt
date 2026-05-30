@@ -8,6 +8,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import pt.ligix.app.data.repository.AuthRepository
 import pt.ligix.app.ui.aluno.AlunoMainScreen
 import pt.ligix.app.util.SessionManager
@@ -31,6 +33,7 @@ object Routes {
 fun LigixNavGraph() {
     val navController = rememberNavController()
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val sessionManager = remember { SessionManager(context) }
     val authViewModel: AuthViewModel = viewModel(
         factory = AuthViewModelFactory(AuthRepository(), sessionManager)
@@ -79,7 +82,20 @@ fun LigixNavGraph() {
     ) {
         composable(Routes.SPLASH) {
             SplashScreen(onComecar = {
-                navController.navigate("login?email=")
+                coroutineScope.launch {
+                    val destino = if (sessionManager.estaLogado.first()) {
+                        when (sessionManager.role.first()) {
+                            "admin" -> Routes.DASHBOARD_ADMIN
+                            "aluno" -> Routes.DASHBOARD_ALUNO
+                            "empresa" -> Routes.DASHBOARD_EMPRESA
+                            "docente" -> Routes.DASHBOARD_DOCENTE
+                            else -> "login?email="
+                        }
+                    } else {
+                        "login?email="
+                    }
+                    navController.navigate(destino)
+                }
             })
         }
 

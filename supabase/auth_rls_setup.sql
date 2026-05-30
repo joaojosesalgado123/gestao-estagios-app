@@ -321,6 +321,12 @@ to authenticated
 using (public.can_access_estagio(idestagio))
 with check (public.can_access_estagio(idestagio));
 
+drop policy if exists "atividade_delete_participantes" on public.atividade;
+create policy "atividade_delete_participantes"
+on public.atividade for delete
+to authenticated
+using (public.can_access_estagio(idestagio));
+
 drop policy if exists "presenca_select_participantes" on public.presenca;
 create policy "presenca_select_participantes"
 on public.presenca for select

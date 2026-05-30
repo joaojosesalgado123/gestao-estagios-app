@@ -17,6 +17,10 @@ data class SupabaseRecoverPasswordRequest(
     @SerializedName("email") val email: String
 )
 
+data class SupabaseRefreshTokenRequest(
+    @SerializedName("refresh_token") val refreshToken: String
+)
+
 data class SupabaseAuthUser(
     @SerializedName("id") val id: String = "",
     @SerializedName("email") val email: String? = null

@@ -5,11 +5,14 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import pt.ligix.app.data.remote.RetrofitClient
+import pt.ligix.app.data.repository.AtividadesRepository
 import pt.ligix.app.data.repository.OfertasRepository
 import pt.ligix.app.model.Atividade
 import pt.ligix.app.model.Estagio
@@ -72,28 +75,56 @@ class EstagioViewModel : ViewModel() {
     private val _nomeOrientadorEmpresa = MutableStateFlow("—")
     val nomeOrientadorEmpresa: StateFlow<String> = _nomeOrientadorEmpresa
 
+    private var atividadesRepository: AtividadesRepository? = null
+    private var atividadesJob: Job? = null
+    private var atividadesObservationKey: String? = null
+    private var idAlunoAtual: String? = null
+
     fun carregarDados(context: Context) {
         viewModelScope.launch {
             _isLoading.value = true
             _erro.value = null
+            val repository = atividadesRepository
+                ?: AtividadesRepository(context).also { atividadesRepository = it }
             try {
                 val sessionManager = SessionManager(context)
                 val idAluno = sessionManager.idUtilizador.first() ?: return@launch
+                idAlunoAtual = idAluno
+                val estagioEmCache = repository.obterEstagioAtivo(idAluno)
+                if (estagioEmCache != null) {
+                    _estagio.value = estagioEmCache
+                    observarAtividades(repository, idAluno, estagioEmCache.idEstagio)
+                }
+
                 val api = RetrofitClient.api
 
-                val candidaturas = api.getCandidaturasByAluno(
+                val candidaturasResponse = api.getCandidaturasByAluno(
                     idAluno = "eq.$idAluno"
-                ).body() ?: emptyList()
+                )
+                if (!candidaturasResponse.isSuccessful) {
+                    throw IllegalStateException(
+                        apiError("Erro ao carregar candidaturas", candidaturasResponse)
+                    )
+                }
+                val candidaturas = candidaturasResponse.body().orEmpty()
 
                 val candidaturaAceite = candidaturas.firstOrNull { it.status == "aceite" }
                     ?: return@launch
 
-                val estagios = api.getEstagioByCandidatura(
+                val estagiosResponse = api.getEstagioByCandidatura(
                     idCandidatura = "eq.${candidaturaAceite.idCandidatura}"
-                ).body() ?: emptyList()
+                )
+                if (!estagiosResponse.isSuccessful) {
+                    throw IllegalStateException(
+                        apiError("Erro ao carregar estágio", estagiosResponse)
+                    )
+                }
+                val estagios = estagiosResponse.body().orEmpty()
 
                 val estagioAtual = estagios.firstOrNull() ?: return@launch
                 _estagio.value = estagioAtual
+                repository.guardarEstagioAtivo(idAluno, estagioAtual)
+                observarAtividades(repository, idAluno, estagioAtual.idEstagio)
 
                 try {
                     val oferta = api.getOfertaById(
@@ -115,15 +146,34 @@ class EstagioViewModel : ViewModel() {
                     }
                 } catch (_: Exception) {}
 
-                recarregarPresencas(estagioAtual.idEstagio)
-                recarregarAtividades(estagioAtual.idEstagio)
-                recarregarRelatorioFinal(estagioAtual.idEstagio)
+                runCatching { recarregarPresencas(estagioAtual.idEstagio) }
+                repository.atualizarCacheRemoto(idAluno, estagioAtual.idEstagio)
+                runCatching { recarregarRelatorioFinal(estagioAtual.idEstagio) }
                 runCatching { recarregarAvaliacaoFinal(estagioAtual) }
 
             } catch (e: Exception) {
-                _erro.value = "Erro ao carregar dados: ${e.message}"
+                if (_estagio.value == null) {
+                    _erro.value = "Sem ligação. Abre o estágio online pelo menos uma vez antes de registar atividades offline."
+                }
             } finally {
                 _isLoading.value = false
+            }
+        }
+    }
+
+    private fun observarAtividades(
+        repository: AtividadesRepository,
+        idAluno: String,
+        idEstagio: String
+    ) {
+        val key = "$idAluno:$idEstagio"
+        if (atividadesObservationKey == key) return
+
+        atividadesObservationKey = key
+        atividadesJob?.cancel()
+        atividadesJob = viewModelScope.launch {
+            repository.observarAtividades(idAluno, idEstagio).collect {
+                _atividades.value = it
             }
         }
     }
@@ -138,18 +188,6 @@ class EstagioViewModel : ViewModel() {
         }
 
         _presencas.value = response.body().orEmpty()
-    }
-
-    private suspend fun recarregarAtividades(idEstagio: String) {
-        val response = RetrofitClient.api.getAtividadesByEstagio(
-            idEstagio = "eq.$idEstagio"
-        )
-
-        if (!response.isSuccessful) {
-            throw IllegalStateException(apiError("Erro ao carregar atividades", response))
-        }
-
-        _atividades.value = response.body().orEmpty()
     }
 
     private suspend fun recarregarRelatorioFinal(idEstagio: String) {
@@ -377,33 +415,13 @@ class EstagioViewModel : ViewModel() {
                     idEstagio = estagioId,
                     titulo = titulo.trim()
                 )
+                val idAluno = idAlunoAtual
+                    ?: throw IllegalStateException("Sessão inválida.")
+                val repository = atividadesRepository
+                    ?: throw IllegalStateException("O modo offline ainda não foi inicializado.")
+                repository.registarAtividade(idAluno, atividadeCriada)
 
-                val response = RetrofitClient.api.createAtividade(
-                    atividade = mapOf(
-                        "idatividade" to idAtividade,
-                        "titulo" to atividadeCriada.titulo,
-                        "descricao" to atividadeCriada.descricao.orEmpty(),
-                        "data_atividade" to dataStr,
-                        "data_registo" to hojeStr,
-                        "idestagio" to estagioId
-                    )
-                )
-
-                if (!response.isSuccessful) {
-                    throw IllegalStateException(apiError("Erro ao gravar atividade", response))
-                }
-
-                _atividades.value = _atividades.value
-                    .filterNot { it.idAtividade == idAtividade }
-                    .plus(atividadeCriada)
-
-                try {
-                    recarregarAtividades(estagioId)
-                } catch (_: Exception) {
-                    // Mantem a atividade criada no ecrã quando a gravação já foi aceite.
-                }
-
-                _feedbackMsg.value = "Atividade registada ✓"
+                _feedbackMsg.value = "Atividade guardada. A sincronização será automática."
                 onSuccess()
 
             } catch (e: Exception) {
@@ -441,32 +459,13 @@ class EstagioViewModel : ViewModel() {
                     dataAtividade = dataStr,
                     idEstagio = estagioId
                 )
+                val idAluno = idAlunoAtual
+                    ?: throw IllegalStateException("Sessão inválida.")
+                val repository = atividadesRepository
+                    ?: throw IllegalStateException("O modo offline ainda não foi inicializado.")
+                repository.editarAtividade(idAluno, atividadeAtualizada)
 
-                val response = RetrofitClient.api.updateAtividade(
-                    id = "eq.${atividade.idAtividade}",
-                    atividade = mapOf(
-                        "titulo" to atividadeAtualizada.titulo,
-                        "descricao" to atividadeAtualizada.descricao.orEmpty(),
-                        "data_atividade" to dataStr,
-                        "idestagio" to estagioId
-                    )
-                )
-
-                if (!response.isSuccessful) {
-                    throw IllegalStateException(apiError("Erro ao editar atividade", response))
-                }
-
-                _atividades.value = _atividades.value.map {
-                    if (it.idAtividade == atividade.idAtividade) atividadeAtualizada else it
-                }
-
-                try {
-                    recarregarAtividades(estagioId)
-                } catch (_: Exception) {
-                    // Mantem a edição no ecrã quando a gravação já foi aceite.
-                }
-
-                _feedbackMsg.value = "Atividade atualizada ✓"
+                _feedbackMsg.value = "Alteração guardada. A sincronização será automática."
                 onSuccess()
 
             } catch (e: Exception) {
@@ -487,18 +486,13 @@ class EstagioViewModel : ViewModel() {
                     throw IllegalStateException("Não foi possível identificar a atividade.")
                 }
 
-                val response = RetrofitClient.api.deleteAtividade(
-                    id = "eq.${atividade.idAtividade}"
-                )
+                val idAluno = idAlunoAtual
+                    ?: throw IllegalStateException("Sessão inválida.")
+                val repository = atividadesRepository
+                    ?: throw IllegalStateException("O modo offline ainda não foi inicializado.")
+                repository.apagarAtividade(idAluno, atividade)
 
-                if (!response.isSuccessful) {
-                    throw IllegalStateException(apiError("Erro ao apagar atividade", response))
-                }
-
-                _atividades.value = _atividades.value.filterNot {
-                    it.idAtividade == atividade.idAtividade
-                }
-                _feedbackMsg.value = "Atividade apagada"
+                _feedbackMsg.value = "Atividade apagada. A sincronização será automática."
 
             } catch (e: Exception) {
                 _erro.value = e.message ?: "Erro ao apagar atividade"

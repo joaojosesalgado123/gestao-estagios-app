@@ -75,6 +75,9 @@ dependencies {
     // --- DataStore (guardar token/sessão) ---
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
+    // --- WorkManager (sincronização automática offline) ---
+    implementation("androidx.work:work-runtime-ktx:2.10.1")
+
     // --- Coil (carregar imagens) ---
     implementation("io.coil-kt:coil-compose:2.7.0")
 

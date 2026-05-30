@@ -23,8 +23,15 @@ data class Atividade(
     @SerializedName("data_atividade") val dataAtividade: String? = null,
     @SerializedName("data_registo") val dataRegisto: String = "",
     @SerializedName("idestagio") val idEstagio: String = "",
-    @SerializedName("created_at") val createdAt: String = ""
+    @SerializedName("created_at") val createdAt: String = "",
+    @Transient val syncStatus: AtividadeSyncStatus = AtividadeSyncStatus.SYNCED
 )
+
+enum class AtividadeSyncStatus {
+    SYNCED,
+    PENDING,
+    ERROR
+}
 
 fun normalizarCategoriaAtividade(categoria: String): String = when (categoria) {
     ATIVIDADE_CATEGORIA_DESENVOLVIMENTO -> ATIVIDADE_CATEGORIA_DESENVOLVIMENTO
