@@ -50,8 +50,60 @@ fun AlunoDashboardScreen(
     val horasAcumuladas by viewModel.horasAcumuladas.collectAsState()
     val totalHoras by viewModel.totalHoras.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val idCandidaturaEmCurso by viewModel.idCandidaturaEmCurso.collectAsState()
+    val feedbackCandidatura by viewModel.feedbackCandidatura.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    var candidaturaAConfirmar by remember { mutableStateOf<Candidatura?>(null) }
 
     LaunchedEffect(Unit) { viewModel.carregarDados(context) }
+    LaunchedEffect(feedbackCandidatura) {
+        feedbackCandidatura?.let { mensagem ->
+            snackbarHostState.showSnackbar(mensagem)
+            viewModel.limparFeedbackCandidatura()
+        }
+    }
+
+    candidaturaAConfirmar?.let { candidatura ->
+        val pendente = candidatura.status == "pendente"
+        AlertDialog(
+            onDismissRequest = { candidaturaAConfirmar = null },
+            title = {
+                Text(
+                    if (pendente) "Cancelar candidatura" else "Remover candidatura",
+                    fontWeight = FontWeight.Bold,
+                    color = DarkBlue
+                )
+            },
+            text = {
+                Text(
+                    if (pendente) {
+                        "Queres cancelar a tua candidatura? Poderás voltar a candidatar-te mais tarde."
+                    } else {
+                        "Queres remover o resultado desta candidatura da tua lista?"
+                    }
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        candidaturaAConfirmar = null
+                        if (pendente) {
+                            viewModel.cancelarCandidatura(candidatura)
+                        } else {
+                            viewModel.ocultarResultadoCandidatura(candidatura)
+                        }
+                    }
+                ) {
+                    Text(if (pendente) "Cancelar candidatura" else "Remover", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { candidaturaAConfirmar = null }) {
+                    Text("Manter", color = Color.Gray)
+                }
+            }
+        )
+    }
 
     Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF5F5F7))) {
         Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
@@ -119,7 +171,14 @@ fun AlunoDashboardScreen(
                         }
                     } else {
                         candidaturas.forEach { item ->
-                            CandidaturaCard(candidatura = item.candidatura, oferta = item.oferta)
+                            key(item.candidatura.idCandidatura) {
+                                CandidaturaCard(
+                                    candidatura = item.candidatura,
+                                    oferta = item.oferta,
+                                    permitirRemocao = idCandidaturaEmCurso == null,
+                                    onRemover = { candidaturaAConfirmar = item.candidatura }
+                                )
+                            }
                             Spacer(modifier = Modifier.height(8.dp))
                         }
                     }
@@ -177,11 +236,62 @@ fun AlunoDashboardScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
         }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter).padding(16.dp)
+        )
     }
 }
 
 @Composable
-fun CandidaturaCard(candidatura: Candidatura, oferta: OfertaEstagio?) {
+fun CandidaturaCard(
+    candidatura: Candidatura,
+    oferta: OfertaEstagio?,
+    permitirRemocao: Boolean,
+    onRemover: () -> Unit
+) {
+    val removivel = candidatura.status == "pendente" || candidatura.status == "rejeitada"
+    if (!removivel || !permitirRemocao) {
+        CandidaturaCardContent(candidatura = candidatura, oferta = oferta)
+        return
+    }
+
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { novoEstado ->
+            if (novoEstado == SwipeToDismissBoxValue.EndToStart) {
+                onRemover()
+            }
+            false
+        }
+    )
+
+    SwipeToDismissBox(
+        state = dismissState,
+        backgroundContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color(0xFFE53935))
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.CenterEnd
+            ) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Remover candidatura",
+                    tint = Color.White
+                )
+            }
+        },
+        enableDismissFromStartToEnd = false,
+        enableDismissFromEndToStart = true
+    ) {
+        CandidaturaCardContent(candidatura = candidatura, oferta = oferta)
+    }
+}
+
+@Composable
+private fun CandidaturaCardContent(candidatura: Candidatura, oferta: OfertaEstagio?) {
     val (statusLabel, statusColor) = when (candidatura.status) {
         "pendente" -> "EM ANÁLISE" to Color(0xFFF5A623)
         "aceite" -> "ACEITE" to DarkBlue

@@ -164,6 +164,16 @@ interface SupabaseApi {
         @Body status: Map<String, String>
     ): Response<List<Candidatura>>
 
+    @POST("rpc/cancelar_candidatura_aluno")
+    suspend fun cancelarCandidaturaAluno(
+        @Body candidatura: Map<String, String>
+    ): Response<Boolean>
+
+    @POST("rpc/ocultar_resultado_candidatura_aluno")
+    suspend fun ocultarResultadoCandidaturaAluno(
+        @Body candidatura: Map<String, String>
+    ): Response<Boolean>
+
     @GET("candidatura")
     suspend fun getCandidaturasByOferta(
         @Query("idoferta") idOferta: String,

@@ -1,10 +1,9 @@
--- Ligix - cria automaticamente o estagio quando uma candidatura e aceite.
+-- Ligix - gestao de candidaturas pelo aluno e garantia de um unico estagio ativo.
 -- Executar uma vez no Supabase Dashboard > SQL Editor.
 
 alter table public.candidatura
 add column if not exists oculta_aluno boolean not null default false;
 
--- Cada candidatura aceite deve originar, no maximo, um estagio.
 do $$
 begin
     if exists (
@@ -14,7 +13,7 @@ begin
         having count(*) > 1
     ) then
         raise exception
-            'Existem candidaturas com mais de um estagio. Corrija os duplicados antes de instalar o trigger.';
+            'Existem candidaturas com mais de um estagio. Corrija os duplicados antes de instalar a migracao.';
     end if;
 
     if exists (
@@ -26,7 +25,7 @@ begin
         having count(*) > 1
     ) then
         raise exception
-            'Existem alunos com mais de um estagio ativo. Corrija os duplicados antes de instalar o trigger.';
+            'Existem alunos com mais de um estagio ativo. Corrija os duplicados antes de instalar a migracao.';
     end if;
 
     if exists (
@@ -37,7 +36,7 @@ begin
         having count(*) > 1
     ) then
         raise exception
-            'Existem alunos com mais de uma candidatura aceite. Corrija os duplicados antes de instalar o trigger.';
+            'Existem alunos com mais de uma candidatura aceite. Corrija os duplicados antes de instalar a migracao.';
     end if;
 
     if exists (
@@ -48,7 +47,7 @@ begin
         having count(*) > 1
     ) then
         raise exception
-            'Existem candidaturas ativas duplicadas para a mesma oferta. Corrija os duplicados antes de instalar o trigger.';
+            'Existem candidaturas ativas duplicadas para a mesma oferta. Corrija os duplicados antes de instalar a migracao.';
     end if;
 end;
 $$;
@@ -64,6 +63,59 @@ create unique index if not exists candidatura_ativa_aluno_oferta_unique_idx
 on public.candidatura (idaluno, idoferta)
 where status in ('pendente', 'aceite');
 
+-- O aluno pode desistir apenas das suas candidaturas que ainda estao pendentes.
+create or replace function public.cancelar_candidatura_aluno(p_idcandidatura uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+    if auth.uid() is null then
+        return false;
+    end if;
+
+    update public.candidatura
+    set status = 'cancelada',
+        oculta_aluno = true
+    where idcandidatura = p_idcandidatura
+      and idaluno = auth.uid()
+      and status = 'pendente';
+
+    return found;
+end;
+$$;
+
+revoke all on function public.cancelar_candidatura_aluno(uuid) from public;
+grant execute on function public.cancelar_candidatura_aluno(uuid) to authenticated;
+
+-- Uma rejeicao permanece no historico, mas o aluno pode remove-la da sua lista.
+create or replace function public.ocultar_resultado_candidatura_aluno(p_idcandidatura uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+    if auth.uid() is null then
+        return false;
+    end if;
+
+    update public.candidatura
+    set oculta_aluno = true
+    where idcandidatura = p_idcandidatura
+      and idaluno = auth.uid()
+      and status = 'rejeitada';
+
+    return found;
+end;
+$$;
+
+revoke all on function public.ocultar_resultado_candidatura_aluno(uuid) from public;
+grant execute on function public.ocultar_resultado_candidatura_aluno(uuid) to authenticated;
+
+-- Substitui a versao anterior: cada aluno pode ter apenas um estagio ativo.
+-- Ao aceitar uma candidatura, as restantes candidaturas pendentes sao canceladas.
 create or replace function public.criar_estagio_ao_aceitar_candidatura()
 returns trigger
 language plpgsql
@@ -115,7 +167,7 @@ after insert or update of status on public.candidatura
 for each row
 execute function public.criar_estagio_ao_aceitar_candidatura();
 
--- Preenche candidaturas que ja estavam aceites antes da instalacao do trigger.
+-- Preenche candidaturas aceites antes da instalacao do trigger.
 insert into public.estagio (
     idestagio,
     status,

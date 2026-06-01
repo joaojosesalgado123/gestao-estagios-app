@@ -40,10 +40,42 @@ class AlunoRepository {
         return try {
             val response = api.getCandidaturasByAluno(idAluno = "eq.$idAluno")
             if (response.isSuccessful) {
-                response.body()?.any { it.idOferta == idOferta } ?: false
+                response.body()?.any {
+                    it.idOferta == idOferta && (it.status == "pendente" || it.status == "aceite")
+                } ?: false
             } else false
         } catch (e: Exception) {
             false
+        }
+    }
+
+    suspend fun cancelarCandidatura(idCandidatura: String): Result<Unit> {
+        return try {
+            val response = api.cancelarCandidaturaAluno(
+                candidatura = mapOf("p_idcandidatura" to idCandidatura)
+            )
+            if (response.isSuccessful && response.body() == true) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("A candidatura já não pode ser cancelada."))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Sem ligação à internet"))
+        }
+    }
+
+    suspend fun ocultarResultadoCandidatura(idCandidatura: String): Result<Unit> {
+        return try {
+            val response = api.ocultarResultadoCandidaturaAluno(
+                candidatura = mapOf("p_idcandidatura" to idCandidatura)
+            )
+            if (response.isSuccessful && response.body() == true) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Não foi possível remover a candidatura da lista."))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Sem ligação à internet"))
         }
     }
 
