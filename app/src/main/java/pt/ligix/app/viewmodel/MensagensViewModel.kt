@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -70,6 +71,8 @@ class MensagensViewModel : ViewModel() {
     private var ultimoCountVisto = 0
     private var chatEstaAberto = false
     private val idsJaNotificados = mutableSetOf<String>()
+    private var descobertaConversaJob: Job? = null
+    private var mensagensPollingJob: Job? = null
 
     fun abrirChat() {
         _mostrarChat.value = true
@@ -118,53 +121,71 @@ class MensagensViewModel : ViewModel() {
             _idUtilizador.value = idAluno
 
             try {
-                val respCand = api.getCandidaturasByAluno(idAluno = "eq.$idAluno")
-                if (!respCand.isSuccessful) {
-                    _erro.value = "Não foi possível carregar candidaturas."
-                    _isLoading.value = false
-                    return@launch
-                }
-
-                val candidaturaAceite = respCand.body()?.firstOrNull { it.status == "aceite" }
-                    ?: run { _isLoading.value = false; return@launch }
-
-                val respEstagio = api.getEstagioByCandidatura(idCandidatura = "eq.${candidaturaAceite.idCandidatura}")
-                if (!respEstagio.isSuccessful) {
-                    _erro.value = "Não foi possível carregar o estágio."
-                    _isLoading.value = false
-                    return@launch
-                }
-
-                val estagio = respEstagio.body()?.firstOrNull()
-                    ?: run { _isLoading.value = false; return@launch }
-
-                val respOferta = api.getOfertaById(idOferta = "eq.${candidaturaAceite.idOferta}")
-                respOferta.body()?.firstOrNull()?.let { _nomeEstagio.value = it.titulo }
-
-                val nomes = mutableMapOf<String, String>()
-                try { api.getUtilizadorById(id = "eq.$idAluno").body()?.firstOrNull()?.let { nomes[idAluno] = it.nome } } catch (_: Exception) {}
-                estagio.idDocente?.let { try { api.getUtilizadorById(id = "eq.$it").body()?.firstOrNull()?.let { u -> nomes[it] = u.nome } } catch (_: Exception) {} }
-                estagio.idOrientador?.let { try { api.getUtilizadorById(id = "eq.$it").body()?.firstOrNull()?.let { u -> nomes[it] = u.nome } } catch (_: Exception) {} }
-                _nomesParticipantes.value = nomes
-
-                val respConversa = api.getConversaByEstagio(idEstagio = "eq.${estagio.idEstagio}")
-                if (!respConversa.isSuccessful) {
-                    _erro.value = "Não foi possível carregar conversas."
-                    _isLoading.value = false
-                    return@launch
-                }
-                val conversa = respConversa.body()?.firstOrNull()
-
-                if (conversa != null) {
-                    _conversa.value = conversa
-                    carregarMensagens(conversa.idConversa, primeiraVez = true)
-                    iniciarPolling(conversa.idConversa)
-                }
+                procurarConversa(idAluno, mostrarErro = true)
             } catch (_: Exception) {
                 _erro.value = "Não foi possível carregar mensagens."
             }
+            if (_conversa.value == null) iniciarDescobertaConversa(idAluno)
 
             _isLoading.value = false
+        }
+    }
+
+    private suspend fun procurarConversa(idAluno: String, mostrarErro: Boolean): Boolean {
+        if (_conversa.value != null) return true
+
+        val respCand = api.getCandidaturasByAluno(idAluno = "eq.$idAluno")
+        if (!respCand.isSuccessful) {
+            if (mostrarErro) _erro.value = "Não foi possível carregar candidaturas."
+            return false
+        }
+
+        val candidaturaAceite = respCand.body()?.firstOrNull { it.status == "aceite" }
+            ?: return false
+
+        val respEstagio = api.getEstagioByCandidatura(idCandidatura = "eq.${candidaturaAceite.idCandidatura}")
+        if (!respEstagio.isSuccessful) {
+            if (mostrarErro) _erro.value = "Não foi possível carregar o estágio."
+            return false
+        }
+
+        val estagio = respEstagio.body()?.firstOrNull() ?: return false
+        val respConversa = api.getConversaByEstagio(idEstagio = "eq.${estagio.idEstagio}")
+        if (!respConversa.isSuccessful) {
+            if (mostrarErro) _erro.value = "Não foi possível carregar conversas."
+            return false
+        }
+
+        val conversa = respConversa.body()?.firstOrNull() ?: return false
+
+        val respOferta = api.getOfertaById(idOferta = "eq.${candidaturaAceite.idOferta}")
+        respOferta.body()?.firstOrNull()?.let { _nomeEstagio.value = it.titulo }
+
+        val nomes = mutableMapOf<String, String>()
+        try { api.getUtilizadorById(id = "eq.$idAluno").body()?.firstOrNull()?.let { nomes[idAluno] = it.nome } } catch (_: Exception) {}
+        estagio.idDocente?.let { try { api.getUtilizadorById(id = "eq.$it").body()?.firstOrNull()?.let { u -> nomes[it] = u.nome } } catch (_: Exception) {} }
+        estagio.idOrientador?.let { try { api.getUtilizadorById(id = "eq.$it").body()?.firstOrNull()?.let { u -> nomes[it] = u.nome } } catch (_: Exception) {} }
+        _nomesParticipantes.value = nomes
+
+        _erro.value = null
+        _conversa.value = conversa
+        carregarMensagens(conversa.idConversa, primeiraVez = true)
+        iniciarPollingMensagens(conversa.idConversa)
+        return true
+    }
+
+    private fun iniciarDescobertaConversa(idAluno: String) {
+        if (descobertaConversaJob?.isActive == true) return
+
+        descobertaConversaJob = viewModelScope.launch {
+            while (isActive && _conversa.value == null) {
+                delay(5000)
+                try {
+                    if (procurarConversa(idAluno, mostrarErro = false)) return@launch
+                } catch (_: Exception) {
+                    // A descoberta volta a tentar enquanto a app do aluno estiver aberta.
+                }
+            }
         }
     }
 
@@ -211,8 +232,10 @@ class MensagensViewModel : ViewModel() {
         }
     }
 
-    private fun iniciarPolling(idConversa: String) {
-        viewModelScope.launch {
+    private fun iniciarPollingMensagens(idConversa: String) {
+        if (mensagensPollingJob?.isActive == true) return
+
+        mensagensPollingJob = viewModelScope.launch {
             while (isActive) {
                 delay(5000)
                 carregarMensagens(idConversa)

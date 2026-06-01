@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import pt.ligix.app.data.repository.AlunoRepository
 import pt.ligix.app.model.Candidatura
@@ -41,6 +42,12 @@ class AlunoDashboardViewModel(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val _idCandidaturaEmCurso = MutableStateFlow<String?>(null)
+    val idCandidaturaEmCurso: StateFlow<String?> = _idCandidaturaEmCurso
+
+    private val _feedbackCandidatura = MutableStateFlow<String?>(null)
+    val feedbackCandidatura: StateFlow<String?> = _feedbackCandidatura
+
     init {
         calcularSaudacao()
     }
@@ -68,12 +75,14 @@ class AlunoDashboardViewModel(
 
             // Buscar candidaturas
             repository.getCandidaturas(idAluno).onSuccess { lista ->
-                val comDetalhe = lista.map { candidatura ->
-                    val oferta = candidatura.idOferta?.let { idOferta ->
-                        repository.getOferta(idOferta).getOrNull()
+                val comDetalhe = lista
+                    .filter { !it.ocultaAluno && it.status != "cancelada" }
+                    .map { candidatura ->
+                        val oferta = candidatura.idOferta?.let { idOferta ->
+                            repository.getOferta(idOferta).getOrNull()
+                        }
+                        CandidaturaComDetalhe(candidatura, oferta)
                     }
-                    CandidaturaComDetalhe(candidatura, oferta)
-                }
                 _candidaturas.value = comDetalhe
 
                 // Total horas da oferta aceite
@@ -93,6 +102,56 @@ class AlunoDashboardViewModel(
             }
 
             _isLoading.value = false
+        }
+    }
+
+    fun cancelarCandidatura(candidatura: Candidatura) {
+        if (candidatura.status != "pendente") return
+
+        executarRemocao(
+            candidatura = candidatura,
+            feedback = "Candidatura cancelada.",
+            operacao = { repository.cancelarCandidatura(candidatura.idCandidatura) }
+        )
+    }
+
+    fun ocultarResultadoCandidatura(candidatura: Candidatura) {
+        if (candidatura.status != "rejeitada") return
+
+        executarRemocao(
+            candidatura = candidatura,
+            feedback = "Candidatura removida da lista.",
+            operacao = { repository.ocultarResultadoCandidatura(candidatura.idCandidatura) }
+        )
+    }
+
+    fun limparFeedbackCandidatura() {
+        _feedbackCandidatura.value = null
+    }
+
+    private fun executarRemocao(
+        candidatura: Candidatura,
+        feedback: String,
+        operacao: suspend () -> Result<Unit>
+    ) {
+        if (_idCandidaturaEmCurso.value != null) return
+
+        viewModelScope.launch {
+            _idCandidaturaEmCurso.value = candidatura.idCandidatura
+            operacao().fold(
+                onSuccess = {
+                    _candidaturas.update { candidaturas ->
+                        candidaturas.filterNot {
+                            it.candidatura.idCandidatura == candidatura.idCandidatura
+                        }
+                    }
+                    _feedbackCandidatura.value = feedback
+                },
+                onFailure = {
+                    _feedbackCandidatura.value = it.message ?: "Não foi possível atualizar a candidatura."
+                }
+            )
+            _idCandidaturaEmCurso.value = null
         }
     }
 }
