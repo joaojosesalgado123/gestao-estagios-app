@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("com.google.devtools.ksp") version "2.0.21-1.0.28"
+    id("kotlin-parcelize")
 }
 
 android {
@@ -74,8 +75,13 @@ dependencies {
     // --- DataStore (guardar token/sessão) ---
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
+    // --- WorkManager (sincronização automática offline) ---
+    implementation("androidx.work:work-runtime-ktx:2.10.1")
+
     // --- Coil (carregar imagens) ---
     implementation("io.coil-kt:coil-compose:2.7.0")
+
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
 
     // --- Testes ---
     testImplementation(libs.junit)
