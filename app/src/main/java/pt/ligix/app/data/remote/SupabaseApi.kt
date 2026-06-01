@@ -368,6 +368,19 @@ interface SupabaseApi {
         @Query("select") select: String = "*"
     ): Response<List<InstituicaoEnsino>>
 
+    @GET("empresa")
+    suspend fun getEmpresaById(
+        @Query("idutilizador") idUtilizador: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Empresa>>
+
+    @PATCH("empresa")
+    suspend fun updateEmpresa(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Query("idutilizador") idUtilizador: String,
+        @Body empresa: Empresa
+    ): Response<List<Empresa>>
+
     // ==================== DOCENTE ====================
     @POST("docente")
     suspend fun createDocente(

@@ -90,11 +90,8 @@ class EmpresaRepository {
             if (responseAluno.isSuccessful) {
                 val aluno = responseAluno.body()?.firstOrNull()
                 val curso = aluno?.curso ?: ""
-                android.util.Log.d("EmpresaRepo", "aluno: $aluno curso: $curso idInst: ${aluno?.idInstituicao}")
                 val siglaInstituicao = aluno?.idInstituicao?.let { idInst ->
-                    android.util.Log.d("EmpresaRepo", "querying inst with: eq.$idInst")
                     val responseInst = api.getInstituicaoById(idInstituicao = "eq.$idInst")
-                    android.util.Log.d("EmpresaRepo", "inst code: ${responseInst.code()} body: ${responseInst.body()}")
                     if (responseInst.isSuccessful) {
                         responseInst.body()?.firstOrNull()?.sigla
                     } else null

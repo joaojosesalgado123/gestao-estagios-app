@@ -54,7 +54,7 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
             1 -> EmpresaDashboardScreen(modifier = Modifier.padding(innerPadding))
             2 -> EmpresaDashboardScreen(modifier = Modifier.padding(innerPadding))
             3 -> EmpresaDashboardScreen(modifier = Modifier.padding(innerPadding))
-            4 -> EmpresaDashboardScreen(modifier = Modifier.padding(innerPadding))
+            4 -> EmpresaPerfilScreen(modifier = Modifier.padding(innerPadding), onLogout = onLogout)
         }
     }
 }
