@@ -6,6 +6,7 @@ import pt.ligix.app.model.Avaliacao
 import pt.ligix.app.model.Candidatura
 import pt.ligix.app.model.Conversa
 import pt.ligix.app.model.Docente
+import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.model.Empresa
 import pt.ligix.app.model.Estagio
 import pt.ligix.app.model.ItemAvaliacao
@@ -359,6 +360,13 @@ interface SupabaseApi {
         @Query("idutilizador") idUtilizador: String,
         @Query("select") select: String = "*"
     ): Response<List<Aluno>>
+
+    // ==================== INSTITUIÇÃO ====================
+    @GET("instituicao_ensino")
+    suspend fun getInstituicaoById(
+        @Query("idinstituicao") idInstituicao: String,
+        @Query("select") select: String = "*"
+    ): Response<List<InstituicaoEnsino>>
 
     // ==================== DOCENTE ====================
     @POST("docente")
