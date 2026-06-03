@@ -87,10 +87,23 @@ interface SupabaseApi {
 
     // ==================== OFERTAS ====================
     @POST("oferta_estagio")
+    suspend fun createOfertaMap(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Body oferta: Map<String, @JvmSuppressWildcards Any>
+    ): Response<List<pt.ligix.app.model.OfertaEstagio>>
+
+    @POST("oferta_estagio")
     suspend fun createOferta(
         @Header("Prefer") prefer: String = "return=representation",
         @Body oferta: OfertaEstagio
     ): Response<List<OfertaEstagio>>
+
+    @PATCH("oferta_estagio")
+    suspend fun updateOfertaMap(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Query("idoferta") id: String,
+        @Body oferta: Map<String, @JvmSuppressWildcards Any>
+    ): Response<List<pt.ligix.app.model.OfertaEstagio>>
 
     @PATCH("oferta_estagio")
     suspend fun updateOferta(
