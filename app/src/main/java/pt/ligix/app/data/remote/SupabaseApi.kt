@@ -402,6 +402,17 @@ interface SupabaseApi {
     ): Response<List<Docente>>
 
     // ==================== ORIENTADOR EMPRESA ====================
+    @GET("orientador_empresa")
+    suspend fun getOrientadoresByEmpresa(
+        @Query("idempresa") idEmpresa: String,
+        @Query("select") select: String = "*"
+    ): Response<List<OrientadorEmpresa>>
+
+    @DELETE("orientador_empresa")
+    suspend fun deleteOrientadorEmpresa(
+        @Query("idutilizador") idOrientador: String
+    ): Response<Unit>
+
     @POST("orientador_empresa")
     suspend fun createOrientadorEmpresa(
         @Header("Prefer") prefer: String = "return=representation",
