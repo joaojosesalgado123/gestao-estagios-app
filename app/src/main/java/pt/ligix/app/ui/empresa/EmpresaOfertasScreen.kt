@@ -29,7 +29,7 @@ import pt.ligix.app.viewmodel.EmpresaOfertasViewModelFactory
 fun EmpresaOfertasScreen(
     modifier: Modifier = Modifier,
     onNovaOferta: () -> Unit = {},
-    onVerCandidatos: (String) -> Unit = {},
+    onVerCandidatos: (String, String) -> Unit = { _, _ -> },
     onEditarOferta: (OfertaEstagio) -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -162,7 +162,7 @@ fun EmpresaOfertasScreen(
                         OfertaCard(
                             oferta = oferta,
                             numCandidatos = candidatosPorOferta[oferta.idOferta] ?: 0,
-                            onVerCandidatos = { onVerCandidatos(oferta.idOferta) },
+                            onVerCandidatos = { onVerCandidatos(oferta.idOferta, oferta.titulo) },
                             onEditar = { onEditarOferta(oferta) },
                             onEliminar = { viewModel.eliminarOferta(oferta.idOferta) }
                         )
