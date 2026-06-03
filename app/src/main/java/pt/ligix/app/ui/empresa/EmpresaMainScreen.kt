@@ -8,6 +8,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
+import pt.ligix.app.model.OfertaEstagio
+import pt.ligix.app.ui.empresa.EmpresaEditarOfertaScreen
+import pt.ligix.app.ui.empresa.EmpresaCandidatosScreen
+import pt.ligix.app.ui.empresa.EmpresaNovaOfertaScreen
+import pt.ligix.app.ui.empresa.EmpresaOfertasScreen
+import pt.ligix.app.ui.empresa.EmpresaDashboardScreen
+import pt.ligix.app.ui.empresa.EmpresaPerfilScreen
 
 @Composable
 fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
@@ -15,6 +22,9 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
     var idOfertaSelecionada by remember { mutableStateOf("") }
     var tituloOfertaSelecionada by remember { mutableStateOf("") }
     var mostrarCandidatos by remember { mutableStateOf(false) }
+    var mostrarNovaOferta by remember { mutableStateOf(false) }
+    var novaOfertaKey by remember { mutableStateOf(0) }
+    var ofertaAEditar by remember { mutableStateOf<OfertaEstagio?>(null) }
 
     Scaffold(
         bottomBar = {
@@ -52,7 +62,25 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
             }
         }
     ) { innerPadding ->
-        if (mostrarCandidatos) {
+        if (ofertaAEditar != null) {
+            EmpresaEditarOfertaScreen(
+                modifier = Modifier.padding(innerPadding),
+                oferta = ofertaAEditar!!,
+                onVoltar = { ofertaAEditar = null },
+                onGuardado = { ofertaAEditar = null }
+            )
+        } else if (mostrarNovaOferta) {
+            key(novaOfertaKey) {
+                EmpresaNovaOfertaScreen(
+                    modifier = Modifier.padding(innerPadding),
+                    onVoltar = { mostrarNovaOferta = false },
+                    onPublicada = {
+                        mostrarNovaOferta = false
+                        novaOfertaKey++
+                    }
+                )
+            }
+        } else if (mostrarCandidatos) {
             EmpresaCandidatosScreen(
                 modifier = Modifier.padding(innerPadding),
                 idOferta = idOfertaSelecionada,
@@ -64,10 +92,17 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                 0 -> EmpresaDashboardScreen(modifier = Modifier.padding(innerPadding))
                 1 -> EmpresaOfertasScreen(
                     modifier = Modifier.padding(innerPadding),
+                    onNovaOferta = {
+                        novaOfertaKey++
+                        mostrarNovaOferta = true
+                    },
                     onVerCandidatos = { idOferta, titulo ->
                         idOfertaSelecionada = idOferta
                         tituloOfertaSelecionada = titulo
                         mostrarCandidatos = true
+                    },
+                    onEditarOferta = { oferta ->
+                        ofertaAEditar = oferta
                     }
                 )
                 2 -> EmpresaDashboardScreen(modifier = Modifier.padding(innerPadding))
