@@ -106,7 +106,7 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                     }
                 )
                 2 -> EmpresaListaCandidatosScreen(modifier = Modifier.padding(innerPadding))
-                3 -> EmpresaDashboardScreen(modifier = Modifier.padding(innerPadding))
+                3 -> EmpresaOrientadoresScreen(modifier = Modifier.padding(innerPadding))
                 4 -> EmpresaPerfilScreen(modifier = Modifier.padding(innerPadding), onLogout = onLogout)
             }
         }
