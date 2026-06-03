@@ -59,8 +59,6 @@ class EmpresaEditarOfertaViewModel(
                 if (response.isSuccessful) {
                     _sucesso.value = true
                 } else {
-                    val errorBody = response.errorBody()?.string()
-                    android.util.Log.e("EditarOferta", "Erro ${response.code()}: $errorBody")
                     _erro.value = "Erro ao guardar: ${response.code()}"
                 }
             } catch (e: Exception) {

@@ -67,12 +67,9 @@ class EmpresaNovaOfertaViewModel(
                 if (response.isSuccessful) {
                     _sucesso.value = true
                 } else {
-                    val errorBody = response.errorBody()?.string()
-                    android.util.Log.e("NovaOferta", "Erro ${response.code()}: $errorBody")
                     _erro.value = "Erro ao publicar oferta: ${response.code()}"
                 }
             } catch (e: Exception) {
-                android.util.Log.e("NovaOferta", "Excecao: ${e::class.simpleName}: ${e.message}")
                 _erro.value = "Sem ligação à internet."
             }
 

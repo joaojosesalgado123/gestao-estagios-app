@@ -48,8 +48,6 @@ class EmpresaOfertasViewModel(
             repository.getCandidaturasDaEmpresa(idEmpresa).onSuccess { candidaturas ->
                 _candidaturasPendentes.value = candidaturas.count { it.status == "pendente" }
                 val mapa = candidaturas.groupBy { it.idOferta }.mapValues { it.value.size }
-                android.util.Log.d("OfertasVM", "mapa: $mapa")
-                android.util.Log.d("OfertasVM", "candidaturas: ${candidaturas.map { it.idOferta }}")
                 _candidatosPorOferta.value = mapa
             }
             _isLoading.value = false
