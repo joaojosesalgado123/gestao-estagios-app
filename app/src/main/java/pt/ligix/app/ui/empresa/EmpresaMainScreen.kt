@@ -51,7 +51,7 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
     ) { innerPadding ->
         when (selectedTab) {
             0 -> EmpresaDashboardScreen(modifier = Modifier.padding(innerPadding))
-            1 -> EmpresaDashboardScreen(modifier = Modifier.padding(innerPadding))
+            1 -> EmpresaOfertasScreen(modifier = Modifier.padding(innerPadding))
             2 -> EmpresaDashboardScreen(modifier = Modifier.padding(innerPadding))
             3 -> EmpresaDashboardScreen(modifier = Modifier.padding(innerPadding))
             4 -> EmpresaPerfilScreen(modifier = Modifier.padding(innerPadding), onLogout = onLogout)
