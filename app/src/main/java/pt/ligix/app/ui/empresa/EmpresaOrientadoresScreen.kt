@@ -29,6 +29,8 @@ import pt.ligix.app.viewmodel.OrientadorDetalhe
 
 @Composable
 fun EmpresaOrientadoresScreen(
+    onEditarOrientador: (OrientadorDetalhe) -> Unit = {},
+    onCriarOrientador: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -42,7 +44,8 @@ fun EmpresaOrientadoresScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     var pesquisa by remember { mutableStateOf("") }
 
-    LaunchedEffect(Unit) { viewModel.carregarOrientadores(context) }
+    var refreshKey by remember { mutableStateOf(0) }
+    LaunchedEffect(refreshKey) { viewModel.carregarOrientadores(context) }
     LaunchedEffect(pesquisa) { viewModel.filtrar(pesquisa) }
 
     Box(
@@ -129,7 +132,7 @@ fun EmpresaOrientadoresScreen(
                     orientadoresFiltrados.forEach { orientador ->
                         OrientadorCard(
                             orientador = orientador,
-                            onEditar = { viewModel.editarOrientador(orientador.id) },
+                            onEditar = { onEditarOrientador(orientador) },
                             onEliminar = { viewModel.eliminarOrientador(orientador.id) }
                         )
                         Spacer(Modifier.height(16.dp))
@@ -142,7 +145,7 @@ fun EmpresaOrientadoresScreen(
 
         // Botão flutuante +
         FloatingActionButton(
-            onClick = { viewModel.adicionarOrientador() },
+            onClick = { onCriarOrientador() },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(24.dp),

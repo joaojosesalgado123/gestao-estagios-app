@@ -54,6 +54,13 @@ interface SupabaseApi {
     ): Response<List<Utilizador>>
 
     @PATCH("utilizador")
+    suspend fun updateUtilizadorMap(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Query("idutilizador") id: String,
+        @Body utilizador: Map<String, @JvmSuppressWildcards Any>
+    ): Response<List<Utilizador>>
+
+    @PATCH("utilizador")
     suspend fun adminUpdateUtilizador(
         @Header("Prefer") prefer: String = "return=representation",
         @Query("idutilizador") id: String,
