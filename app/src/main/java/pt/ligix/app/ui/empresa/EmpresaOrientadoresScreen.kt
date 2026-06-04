@@ -59,27 +59,7 @@ fun EmpresaOrientadoresScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             // Top Bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("LIGIX", color = DarkBlue, fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-                Spacer(modifier = Modifier.weight(1f))
-                IconButton(onClick = {}) {
-                    Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = DarkBlue)
-                }
-                Box(
-                    modifier = Modifier.size(36.dp).clip(CircleShape).background(DarkBlue),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(Icons.Default.Business, contentDescription = null,
-                        tint = Color.White, modifier = Modifier.size(20.dp))
-                }
-            }
+            EmpresaTopBar()
 
             Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
 

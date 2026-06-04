@@ -196,6 +196,12 @@ interface SupabaseApi {
     ): Response<Boolean>
 
     @GET("candidatura")
+    suspend fun getCandidaturaById(
+        @Query("idcandidatura") idCandidatura: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Candidatura>>
+
+    @GET("candidatura")
     suspend fun getCandidaturasByOferta(
         @Query("idoferta") idOferta: String,
         @Query("select") select: String = "*"

@@ -31,7 +31,8 @@ fun EmpresaCandidatosScreen(
     modifier: Modifier = Modifier,
     idOferta: String = "",
     tituloOferta: String = "",
-    onVoltar: () -> Unit = {}
+    onVoltar: () -> Unit = {},
+    onVerCandidatura: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
@@ -69,20 +70,7 @@ fun EmpresaCandidatosScreen(
                     .verticalScroll(rememberScrollState())
             ) {
                 // Top Bar
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.White)
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text("LIGIX", color = DarkBlue, fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-                    Spacer(modifier = Modifier.weight(1f))
-                    IconButton(onClick = {}) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = DarkBlue)
-                    }
-                }
+                EmpresaTopBar()
 
                 Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
 
@@ -184,7 +172,8 @@ fun EmpresaCandidatosScreen(
                             CandidatoDetalheCard(
                                 detalhe = detalhe,
                                 onAprovar = { viewModel.aprovarCandidatura(detalhe.candidatura.idCandidatura) },
-                                onRejeitar = { viewModel.rejeitarCandidatura(detalhe.candidatura.idCandidatura) }
+                                onRejeitar = { viewModel.rejeitarCandidatura(detalhe.candidatura.idCandidatura) },
+                                onVerCandidatura = { onVerCandidatura(detalhe.candidatura.idCandidatura) }
                             )
                             Spacer(Modifier.height(16.dp))
                         }
@@ -202,7 +191,8 @@ fun CandidatoDetalheCard(
     detalhe: CandidatoDetalhe,
     tituloOferta: String = "",
     onAprovar: () -> Unit,
-    onRejeitar: () -> Unit
+    onRejeitar: () -> Unit,
+    onVerCandidatura: () -> Unit = {}
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -296,7 +286,7 @@ fun CandidatoDetalheCard(
                         Text("Rejeitar", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
                     }
                     OutlinedButton(
-                        onClick = {},
+                        onClick = onVerCandidatura,
                         modifier = Modifier.weight(1f).height(44.dp),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = DarkBlue),
                         border = androidx.compose.foundation.BorderStroke(1.dp, DarkBlue),

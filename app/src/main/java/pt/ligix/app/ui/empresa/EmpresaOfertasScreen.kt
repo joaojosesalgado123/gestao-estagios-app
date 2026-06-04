@@ -60,20 +60,7 @@ fun EmpresaOfertasScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             // Top Bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("LIGIX", color = DarkBlue, fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
-                Spacer(modifier = Modifier.weight(1f))
-                IconButton(onClick = {}) {
-                    Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = DarkBlue)
-                }
-            }
+            EmpresaTopBar()
 
             Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
 
@@ -92,32 +79,20 @@ fun EmpresaOfertasScreen(
 
                 Spacer(Modifier.height(24.dp))
 
-                // Filtros
-                Row(
+
+
+                Spacer(Modifier.height(12.dp))
+
+                // Header Todas as Ofertas
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Color(0xFFF0F0F0), RoundedCornerShape(8.dp))
-                        .padding(4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    filtros.forEach { filtro ->
-                        val selecionado = filtroSelecionado == filtro
-                        TextButton(
-                            onClick = { filtroSelecionado = filtro },
-                            colors = ButtonDefaults.textButtonColors(
-                                contentColor = if (selecionado) DarkBlue else Color.Gray
-                            ),
-                            modifier = Modifier
-                                .weight(1f)
-                                .background(
-                                    if (selecionado) Color.White else Color.Transparent,
-                                    RoundedCornerShape(6.dp)
-                                )
-                        ) {
-                            Text(filtro, fontSize = 12.sp,
-                                fontWeight = if (selecionado) FontWeight.Bold else FontWeight.Normal)
-                        }
-                    }
+                    Text("Todas as Ofertas", fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold, color = DarkBlue)
                 }
 
                 Spacer(Modifier.height(12.dp))
