@@ -9,12 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import pt.ligix.app.model.OfertaEstagio
-import pt.ligix.app.ui.empresa.EmpresaEditarOfertaScreen
-import pt.ligix.app.ui.empresa.EmpresaCandidatosScreen
-import pt.ligix.app.ui.empresa.EmpresaNovaOfertaScreen
-import pt.ligix.app.ui.empresa.EmpresaOfertasScreen
-import pt.ligix.app.ui.empresa.EmpresaDashboardScreen
-import pt.ligix.app.ui.empresa.EmpresaPerfilScreen
+import pt.ligix.app.viewmodel.OrientadorDetalhe
 
 @Composable
 fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
@@ -23,42 +18,45 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
     var tituloOfertaSelecionada by remember { mutableStateOf("") }
     var mostrarCandidatos by remember { mutableStateOf(false) }
     var mostrarNovaOferta by remember { mutableStateOf(false) }
+    var mostrarCriarOrientador by remember { mutableStateOf(false) }
+    var orientadorAEditar by remember { mutableStateOf<OrientadorDetalhe?>(null) }
+    var orientadoresKey by remember { mutableStateOf(0) }
     var novaOfertaKey by remember { mutableStateOf(0) }
     var ofertaAEditar by remember { mutableStateOf<OfertaEstagio?>(null) }
 
     Scaffold(
         bottomBar = {
             NavigationBar(containerColor = Color.White) {
-                    NavigationBarItem(
-                        selected = selectedTab == 0,
-                        onClick = { selectedTab = 0 },
-                        icon = { Icon(Icons.Default.Home, contentDescription = "Início") },
-                        label = { Text("Início", fontSize = 10.sp) }
-                    )
-                    NavigationBarItem(
-                        selected = selectedTab == 1,
-                        onClick = { selectedTab = 1 },
-                        icon = { Icon(Icons.Default.Work, contentDescription = "Ofertas") },
-                        label = { Text("Ofertas", fontSize = 10.sp) }
-                    )
-                    NavigationBarItem(
-                        selected = selectedTab == 2,
-                        onClick = { selectedTab = 2 },
-                        icon = { Icon(Icons.Default.People, contentDescription = "Candidatos") },
-                        label = { Text("Candidatos", fontSize = 10.sp) }
-                    )
-                    NavigationBarItem(
-                        selected = selectedTab == 3,
-                        onClick = { selectedTab = 3 },
-                        icon = { Icon(Icons.Default.School, contentDescription = "Orientadores") },
-                        label = { Text("Orientadores", fontSize = 10.sp) }
-                    )
-                    NavigationBarItem(
-                        selected = selectedTab == 4,
-                        onClick = { selectedTab = 4 },
-                        icon = { Icon(Icons.Default.Business, contentDescription = "Perfil") },
-                        label = { Text("Perfil", fontSize = 10.sp) }
-                    )
+                NavigationBarItem(
+                    selected = selectedTab == 0,
+                    onClick = { selectedTab = 0; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null },
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Início") },
+                    label = { Text("Início", fontSize = 10.sp) }
+                )
+                NavigationBarItem(
+                    selected = selectedTab == 1,
+                    onClick = { selectedTab = 1; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null },
+                    icon = { Icon(Icons.Default.Work, contentDescription = "Ofertas") },
+                    label = { Text("Ofertas", fontSize = 10.sp) }
+                )
+                NavigationBarItem(
+                    selected = selectedTab == 2,
+                    onClick = { selectedTab = 2; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null },
+                    icon = { Icon(Icons.Default.People, contentDescription = "Candidatos") },
+                    label = { Text("Candidatos", fontSize = 10.sp) }
+                )
+                NavigationBarItem(
+                    selected = selectedTab == 3,
+                    onClick = { selectedTab = 3; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null },
+                    icon = { Icon(Icons.Default.School, contentDescription = "Orientadores") },
+                    label = { Text("Orientadores", fontSize = 10.sp) }
+                )
+                NavigationBarItem(
+                    selected = selectedTab == 4,
+                    onClick = { selectedTab = 4; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null },
+                    icon = { Icon(Icons.Default.Business, contentDescription = "Perfil") },
+                    label = { Text("Perfil", fontSize = 10.sp) }
+                )
             }
         }
     ) { innerPadding ->
@@ -87,6 +85,25 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                 tituloOferta = tituloOfertaSelecionada,
                 onVoltar = { mostrarCandidatos = false }
             )
+        } else if (mostrarCriarOrientador) {
+            EmpresaCriarOrientadorScreen(
+                modifier = Modifier.padding(innerPadding),
+                onVoltar = { mostrarCriarOrientador = false },
+                onCriado = {
+                    mostrarCriarOrientador = false
+                    orientadoresKey++
+                }
+            )
+        } else if (orientadorAEditar != null) {
+            EmpresaEditarOrientadorScreen(
+                modifier = Modifier.padding(innerPadding),
+                orientador = orientadorAEditar!!,
+                onVoltar = { orientadorAEditar = null },
+                onGuardado = {
+                    orientadorAEditar = null
+                    orientadoresKey++
+                }
+            )
         } else {
             when (selectedTab) {
                 0 -> EmpresaDashboardScreen(modifier = Modifier.padding(innerPadding))
@@ -106,7 +123,13 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                     }
                 )
                 2 -> EmpresaListaCandidatosScreen(modifier = Modifier.padding(innerPadding))
-                3 -> EmpresaOrientadoresScreen(modifier = Modifier.padding(innerPadding))
+                3 -> key(orientadoresKey) {
+                    EmpresaOrientadoresScreen(
+                        modifier = Modifier.padding(innerPadding),
+                        onCriarOrientador = { mostrarCriarOrientador = true },
+                        onEditarOrientador = { orientador -> orientadorAEditar = orientador }
+                    )
+                }
                 4 -> EmpresaPerfilScreen(modifier = Modifier.padding(innerPadding), onLogout = onLogout)
             }
         }

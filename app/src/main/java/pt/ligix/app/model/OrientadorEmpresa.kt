@@ -7,5 +7,5 @@ data class OrientadorEmpresa(
     @SerializedName("idempresa") val idEmpresa: String = "",
     @SerializedName("area") val area: String? = null,
     @SerializedName("status") val status: String = "ativo",
-    @SerializedName("created_at") val createdAt: String = ""
+    @SerializedName("created_at") val createdAt: String? = null
 )
