@@ -23,37 +23,38 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
     var orientadoresKey by remember { mutableStateOf(0) }
     var novaOfertaKey by remember { mutableStateOf(0) }
     var ofertaAEditar by remember { mutableStateOf<OfertaEstagio?>(null) }
+    var idCandidaturaSelecionada by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         bottomBar = {
             NavigationBar(containerColor = Color.White) {
                 NavigationBarItem(
                     selected = selectedTab == 0,
-                    onClick = { selectedTab = 0; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null },
+                    onClick = { selectedTab = 0; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null; idCandidaturaSelecionada = null },
                     icon = { Icon(Icons.Default.Home, contentDescription = "Início") },
                     label = { Text("Início", fontSize = 10.sp) }
                 )
                 NavigationBarItem(
                     selected = selectedTab == 1,
-                    onClick = { selectedTab = 1; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null },
-                    icon = { Icon(Icons.Default.Work, contentDescription = "Ofertas") },
-                    label = { Text("Ofertas", fontSize = 10.sp) }
+                    onClick = { selectedTab = 1; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null; idCandidaturaSelecionada = null },
+                    icon = { Icon(Icons.Default.Work, contentDescription = "Estágios") },
+                    label = { Text("Estágios", fontSize = 10.sp) }
                 )
                 NavigationBarItem(
                     selected = selectedTab == 2,
-                    onClick = { selectedTab = 2; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null },
+                    onClick = { selectedTab = 2; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null; idCandidaturaSelecionada = null },
                     icon = { Icon(Icons.Default.People, contentDescription = "Candidatos") },
                     label = { Text("Candidatos", fontSize = 10.sp) }
                 )
                 NavigationBarItem(
                     selected = selectedTab == 3,
-                    onClick = { selectedTab = 3; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null },
+                    onClick = { selectedTab = 3; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null; idCandidaturaSelecionada = null },
                     icon = { Icon(Icons.Default.School, contentDescription = "Orientadores") },
                     label = { Text("Orientadores", fontSize = 10.sp) }
                 )
                 NavigationBarItem(
                     selected = selectedTab == 4,
-                    onClick = { selectedTab = 4; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null },
+                    onClick = { selectedTab = 4; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null; idCandidaturaSelecionada = null },
                     icon = { Icon(Icons.Default.Business, contentDescription = "Perfil") },
                     label = { Text("Perfil", fontSize = 10.sp) }
                 )
@@ -78,12 +79,19 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                     }
                 )
             }
+        } else if (idCandidaturaSelecionada != null) {
+            EmpresaDetalhesCandidaturaScreen(
+                modifier = Modifier.padding(innerPadding),
+                idCandidatura = idCandidaturaSelecionada!!,
+                onVoltar = { idCandidaturaSelecionada = null }
+            )
         } else if (mostrarCandidatos) {
             EmpresaCandidatosScreen(
                 modifier = Modifier.padding(innerPadding),
                 idOferta = idOfertaSelecionada,
                 tituloOferta = tituloOfertaSelecionada,
-                onVoltar = { mostrarCandidatos = false }
+                onVoltar = { mostrarCandidatos = false },
+                onVerCandidatura = { id -> idCandidaturaSelecionada = id }
             )
         } else if (mostrarCriarOrientador) {
             EmpresaCriarOrientadorScreen(
@@ -106,7 +114,14 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
             )
         } else {
             when (selectedTab) {
-                0 -> EmpresaDashboardScreen(modifier = Modifier.padding(innerPadding))
+                0 -> EmpresaDashboardScreen(
+                    modifier = Modifier.padding(innerPadding),
+                    onVerTodasCandidaturas = { selectedTab = 2 },
+                    onPublicarVaga = {
+                        novaOfertaKey++
+                        mostrarNovaOferta = true
+                    }
+                )
                 1 -> EmpresaOfertasScreen(
                     modifier = Modifier.padding(innerPadding),
                     onNovaOferta = {
@@ -122,7 +137,10 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                         ofertaAEditar = oferta
                     }
                 )
-                2 -> EmpresaListaCandidatosScreen(modifier = Modifier.padding(innerPadding))
+                2 -> EmpresaListaCandidatosScreen(
+                    modifier = Modifier.padding(innerPadding),
+                    onVerCandidatura = { id -> idCandidaturaSelecionada = id }
+                )
                 3 -> key(orientadoresKey) {
                     EmpresaOrientadoresScreen(
                         modifier = Modifier.padding(innerPadding),
