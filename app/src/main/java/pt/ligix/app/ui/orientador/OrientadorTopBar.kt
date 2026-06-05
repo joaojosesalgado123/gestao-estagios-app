@@ -1,4 +1,4 @@
-package pt.ligix.app.ui.empresa
+package pt.ligix.app.ui.orientador
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight as FW
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,20 +29,20 @@ import pt.ligix.app.viewmodel.MensagensViewModel
 import pt.ligix.app.viewmodel.MensagensViewModelFactory
 
 @Composable
-fun EmpresaTopBar(mensagensViewModel: MensagensViewModel? = null) {
+fun OrientadorTopBar(mensagensViewModel: MensagensViewModel? = null) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
-    var nomeEmpresa by remember { mutableStateOf("") }
+    var nomeOrientador by remember { mutableStateOf("") }
     var mostrarSininho by remember { mutableStateOf(false) }
 
     val vm = mensagensViewModel ?: viewModel(factory = MensagensViewModelFactory())
     val historicoNotificacoes by vm.historicoNotificacoes.collectAsState()
 
     LaunchedEffect(Unit) {
-        nomeEmpresa = sessionManager.nome.first() ?: ""
+        nomeOrientador = sessionManager.nome.first() ?: ""
     }
 
-    val iniciais = nomeEmpresa
+    val iniciais = nomeOrientador
         .split(" ")
         .mapNotNull { it.firstOrNull()?.toString() }
         .take(2)
@@ -59,7 +59,7 @@ fun EmpresaTopBar(mensagensViewModel: MensagensViewModel? = null) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically) {
                         Text("Notificações", fontSize = 18.sp,
-                            fontWeight = FW.Bold, color = DarkBlue)
+                            fontWeight = FontWeight.Bold, color = DarkBlue)
                         if (historicoNotificacoes.isNotEmpty()) {
                             TextButton(onClick = { vm.limparHistoricoNotificacoes() }) {
                                 Text("Limpar", fontSize = 13.sp, color = Color.Gray)
@@ -88,12 +88,12 @@ fun EmpresaTopBar(mensagensViewModel: MensagensViewModel? = null) {
                                         .background(Color(0xFFE8EAF6)),
                                         contentAlignment = Alignment.Center) {
                                         Text(notif.nomeRemetente.firstOrNull()?.toString() ?: "?",
-                                            color = DarkBlue, fontWeight = FW.Bold)
+                                            color = DarkBlue, fontWeight = FontWeight.Bold)
                                     }
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Column(modifier = Modifier.weight(1f)) {
                                         Text(notif.nomeRemetente, fontSize = 14.sp,
-                                            fontWeight = FW.SemiBold, color = Color.Black)
+                                            fontWeight = FontWeight.SemiBold, color = Color.Black)
                                         Text(notif.conteudo, fontSize = 13.sp, color = Color.Gray,
                                             maxLines = 1, overflow = TextOverflow.Ellipsis)
                                     }
@@ -115,7 +115,7 @@ fun EmpresaTopBar(mensagensViewModel: MensagensViewModel? = null) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text("LIGIX", color = DarkBlue, fontSize = 18.sp,
-            fontWeight = FW.Bold, letterSpacing = 2.sp)
+            fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
         Spacer(modifier = Modifier.weight(1f))
         Box(contentAlignment = Alignment.TopEnd) {
             IconButton(onClick = { mostrarSininho = true }) {
@@ -127,14 +127,14 @@ fun EmpresaTopBar(mensagensViewModel: MensagensViewModel? = null) {
             }
         }
         Box(
-            modifier = Modifier.size(36.dp).clip(CircleShape).background(DarkBlue),
+            modifier = Modifier.size(36.dp).clip(CircleShape).background(Color(0xFFE57373)),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = if (iniciais.isNotEmpty()) iniciais else "E",
+                text = if (iniciais.isNotEmpty()) iniciais else "O",
                 color = Color.White,
                 fontSize = 13.sp,
-                fontWeight = FW.Bold
+                fontWeight = FontWeight.Bold
             )
         }
     }

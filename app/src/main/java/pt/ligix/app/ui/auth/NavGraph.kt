@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import pt.ligix.app.data.repository.AuthRepository
 import pt.ligix.app.ui.aluno.AlunoMainScreen
 import pt.ligix.app.ui.empresa.EmpresaMainScreen
+import pt.ligix.app.ui.orientador.OrientadorMainScreen
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.util.SessionTokenProvider
 import pt.ligix.app.viewmodel.AuthViewModel
@@ -28,6 +29,7 @@ object Routes {
     const val DASHBOARD_EMPRESA = "dashboard_empresa"
     const val DASHBOARD_DOCENTE = "dashboard_docente"
     const val DASHBOARD_ADMIN = "dashboard_admin"
+    const val DASHBOARD_ORIENTADOR = "dashboard_orientador"
 }
 
 @Composable
@@ -57,6 +59,7 @@ fun LigixNavGraph() {
                 "aluno" -> Routes.DASHBOARD_ALUNO
                 "empresa" -> Routes.DASHBOARD_EMPRESA
                 "docente" -> Routes.DASHBOARD_DOCENTE
+                "orientador" -> Routes.DASHBOARD_ORIENTADOR
                 else -> "login?email="
             }
             navController.navigate(destino) {
@@ -90,6 +93,7 @@ fun LigixNavGraph() {
                             "aluno" -> Routes.DASHBOARD_ALUNO
                             "empresa" -> Routes.DASHBOARD_EMPRESA
                             "docente" -> Routes.DASHBOARD_DOCENTE
+                            "orientador" -> Routes.DASHBOARD_ORIENTADOR
                             else -> "login?email="
                         }
                     } else {
@@ -207,6 +211,15 @@ fun LigixNavGraph() {
 
         composable(Routes.DASHBOARD_EMPRESA) {
             EmpresaMainScreen(onLogout = {
+                authViewModel.logout()
+                navController.navigate("login?email=") {
+                    popUpTo(0) { inclusive = true }
+                }
+            })
+        }
+
+        composable(Routes.DASHBOARD_ORIENTADOR) {
+            OrientadorMainScreen(onLogout = {
                 authViewModel.logout()
                 navController.navigate("login?email=") {
                     popUpTo(0) { inclusive = true }

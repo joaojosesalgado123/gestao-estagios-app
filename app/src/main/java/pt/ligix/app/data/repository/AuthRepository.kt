@@ -26,10 +26,9 @@ class AuthRepository {
 
             if (!authResponse.isSuccessful) {
                 val errorBody = authResponse.errorBody()?.string().orEmpty()
-                val message = if (errorBody.contains("email_not_confirmed", ignoreCase = true)) {
-                    "Confirme o seu email antes de iniciar sessão"
-                } else {
-                    "Email ou password inválidos"
+                val message = when {
+                    errorBody.contains("email_not_confirmed", ignoreCase = true) -> "Confirme o seu email antes de iniciar sessão"
+                    else -> "Erro ${authResponse.code()}: $errorBody"
                 }
                 return Result.failure(Exception(message))
             }
@@ -45,7 +44,7 @@ class AuthRepository {
             val perfilResponse = api.getUtilizadorById(id = "eq.$authUserId")
             if (perfilResponse.isSuccessful) {
                 val utilizador = perfilResponse.body()?.firstOrNull()
-                    ?: return Result.failure(Exception("Perfil de utilizador não encontrado"))
+                    ?: return Result.failure(Exception("Perfil de utilizador não encontrado. Body: ${perfilResponse.body()}"))
                 Result.success(
                     AuthenticatedUtilizador(
                         utilizador = utilizador,
@@ -53,7 +52,7 @@ class AuthRepository {
                     )
                 )
             } else {
-                Result.failure(Exception("Erro ao obter perfil: ${perfilResponse.code()}"))
+                Result.failure(Exception("Erro ao obter perfil: ${perfilResponse.code()} - ${perfilResponse.errorBody()?.string()}"))
             }
         } catch (e: Exception) {
             Result.failure(Exception("Sem ligação à internet"))

@@ -47,6 +47,7 @@ fun EmpresaEditarOrientadorScreen(
 
     var nome by remember { mutableStateOf(orientador.nome) }
     var email by remember { mutableStateOf(orientador.email) }
+    var area by remember { mutableStateOf(orientador.area) }
     var palavraPasse by remember { mutableStateOf("") }
     var mostrarPasse by remember { mutableStateOf(false) }
 
@@ -132,6 +133,27 @@ fun EmpresaEditarOrientadorScreen(
                         value = email,
                         onValueChange = { email = it },
                         modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = DarkBlue,
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color(0xFFF0F0F0)
+                        ),
+                        singleLine = true
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
+                    // Área
+                    Text("ÁREA DE TRABALHO", fontSize = 11.sp, color = Color.Gray,
+                        letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
+                    Spacer(Modifier.height(6.dp))
+                    OutlinedTextField(
+                        value = area,
+                        onValueChange = { area = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("ex: Informática, Design, Gestão...", color = Color.LightGray) },
                         shape = RoundedCornerShape(10.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = DarkBlue,
@@ -233,7 +255,8 @@ fun EmpresaEditarOrientadorScreen(
                         id = orientador.id,
                         nome = nome,
                         email = email,
-                        palavraPasse = palavraPasse.ifBlank { null }
+                        palavraPasse = palavraPasse.ifBlank { null },
+                        area = area
                     )
                 },
                 modifier = Modifier.fillMaxWidth().height(52.dp),

@@ -8,5 +8,6 @@ data class RelatorioFinal(
     @SerializedName("data_submissao") val dataSubmissao: String = "",
     @SerializedName("observacoes") val observacoes: String? = null,
     @SerializedName("idestagio") val idEstagio: String = "",
-    @SerializedName("created_at") val createdAt: String = ""
+    @SerializedName("created_at") val createdAt: String = "",
+    @SerializedName("ficheiro_url") val ficheiroUrl: String? = null
 )

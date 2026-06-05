@@ -7,5 +7,6 @@ data class ItemAvaliacao(
     @SerializedName("idavaliador") val idAvaliador: String = "",
     @SerializedName("classificacao") val classificacao: Double? = null,
     @SerializedName("comentario") val comentario: String? = null,
-    @SerializedName("data_avaliacao") val dataAvaliacao: String = ""
+    @SerializedName("data_avaliacao") val dataAvaliacao: String = "",
+    @SerializedName("criterio") val criterio: String = ""
 )

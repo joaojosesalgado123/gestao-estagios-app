@@ -302,18 +302,7 @@ fun EmpresaNovaOfertaScreen(
                 }
             }
 
-            Spacer(Modifier.height(12.dp))
 
-            // Botão Guardar Rascunho
-            OutlinedButton(
-                onClick = { onVoltar() },
-                modifier = Modifier.fillMaxWidth().height(52.dp),
-                shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = DarkBlue)
-            ) {
-                Text("Guardar Rascunho", fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold, color = DarkBlue)
-            }
 
             Spacer(Modifier.height(32.dp))
         }

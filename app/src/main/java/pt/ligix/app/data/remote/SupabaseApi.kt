@@ -228,6 +228,12 @@ interface SupabaseApi {
     ): Response<List<Estagio>>
 
     @GET("estagio")
+    suspend fun getEstagiosByOrientador(
+        @Query("idorientador") idOrientador: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Estagio>>
+
+    @GET("estagio")
     suspend fun getEstagioByCandidatura(
         @Query("idcandidatura") idCandidatura: String,
         @Query("select") select: String = "*"
@@ -416,6 +422,12 @@ interface SupabaseApi {
 
     // ==================== ORIENTADOR EMPRESA ====================
     @GET("orientador_empresa")
+    suspend fun getOrientadoresPorUtilizador(
+        @Query("idutilizador") idUtilizador: String,
+        @Query("select") select: String = "*"
+    ): Response<List<OrientadorEmpresa>>
+
+    @GET("orientador_empresa")
     suspend fun getOrientadoresByEmpresa(
         @Query("idempresa") idEmpresa: String,
         @Query("select") select: String = "*"
@@ -425,6 +437,13 @@ interface SupabaseApi {
     suspend fun deleteOrientadorEmpresa(
         @Query("idutilizador") idOrientador: String
     ): Response<Unit>
+
+    @PATCH("orientador_empresa")
+    suspend fun updateOrientadorEmpresaTelemovel(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Query("idutilizador") idUtilizador: String,
+        @Body body: Map<String, String>
+    ): Response<List<OrientadorEmpresa>>
 
     @POST("orientador_empresa")
     suspend fun createOrientadorEmpresa(
