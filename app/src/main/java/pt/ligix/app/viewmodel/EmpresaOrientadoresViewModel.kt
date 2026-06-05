@@ -15,7 +15,8 @@ import pt.ligix.app.util.SessionManager
 data class OrientadorDetalhe(
     val id: String,
     val nome: String,
-    val email: String
+    val email: String,
+    val area: String = ""
 )
 
 class EmpresaOrientadoresViewModel(
@@ -49,7 +50,8 @@ class EmpresaOrientadoresViewModel(
                         OrientadorDetalhe(
                             id = orientador.idUtilizador,
                             nome = nome,
-                            email = utilizador?.email ?: ""
+                            email = utilizador?.email ?: "",
+                            area = orientador.area ?: ""
                         )
                     }
                     _orientadores.value = detalhes

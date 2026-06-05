@@ -26,7 +26,7 @@ class EmpresaEditarOrientadorViewModel(
     private val _sucesso = MutableStateFlow(false)
     val sucesso: StateFlow<Boolean> = _sucesso
 
-    fun guardarOrientador(id: String, nome: String, email: String, palavraPasse: String?) {
+    fun guardarOrientador(id: String, nome: String, email: String, palavraPasse: String?, area: String = "") {
         if (nome.isBlank() || email.isBlank()) {
             _erro.value = "Preencha o nome e o email."
             return
@@ -53,6 +53,11 @@ class EmpresaEditarOrientadorViewModel(
                     return@launch
                 }
 
+                // Atualiza área na orientador_empresa
+                if (area.isNotBlank()) {
+                    val areaMap = mapOf("area" to area)
+                    api.updateOrientadorEmpresaTelemovel(idUtilizador = "eq.$id", body = areaMap)
+                }
                 _sucesso.value = true
 
             } catch (e: Exception) {

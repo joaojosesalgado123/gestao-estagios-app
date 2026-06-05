@@ -37,6 +37,12 @@ class EmpresaDetalhesCandidaturaViewModel(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private val _notas = MutableStateFlow("")
+    val notas: StateFlow<String> = _notas
+
+    private val _notasGuardadas = MutableStateFlow(false)
+    val notasGuardadas: StateFlow<Boolean> = _notasGuardadas
+
     fun carregarDetalhes(idCandidatura: String) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -57,6 +63,7 @@ class EmpresaDetalhesCandidaturaViewModel(
                 )
                 val candidatura = candidaturaResponse.body()?.firstOrNull() ?: return@launch
                 _candidatura.value = candidatura
+                _notas.value = candidatura.notasEmpresa ?: ""
 
                 // Nome aluno
                 _nomeAluno.value = repository.getNomeUtilizador(candidatura.idAluno)
@@ -106,6 +113,22 @@ class EmpresaDetalhesCandidaturaViewModel(
             }
         }
     }
+
+    fun guardarNotas(idCandidatura: String, notas: String) {
+        viewModelScope.launch {
+            try {
+                val api = RetrofitClient.api
+                val body = mapOf("notas_empresa" to notas)
+                api.updateCandidaturaStatus(id = "eq.$idCandidatura", status = body)
+                _notas.value = notas
+                _notasGuardadas.value = true
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun resetNotasGuardadas() { _notasGuardadas.value = false }
 
     fun abrirFicheiro(context: Context, caminho: String) {
         try {

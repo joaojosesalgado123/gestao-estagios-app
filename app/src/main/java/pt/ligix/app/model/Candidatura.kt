@@ -11,5 +11,6 @@ data class Candidatura(
     @SerializedName("idoferta") val idOferta: String = "",
     @SerializedName("idaluno") val idAluno: String = "",
     @SerializedName("oculta_aluno") val ocultaAluno: Boolean = false,
+    @SerializedName("notas_empresa") val notasEmpresa: String? = null,
     @SerializedName("created_at") val createdAt: String = ""
 )

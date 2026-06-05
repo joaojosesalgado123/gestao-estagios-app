@@ -30,7 +30,7 @@ class EmpresaCriarOrientadorViewModel(
     private val _sucesso = MutableStateFlow(false)
     val sucesso: StateFlow<Boolean> = _sucesso
 
-    fun criarOrientador(nome: String, email: String, palavraPasse: String) {
+    fun criarOrientador(nome: String, email: String, palavraPasse: String, area: String = "") {
         if (nome.isBlank() || email.isBlank() || palavraPasse.isBlank()) {
             _erro.value = "Preencha o nome, email e palavra-passe."
             return
@@ -74,7 +74,7 @@ class EmpresaCriarOrientadorViewModel(
                 val orientadorEmpresa = OrientadorEmpresa(
                     idUtilizador = idNovoUtilizador,
                     idEmpresa = idEmpresa,
-                    area = "",
+                    area = area,
                     status = "ativo"
                 )
                 val orientadorResponse = api.createOrientadorEmpresa(orientadorEmpresa = orientadorEmpresa)

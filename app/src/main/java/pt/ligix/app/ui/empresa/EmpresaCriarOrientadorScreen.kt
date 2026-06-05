@@ -47,6 +47,7 @@ fun EmpresaCriarOrientadorScreen(
     var email by remember { mutableStateOf("") }
     var palavraPasse by remember { mutableStateOf("") }
     var mostrarPasse by remember { mutableStateOf(false) }
+    var area by remember { mutableStateOf("") }
 
     LaunchedEffect(sucesso) {
         if (sucesso) {
@@ -132,6 +133,27 @@ fun EmpresaCriarOrientadorScreen(
                         onValueChange = { email = it },
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = { Text("m.joao.silva@instituicao.edu.pt", color = Color.LightGray) },
+                        shape = RoundedCornerShape(10.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = DarkBlue,
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color(0xFFF0F0F0)
+                        ),
+                        singleLine = true
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
+                    // Área
+                    Text("ÁREA DE TRABALHO", fontSize = 11.sp, color = Color.Gray,
+                        letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
+                    Spacer(Modifier.height(6.dp))
+                    OutlinedTextField(
+                        value = area,
+                        onValueChange = { area = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("ex: Informática, Design, Gestão...", color = Color.LightGray) },
                         shape = RoundedCornerShape(10.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = DarkBlue,
@@ -229,7 +251,7 @@ fun EmpresaCriarOrientadorScreen(
 
             Button(
                 onClick = {
-                    viewModel.criarOrientador(nome = nome, email = email, palavraPasse = palavraPasse)
+                    viewModel.criarOrientador(nome = nome, email = email, palavraPasse = palavraPasse, area = area)
                 },
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),

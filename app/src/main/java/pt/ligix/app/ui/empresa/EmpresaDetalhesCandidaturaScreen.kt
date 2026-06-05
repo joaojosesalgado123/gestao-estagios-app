@@ -44,9 +44,12 @@ fun EmpresaDetalhesCandidaturaScreen(
     val instituicao by viewModel.instituicao.collectAsState()
     val tituloOferta by viewModel.tituloOferta.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val notasBD by viewModel.notas.collectAsState()
+    val notasGuardadas by viewModel.notasGuardadas.collectAsState()
     var notas by remember { mutableStateOf("") }
 
     LaunchedEffect(idCandidatura) { viewModel.carregarDetalhes(idCandidatura) }
+    LaunchedEffect(notasBD) { if (notas.isEmpty()) notas = notasBD }
 
     val iniciais = nomeAluno.split(" ").mapNotNull { it.firstOrNull()?.toString() }.take(2).joinToString("")
 
@@ -91,7 +94,7 @@ fun EmpresaDetalhesCandidaturaScreen(
                     elevation = CardDefaults.cardElevation(2.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(20.dp),
+                        modifier = Modifier.fillMaxWidth().padding(20.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Box(
@@ -105,13 +108,15 @@ fun EmpresaDetalhesCandidaturaScreen(
                         Spacer(Modifier.height(12.dp))
 
                         Text(nomeAluno, fontSize = 22.sp,
-                            fontWeight = FontWeight.Bold, color = Color.Black)
+                            fontWeight = FontWeight.Bold, color = Color.Black,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                         Text(
                             buildString {
                                 if (curso.isNotEmpty()) append(curso)
                                 if (!instituicao.isNullOrEmpty()) append(" • $instituicao")
                             },
                             fontSize = 14.sp, color = Color.Gray,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                             modifier = Modifier.padding(top = 4.dp)
                         )
 
@@ -239,6 +244,17 @@ fun EmpresaDetalhesCandidaturaScreen(
                         unfocusedContainerColor = Color.White
                     )
                 )
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = { viewModel.guardarNotas(idCandidatura, notas) },
+                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
+                    shape = RoundedCornerShape(10.dp),
+                    enabled = notas != notasBD
+                ) {
+                    Text(if (notasGuardadas) "Notas guardadas ✓" else "Guardar Notas",
+                        fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                }
 
                 Spacer(Modifier.height(24.dp))
 
