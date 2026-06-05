@@ -1,7 +1,10 @@
 package pt.ligix.app.data.repository
 
+import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 import pt.ligix.app.data.remote.AuthenticatedUtilizador
 import pt.ligix.app.data.remote.RetrofitClient
+import pt.ligix.app.data.remote.SupabaseAuthErrorResponse
 import pt.ligix.app.data.remote.SupabaseAuthClient
 import pt.ligix.app.data.remote.SupabasePasswordLoginRequest
 import pt.ligix.app.data.remote.SupabaseRecoverPasswordRequest
@@ -13,6 +16,7 @@ class AuthRepository {
 
     private val api = RetrofitClient.api
     private val authApi = SupabaseAuthClient.api
+    private val gson = Gson()
 
     // RF02 - Login
     suspend fun login(email: String, password: String): Result<AuthenticatedUtilizador> {
@@ -26,11 +30,7 @@ class AuthRepository {
 
             if (!authResponse.isSuccessful) {
                 val errorBody = authResponse.errorBody()?.string().orEmpty()
-                val message = when {
-                    errorBody.contains("email_not_confirmed", ignoreCase = true) -> "Confirme o seu email antes de iniciar sessão"
-                    else -> "Erro ${authResponse.code()}: $errorBody"
-                }
-                return Result.failure(Exception(message))
+                return Result.failure(Exception(mapAuthError(authResponse.code(), errorBody)))
             }
 
             val authBody = authResponse.body()
@@ -56,6 +56,39 @@ class AuthRepository {
             }
         } catch (e: Exception) {
             Result.failure(Exception("Sem ligação à internet"))
+        }
+    }
+
+    private fun mapAuthError(statusCode: Int, errorBody: String): String {
+        val parsedError = parseAuthError(errorBody)
+        val errorCode = parsedError?.errorCode.orEmpty()
+        val apiMessage = parsedError?.message ?: parsedError?.fallbackMessage
+
+        return when {
+            errorCode.equals("invalid_credentials", ignoreCase = true) ||
+                errorBody.contains("invalid_credentials", ignoreCase = true) ||
+                apiMessage?.contains("invalid login credentials", ignoreCase = true) == true ->
+                "E-mail ou palavra-passe incorretos"
+            errorCode.equals("email_not_confirmed", ignoreCase = true) ||
+                errorBody.contains("email_not_confirmed", ignoreCase = true) ||
+                apiMessage?.contains("email not confirmed", ignoreCase = true) == true ->
+                "Confirme o seu email antes de iniciar sessão"
+            statusCode == 429 ->
+                "Demasiadas tentativas. Tente novamente dentro de alguns minutos"
+            statusCode in 500..599 ->
+                "O serviço de autenticação está temporariamente indisponível"
+            else ->
+                "Não foi possível iniciar sessão. Tente novamente"
+        }
+    }
+
+    private fun parseAuthError(errorBody: String): SupabaseAuthErrorResponse? {
+        if (errorBody.isBlank()) return null
+
+        return try {
+            gson.fromJson(errorBody, SupabaseAuthErrorResponse::class.java)
+        } catch (_: JsonSyntaxException) {
+            null
         }
     }
 
