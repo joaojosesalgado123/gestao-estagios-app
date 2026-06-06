@@ -44,7 +44,8 @@ data class CandidatoItem(
 fun EmpresaDashboardScreen(
     modifier: Modifier = Modifier,
     onVerTodasCandidaturas: () -> Unit = {},
-    onPublicarVaga: () -> Unit = {}
+    onPublicarVaga: () -> Unit = {},
+    onVerCandidatura: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
@@ -134,7 +135,7 @@ fun EmpresaDashboardScreen(
                     }
                 } else {
                     candidaturasRecentes.forEach { detalhe ->
-                        EmpresaCandidatoCardBD(detalhe = detalhe, onAvaliar = {})
+                        EmpresaCandidatoCardBD(detalhe = detalhe, onAvaliar = { onVerCandidatura(detalhe.candidatura.idCandidatura) })
                         Spacer(Modifier.height(16.dp))
                     }
                 }

@@ -91,20 +91,21 @@ class OrientadorAvaliacaoViewModel(
             try {
                 val api = RetrofitClient.api
                 val idOrientador = sessionManager.idUtilizador.first() ?: return@launch
-                val agora = java.time.Instant.now().toString()
-
-                val avaliacao = Avaliacao(
-                    idEstagio = idEstagio,
-                    classificacao = classificacaoFinal,
-                    comentario = comentario,
-                    dataAvaliacao = agora
+                // Usa Map para evitar serialização de campos nulos
+                val avaliacaoMap = mutableMapOf<String, Any>(
+                    "idestagio" to idEstagio,
+                    "classificacao" to classificacaoFinal
                 )
-                val avalResp = api.createAvaliacao(avaliacao = avaliacao)
+                if (comentario.isNotBlank()) avaliacaoMap["comentario"] = comentario
+                val avalResp = api.createAvaliacaoMap(body = avaliacaoMap)
                 if (!avalResp.isSuccessful) {
-                    _erro.value = "Erro ao criar avaliação: ${avalResp.code()}"
+                    val errorBody = avalResp.errorBody()?.string()
+                    android.util.Log.e("OrientadorAvaliacao", "Erro: ${avalResp.code()} - $errorBody")
+                    _erro.value = "Erro ao criar avaliação: ${avalResp.code()} - $errorBody"
                     return@launch
                 }
                 val idAvaliacao = avalResp.body()?.firstOrNull()?.idAvaliacao ?: return@launch
+                val agora = java.time.Instant.now().toString()
 
                 val criterios = listOf(
                     "Pontualidade" to pontualidade,
@@ -122,7 +123,12 @@ class OrientadorAvaliacaoViewModel(
                     )
                     api.createItemAvaliacao(itemAvaliacao = item)
                 }
-                _avaliacaoExistente.value = avaliacao.copy(idAvaliacao = idAvaliacao)
+                _avaliacaoExistente.value = Avaliacao(
+                    idAvaliacao = idAvaliacao,
+                    idEstagio = idEstagio,
+                    classificacao = classificacaoFinal,
+                    comentario = comentario
+                )
                 _sucesso.value = true
             } catch (e: Exception) {
                 _erro.value = "Erro: ${e.message}"
@@ -161,7 +167,9 @@ class OrientadorAvaliacaoViewModel(
                 )
                 val avalResp = api.createAvaliacao(avaliacao = avaliacao)
                 if (!avalResp.isSuccessful) {
-                    _erro.value = "Erro ao criar avaliação: ${avalResp.code()}"
+                    val errorBody = avalResp.errorBody()?.string()
+                    android.util.Log.e("OrientadorAvaliacao", "Erro: ${avalResp.code()} - $errorBody")
+                    _erro.value = "Erro ao criar avaliação: ${avalResp.code()} - $errorBody"
                     return@launch
                 }
 

@@ -27,27 +27,46 @@ import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.viewmodel.MensagensViewModel
 import pt.ligix.app.viewmodel.MensagensViewModelFactory
+import pt.ligix.app.viewmodel.OrientadorNotificacoesViewModel
+import pt.ligix.app.viewmodel.OrientadorNotificacoesViewModelFactory
 
 @Composable
-fun OrientadorTopBar(mensagensViewModel: MensagensViewModel? = null) {
+fun OrientadorTopBar(
+    mensagensViewModel: MensagensViewModel? = null,
+    notificacoesViewModel: OrientadorNotificacoesViewModel? = null
+) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
     var nomeOrientador by remember { mutableStateOf("") }
     var mostrarSininho by remember { mutableStateOf(false) }
 
-    val vm = mensagensViewModel ?: viewModel(factory = MensagensViewModelFactory())
-    val historicoNotificacoes by vm.historicoNotificacoes.collectAsState()
+    val localMensVm = LocalOrientadorMensagensViewModel.current
+    val mensVm = mensagensViewModel ?: localMensVm ?: viewModel(
+        key = "orientador_mensagens",
+        factory = MensagensViewModelFactory()
+    )
+    val notifVm = notificacoesViewModel ?: viewModel(
+        key = "orientador_notificacoes",
+        factory = OrientadorNotificacoesViewModelFactory(sessionManager)
+    )
+
+    val historicoMensagens by mensVm.historicoNotificacoes.collectAsState()
+    val notificacoesAtividades by notifVm.notificacoes.collectAsState()
+
+    val todasNotificacoes = remember(notificacoesAtividades, historicoMensagens) {
+        val lista = mutableListOf<Triple<String, String, String>>()
+        notificacoesAtividades.forEach { lista.add(Triple(it.id, it.titulo, it.mensagem)) }
+        historicoMensagens.forEach { lista.add(Triple(it.idMensagem, it.nomeRemetente, it.conteudo)) }
+        lista
+    }
 
     LaunchedEffect(Unit) {
         nomeOrientador = sessionManager.nome.first() ?: ""
     }
 
-    val iniciais = nomeOrientador
-        .split(" ")
+    val iniciais = nomeOrientador.split(" ")
         .mapNotNull { it.firstOrNull()?.toString() }
-        .take(2)
-        .joinToString("")
-        .uppercase()
+        .take(2).joinToString("").uppercase()
 
     if (mostrarSininho) {
         Dialog(onDismissRequest = { mostrarSininho = false }) {
@@ -60,14 +79,17 @@ fun OrientadorTopBar(mensagensViewModel: MensagensViewModel? = null) {
                         verticalAlignment = Alignment.CenterVertically) {
                         Text("Notificações", fontSize = 18.sp,
                             fontWeight = FontWeight.Bold, color = DarkBlue)
-                        if (historicoNotificacoes.isNotEmpty()) {
-                            TextButton(onClick = { vm.limparHistoricoNotificacoes() }) {
+                        if (todasNotificacoes.isNotEmpty()) {
+                            TextButton(onClick = {
+                                mensVm.limparHistoricoNotificacoes()
+                                notifVm.limparNotificacoes()
+                            }) {
                                 Text("Limpar", fontSize = 13.sp, color = Color.Gray)
                             }
                         }
                     }
                     Spacer(modifier = Modifier.height(12.dp))
-                    if (historicoNotificacoes.isEmpty()) {
+                    if (todasNotificacoes.isEmpty()) {
                         Column(modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Default.NotificationsNone, contentDescription = null,
@@ -77,7 +99,7 @@ fun OrientadorTopBar(mensagensViewModel: MensagensViewModel? = null) {
                         }
                     } else {
                         LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
-                            items(historicoNotificacoes.reversed()) { notif ->
+                            items(todasNotificacoes.reversed()) { (_, titulo, mensagem) ->
                                 Row(
                                     modifier = Modifier.fillMaxWidth()
                                         .clickable { mostrarSininho = false }
@@ -87,15 +109,15 @@ fun OrientadorTopBar(mensagensViewModel: MensagensViewModel? = null) {
                                     Box(modifier = Modifier.size(36.dp).clip(CircleShape)
                                         .background(Color(0xFFE8EAF6)),
                                         contentAlignment = Alignment.Center) {
-                                        Text(notif.nomeRemetente.firstOrNull()?.toString() ?: "?",
-                                            color = DarkBlue, fontWeight = FontWeight.Bold)
+                                        Icon(Icons.Default.Notifications, contentDescription = null,
+                                            tint = DarkBlue, modifier = Modifier.size(18.dp))
                                     }
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text(notif.nomeRemetente, fontSize = 14.sp,
+                                        Text(titulo, fontSize = 14.sp,
                                             fontWeight = FontWeight.SemiBold, color = Color.Black)
-                                        Text(notif.conteudo, fontSize = 13.sp, color = Color.Gray,
-                                            maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        Text(mensagem, fontSize = 13.sp, color = Color.Gray,
+                                            maxLines = 2, overflow = TextOverflow.Ellipsis)
                                     }
                                 }
                                 Divider(color = Color(0xFFEEEEEE))
@@ -121,7 +143,7 @@ fun OrientadorTopBar(mensagensViewModel: MensagensViewModel? = null) {
             IconButton(onClick = { mostrarSininho = true }) {
                 Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = DarkBlue)
             }
-            if (historicoNotificacoes.isNotEmpty()) {
+            if (todasNotificacoes.isNotEmpty()) {
                 Box(modifier = Modifier.size(8.dp).background(Color.Red, CircleShape)
                     .offset(x = (-4).dp, y = 4.dp))
             }
@@ -130,12 +152,8 @@ fun OrientadorTopBar(mensagensViewModel: MensagensViewModel? = null) {
             modifier = Modifier.size(36.dp).clip(CircleShape).background(Color(0xFFE57373)),
             contentAlignment = Alignment.Center
         ) {
-            Text(
-                text = if (iniciais.isNotEmpty()) iniciais else "O",
-                color = Color.White,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Text(if (iniciais.isNotEmpty()) iniciais else "O",
+                color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
         }
     }
 }

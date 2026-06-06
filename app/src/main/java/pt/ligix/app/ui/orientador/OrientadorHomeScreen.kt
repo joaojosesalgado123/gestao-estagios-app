@@ -47,7 +47,7 @@ fun OrientadorHomeScreen(modifier: Modifier = Modifier, onVerDiario: (String) ->
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color(0xFFF5F5F7))
             .verticalScroll(rememberScrollState())
     ) {
         // Top Bar
@@ -81,17 +81,8 @@ fun OrientadorHomeScreen(modifier: Modifier = Modifier, onVerDiario: (String) ->
             Spacer(Modifier.height(32.dp))
 
             // Atividade Recente
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text("Atividade Recente", fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold, color = DarkBlue)
-                TextButton(onClick = {}) {
-                    Text("Ver tudo", color = DarkBlue, fontSize = 13.sp)
-                }
-            }
+            Text("Atividade Recente", fontSize = 20.sp,
+                fontWeight = FontWeight.Bold, color = DarkBlue)
 
             Spacer(Modifier.height(12.dp))
 
