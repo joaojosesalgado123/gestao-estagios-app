@@ -46,6 +46,12 @@ interface SupabaseApi {
         @Query("select") select: String = "*"
     ): Response<List<Utilizador>>
 
+    @GET("utilizador")
+    suspend fun getUtilizadoresByIds(
+        @Query("idutilizador") ids: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Utilizador>>
+
     @PATCH("utilizador")
     suspend fun updateUtilizador(
         @Header("Prefer") prefer: String = "return=representation",
@@ -213,6 +219,12 @@ interface SupabaseApi {
         @Query("select") select: String = "*"
     ): Response<List<Candidatura>>
 
+    @GET("candidatura")
+    suspend fun getCandidaturasByOfertas(
+        @Query("idoferta") idOfertas: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Candidatura>>
+
     // ==================== ESTAGIO ====================
     @POST("estagio")
     suspend fun createEstagio(
@@ -242,6 +254,12 @@ interface SupabaseApi {
     @GET("estagio")
     suspend fun getEstagioByCandidatura(
         @Query("idcandidatura") idCandidatura: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Estagio>>
+
+    @GET("estagio")
+    suspend fun getEstagiosByCandidaturas(
+        @Query("idcandidatura") idCandidaturas: String,
         @Query("select") select: String = "*"
     ): Response<List<Estagio>>
 
@@ -405,10 +423,22 @@ interface SupabaseApi {
         @Query("select") select: String = "*"
     ): Response<List<Aluno>>
 
+    @GET("aluno")
+    suspend fun getAlunosByIds(
+        @Query("idutilizador") ids: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Aluno>>
+
     // ==================== INSTITUIÇÃO ====================
     @GET("instituicao_ensino")
     suspend fun getInstituicaoById(
         @Query("idinstituicao") idInstituicao: String,
+        @Query("select") select: String = "*"
+    ): Response<List<InstituicaoEnsino>>
+
+    @GET("instituicao_ensino")
+    suspend fun getInstituicoesByIds(
+        @Query("idinstituicao") ids: String,
         @Query("select") select: String = "*"
     ): Response<List<InstituicaoEnsino>>
 

@@ -45,12 +45,20 @@ class EmpresaCandidatosViewModel(
                     val candidaturas = response.body() ?: emptyList()
                     _totalCandidatos.value = candidaturas.size
 
+                    val idsAlunos = candidaturas
+                        .map { it.idAluno }
+                        .filter { it.isNotBlank() }
+                        .distinct()
+                    val nomes = repository.getNomesUtilizadores(idsAlunos)
+                        .getOrNull() ?: emptyMap()
+                    val dadosAlunos = repository.getDadosAlunos(idsAlunos)
+                        .getOrNull() ?: emptyMap()
+
                     val detalhes = candidaturas.map { candidatura ->
-                        val nomeAluno = repository.getNomeUtilizador(candidatura.idAluno).getOrNull() ?: "Desconhecido"
-                        val dadosAluno = repository.getDadosAluno(candidatura.idAluno).getOrNull()
+                        val dadosAluno = dadosAlunos[candidatura.idAluno]
                         CandidatoDetalhe(
                             candidatura = candidatura,
-                            nomeAluno = nomeAluno,
+                            nomeAluno = nomes[candidatura.idAluno] ?: "Desconhecido",
                             curso = dadosAluno?.first ?: "",
                             instituicao = dadosAluno?.second
                         )

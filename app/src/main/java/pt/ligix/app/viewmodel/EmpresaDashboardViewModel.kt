@@ -43,48 +43,69 @@ class EmpresaDashboardViewModel(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private var dadosCarregados = false
+    private var refreshEmCurso = false
+
     fun carregarDados(context: Context) {
-        viewModelScope.launch {
+        if (_isLoading.value || refreshEmCurso) return
+
+        val primeiraCarga = !dadosCarregados
+        if (primeiraCarga) {
             _isLoading.value = true
+        } else {
+            refreshEmCurso = true
+        }
 
-            val nomeSession = sessionManager.nome.first() ?: ""
-            _nomeEmpresa.value = nomeSession
+        viewModelScope.launch {
+            try {
+                val nomeSession = sessionManager.nome.first() ?: ""
+                _nomeEmpresa.value = nomeSession
 
-            val idEmpresa = sessionManager.idUtilizador.first() ?: run {
-                _isLoading.value = false
-                return@launch
-            }
+                val idEmpresa = sessionManager.idUtilizador.first() ?: return@launch
 
-            repository.getOfertasDaEmpresa(idEmpresa).onSuccess { ofertas ->
+                val ofertas = repository.getOfertasDaEmpresa(idEmpresa).getOrNull() ?: emptyList()
                 _vagasAtivas.value = ofertas.size
 
-                repository.getCandidaturasDaEmpresa(idEmpresa).onSuccess { candidaturas ->
-                    _candidaturasPendentes.value = candidaturas.count { it.status == "pendente" }
+                val candidaturas = repository.getCandidaturasDasOfertas(
+                    ofertas.map { it.idOferta }
+                ).getOrNull() ?: emptyList()
+                _candidaturasPendentes.value = candidaturas.count { it.status == "pendente" }
 
-                    val recentes = candidaturas
-                        .filter { it.status == "pendente" }
-                        .takeLast(3)
-                        .map { candidatura ->
-                            val oferta = repository.getOferta(candidatura.idOferta).getOrNull()
-                            val nomeAluno = repository.getNomeUtilizador(candidatura.idAluno).getOrNull() ?: "Desconhecido"
-                            val dadosAluno = repository.getDadosAluno(candidatura.idAluno).getOrNull()
-                            CandidaturaEmpresaDetalhe(
-                                candidatura = candidatura,
-                                oferta = oferta,
-                                nomeAluno = nomeAluno,
-                                curso = dadosAluno?.first ?: "",
-                                instituicao = dadosAluno?.second
-                            )
-                        }
-                    _candidaturasRecentes.value = recentes
+                val estagios = repository.getEstagiosDasCandidaturas(
+                    candidaturas
+                        .filter { it.status == "aceite" }
+                        .map { it.idCandidatura }
+                ).getOrNull() ?: emptyList()
+                _estagiosADeCorrer.value = estagios.size
+
+                val candidaturasRecentes = candidaturas
+                    .filter { it.status == "pendente" }
+                    .takeLast(3)
+                val ofertasPorId = ofertas.associateBy { it.idOferta }
+                val idsAlunos = candidaturasRecentes.map { it.idAluno }.filter { it.isNotBlank() }
+                val nomesAlunos = repository.getNomesUtilizadores(idsAlunos)
+                    .getOrNull() ?: emptyMap()
+                val dadosAlunos = repository.getDadosAlunos(idsAlunos)
+                    .getOrNull() ?: emptyMap()
+
+                _candidaturasRecentes.value = candidaturasRecentes.map { candidatura ->
+                    val dadosAluno = dadosAlunos[candidatura.idAluno]
+                    CandidaturaEmpresaDetalhe(
+                        candidatura = candidatura,
+                        oferta = ofertasPorId[candidatura.idOferta],
+                        nomeAluno = nomesAlunos[candidatura.idAluno] ?: "Desconhecido",
+                        curso = dadosAluno?.first ?: "",
+                        instituicao = dadosAluno?.second
+                    )
+                }
+                dadosCarregados = true
+            } finally {
+                if (primeiraCarga) {
+                    _isLoading.value = false
+                } else {
+                    refreshEmCurso = false
                 }
             }
-
-            repository.getEstagiosAtivos(idEmpresa).onSuccess { estagios ->
-                _estagiosADeCorrer.value = estagios.size
-            }
-
-            _isLoading.value = false
         }
     }
 }
