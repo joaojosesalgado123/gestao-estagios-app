@@ -54,7 +54,7 @@ fun OrientadorPerfilScreen(
 
     LaunchedEffect(Unit) { viewModel.carregarPerfil(context) }
 
-    LaunchedEffect(utilizador) {
+    LaunchedEffect(utilizador, areaBD) {
         editNome = utilizador?.nome ?: ""
         editArea = areaBD
     }
@@ -64,10 +64,6 @@ fun OrientadorPerfilScreen(
             modoEdicao = false
             viewModel.resetSucesso()
         }
-    }
-
-    LaunchedEffect(utilizador) {
-        editNome = utilizador?.nome ?: ""
     }
 
     Column(
