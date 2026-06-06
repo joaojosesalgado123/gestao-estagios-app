@@ -37,9 +37,20 @@ class OrientadorHomeViewModel(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
+    private var dadosCarregados = false
+    private var refreshEmCurso = false
+
     fun carregarDados(context: Context) {
-        viewModelScope.launch {
+        if (_isLoading.value || refreshEmCurso) return
+
+        val primeiraCarga = !dadosCarregados
+        if (primeiraCarga) {
             _isLoading.value = true
+        } else {
+            refreshEmCurso = true
+        }
+
+        viewModelScope.launch {
             try {
                 val nome = sessionManager.nome.first() ?: ""
                 _nomeOrientador.value = nome
@@ -104,11 +115,16 @@ class OrientadorHomeViewModel(
                     }
                 }
                 _atividadesRecentes.value = todasAtividades.sortedByDescending { it[2] }.take(3)
+                dadosCarregados = true
 
             } catch (e: Exception) {
                 e.printStackTrace()
             } finally {
-                _isLoading.value = false
+                if (primeiraCarga) {
+                    _isLoading.value = false
+                } else {
+                    refreshEmCurso = false
+                }
             }
         }
     }
