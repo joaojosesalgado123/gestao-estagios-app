@@ -98,7 +98,7 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
     ) {
         if (!mostrarChat) {
             // Lista de conversas
-            Column(modifier = Modifier.fillMaxSize().background(Color.White)) {
+            Column(modifier = Modifier.fillMaxSize().background(Color(0xFFF5F5F7))) {
                 OrientadorTopBar()
 
                 OutlinedTextField(

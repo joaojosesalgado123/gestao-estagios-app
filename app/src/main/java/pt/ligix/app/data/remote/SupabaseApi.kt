@@ -201,6 +201,12 @@ interface SupabaseApi {
         @Query("select") select: String = "*"
     ): Response<List<Candidatura>>
 
+    @GET("oferta_estagio")
+    suspend fun getOfertasByEmpresa(
+        @Query("idempresa") idEmpresa: String,
+        @Query("select") select: String = "*"
+    ): Response<List<OfertaEstagio>>
+
     @GET("candidatura")
     suspend fun getCandidaturasByOferta(
         @Query("idoferta") idOferta: String,
@@ -293,6 +299,12 @@ interface SupabaseApi {
     ): Response<List<Presenca>>
 
     // ==================== AVALIAÇÃO ====================
+    @POST("avaliacao")
+    suspend fun createAvaliacaoMap(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Body body: Map<String, @JvmSuppressWildcards Any>
+    ): Response<List<Avaliacao>>
+
     @POST("avaliacao")
     suspend fun createAvaliacao(
         @Header("Prefer") prefer: String = "return=representation",

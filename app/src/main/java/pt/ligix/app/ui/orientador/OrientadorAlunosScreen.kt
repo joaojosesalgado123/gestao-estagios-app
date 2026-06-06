@@ -48,7 +48,7 @@ fun OrientadorAlunosScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color(0xFFF5F5F7))
     ) {
         // Top Bar
         OrientadorTopBar()
