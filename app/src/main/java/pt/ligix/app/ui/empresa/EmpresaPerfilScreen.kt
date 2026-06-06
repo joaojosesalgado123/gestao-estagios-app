@@ -74,57 +74,70 @@ fun EmpresaPerfilScreen(
         // Top Bar
         EmpresaTopBar()
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Avatar + Nome + Badge
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
+        // Header
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(DarkBlue),
-                contentAlignment = Alignment.Center
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Icon(Icons.Default.Business, contentDescription = null,
-                    tint = Color.White, modifier = Modifier.size(52.dp))
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(utilizador?.nome ?: "—", fontSize = 22.sp, fontWeight = FontWeight.Bold,
-                color = Color.Black, textAlign = TextAlign.Center,
-                modifier = Modifier.padding(horizontal = 32.dp))
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            val (badgeColor, badgeIcon, badgeText) = when (empresa?.status) {
-                "aprovada" -> Triple(
-                    LigixGold, Icons.Default.Verified, "EMPRESA CERTIFICADA"
+                Box(
+                    modifier = Modifier.size(90.dp).clip(CircleShape).background(DarkBlue),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        utilizador?.nome?.firstOrNull()?.toString() ?: "E",
+                        color = Color.White,
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    "NOME DA EMPRESA",
+                    fontSize = 10.sp,
+                    color = Color.Gray,
+                    letterSpacing = 1.sp,
+                    fontWeight = FontWeight.Medium
                 )
-                else -> Triple(
-                    Color(0xFFFF9800), Icons.Default.HourglassEmpty, "PENDENTE DE APROVAÇÃO"
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    utilizador?.nome ?: "—",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    textAlign = TextAlign.Center
                 )
-            }
-            Box(
-                modifier = Modifier
-                    .background(badgeColor.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
-                    .padding(horizontal = 14.dp, vertical = 6.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(badgeIcon, contentDescription = null,
-                        tint = badgeColor, modifier = Modifier.size(14.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(badgeText, fontSize = 11.sp,
-                        color = badgeColor, fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.5.sp)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                val (badgeColor, badgeIcon, badgeText) = when (empresa?.status) {
+                    "aprovada" -> Triple(
+                        LigixGold, Icons.Default.Verified, "EMPRESA CERTIFICADA"
+                    )
+                    else -> Triple(
+                        Color(0xFFFF9800), Icons.Default.HourglassEmpty, "PENDENTE DE APROVAÇÃO"
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .background(badgeColor.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
+                        .padding(horizontal = 14.dp, vertical = 6.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(badgeIcon, contentDescription = null,
+                            tint = badgeColor, modifier = Modifier.size(14.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(badgeText, fontSize = 11.sp,
+                            color = badgeColor, fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp)
+                    }
                 }
             }
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
 
         // Título + botão Editar
         Row(
@@ -132,7 +145,7 @@ fun EmpresaPerfilScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Informações Utilizador", fontSize = 20.sp,
+            Text("Informações\nUtilizador", fontSize = 20.sp,
                 fontWeight = FontWeight.Bold, color = Color.Black, lineHeight = 26.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (modoEdicao) {
@@ -220,16 +233,13 @@ fun EmpresaPerfilScreen(
 
         // Informações de Contacto
         EmpresaPerfilSecao(titulo = "Informações de Contacto", icon = Icons.Default.ContactMail) {
+            EmpresaPerfilCampo(label = "E-MAIL", valor = utilizador?.email ?: "—",
+                icon = Icons.Default.Email)
+            Spacer(modifier = Modifier.height(8.dp))
             if (modoEdicao) {
-                EmpresaPerfilCampoEditavel(label = "E-MAIL", valor = utilizador?.email ?: "",
-                    onValorChange = {})
-                Spacer(modifier = Modifier.height(8.dp))
                 EmpresaPerfilCampoEditavel(label = "TELEFONE", valor = editTelefone,
                     onValorChange = { editTelefone = it })
             } else {
-                EmpresaPerfilCampo(label = "E-MAIL", valor = utilizador?.email ?: "—",
-                    icon = Icons.Default.Email)
-                Spacer(modifier = Modifier.height(8.dp))
                 EmpresaPerfilCampo(label = "TELEFONE", valor = empresa?.telemovel ?: "—",
                     icon = Icons.Default.Phone)
             }
