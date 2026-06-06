@@ -66,6 +66,16 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
     val novaNotificacaoCandidatura by notificacoesViewModel.novaNotificacao.collectAsState()
     val todasNotificacoesCandidaturas by notificacoesViewModel.notificacoes.collectAsState()
 
+    fun navegarParaAba(tab: Int) {
+        selectedTab = tab
+        mostrarCandidatos = false
+        mostrarNovaOferta = false
+        mostrarCriarOrientador = false
+        orientadorAEditar = null
+        ofertaAEditar = null
+        idCandidaturaSelecionada = null
+    }
+
     LaunchedEffect(Unit) {
         mensagensViewModel.carregarConversa(context)
         notificacoesViewModel.iniciar(context)
@@ -121,7 +131,7 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                             items(todasParaMostrar.reversed()) { (titulo, mensagem) ->
                                 Row(
                                     modifier = Modifier.fillMaxWidth()
-                                        .clickable { mostrarSininho = false; selectedTab = 2 }
+                                        .clickable { mostrarSininho = false; navegarParaAba(2) }
                                         .padding(vertical = 10.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
@@ -155,31 +165,31 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                 NavigationBar(containerColor = Color.White) {
                     NavigationBarItem(
                         selected = selectedTab == 0,
-                        onClick = { selectedTab = 0; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null; idCandidaturaSelecionada = null },
+                        onClick = { navegarParaAba(0) },
                         icon = { Icon(Icons.Default.Home, contentDescription = "Início") },
                         label = { Text("Início", fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 1,
-                        onClick = { selectedTab = 1; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null; idCandidaturaSelecionada = null },
+                        onClick = { navegarParaAba(1) },
                         icon = { Icon(Icons.Default.Work, contentDescription = "Estágios") },
                         label = { Text("Estágios", fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 2,
-                        onClick = { selectedTab = 2; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null; idCandidaturaSelecionada = null },
+                        onClick = { navegarParaAba(2) },
                         icon = { Icon(Icons.Default.People, contentDescription = "Candidatos") },
                         label = { Text("Candidatos", fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 3,
-                        onClick = { selectedTab = 3; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null; idCandidaturaSelecionada = null },
+                        onClick = { navegarParaAba(3) },
                         icon = { Icon(Icons.Default.School, contentDescription = "Orientadores") },
                         label = { Text("Orientadores", fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 4,
-                        onClick = { selectedTab = 4; mostrarCandidatos = false; mostrarCriarOrientador = false; orientadorAEditar = null; idCandidaturaSelecionada = null },
+                        onClick = { navegarParaAba(4) },
                         icon = { Icon(Icons.Default.Business, contentDescription = "Perfil") },
                         label = { Text("Perfil", fontSize = 10.sp) }
                     )
@@ -273,7 +283,7 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                     modifier = Modifier.fillMaxWidth()
                         .shadow(8.dp, RoundedCornerShape(16.dp))
                         .background(Color.White, RoundedCornerShape(16.dp))
-                        .clickable { selectedTab = 2; notificacoesViewModel.dispensarNotificacao() }
+                        .clickable { navegarParaAba(2); notificacoesViewModel.dispensarNotificacao() }
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -311,7 +321,7 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                     modifier = Modifier.fillMaxWidth()
                         .shadow(8.dp, RoundedCornerShape(16.dp))
                         .background(Color.White, RoundedCornerShape(16.dp))
-                        .clickable { selectedTab = 2; mensagensViewModel.dispensarNotificacao() }
+                        .clickable { navegarParaAba(2); mensagensViewModel.dispensarNotificacao() }
                         .padding(12.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {

@@ -61,12 +61,17 @@ fun EmpresaNovaOfertaScreen(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F7))
-            .verticalScroll(rememberScrollState())
     ) {
         // Top Bar
         EmpresaTopBar()
 
-        Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp)
+                .padding(top = 8.dp, bottom = 24.dp)
+        ) {
 
             // Voltar
             TextButton(onClick = onVoltar, contentPadding = PaddingValues(0.dp)) {
@@ -174,14 +179,14 @@ fun EmpresaNovaOfertaScreen(
                     Spacer(Modifier.height(16.dp))
 
                     // Duração
-                    Text("Duração (meses) *", fontSize = 13.sp,
+                    Text("Duração (horas) *", fontSize = 13.sp,
                         fontWeight = FontWeight.Medium, color = Color.Black)
                     Spacer(Modifier.height(6.dp))
                     OutlinedTextField(
                         value = duracao,
                         onValueChange = { duracao = it.filter { c -> c.isDigit() } },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Ex: 6", color = Color.LightGray) },
+                        placeholder = { Text("Ex: 480", color = Color.LightGray) },
                         shape = RoundedCornerShape(8.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = DarkBlue,
@@ -308,4 +313,3 @@ fun EmpresaNovaOfertaScreen(
         }
     }
 }
-

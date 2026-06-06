@@ -64,17 +64,27 @@ fun EmpresaDetalhesCandidaturaScreen(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F7))
-            .verticalScroll(rememberScrollState())
     ) {
         // Top Bar
         EmpresaTopBar()
 
         if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
                 CircularProgressIndicator(color = DarkBlue)
             }
         } else {
-            Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp)
+                    .padding(top = 8.dp, bottom = 24.dp)
+            ) {
 
                 // Botão voltar
                 TextButton(onClick = onVoltar, contentPadding = PaddingValues(0.dp)) {

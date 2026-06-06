@@ -72,7 +72,11 @@ fun EmpresaCandidatosScreen(
                 // Top Bar
                 EmpresaTopBar()
 
-                Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
+                Column(
+                    modifier = Modifier
+                        .padding(horizontal = 20.dp)
+                        .padding(top = 8.dp, bottom = 24.dp)
+                ) {
 
                     // Voltar
                     TextButton(

@@ -62,12 +62,17 @@ fun EmpresaEditarOrientadorScreen(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F7))
-            .verticalScroll(rememberScrollState())
     ) {
         // Top Bar
         EmpresaTopBar()
 
-        Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp)
+                .padding(top = 12.dp, bottom = 24.dp)
+        ) {
 
             // Voltar
             TextButton(onClick = onVoltar, contentPadding = PaddingValues(0.dp)) {
