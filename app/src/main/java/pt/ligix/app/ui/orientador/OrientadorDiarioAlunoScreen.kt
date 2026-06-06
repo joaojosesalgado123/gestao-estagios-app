@@ -77,11 +77,14 @@ fun OrientadorDiarioAlunoScreen(
             .background(Color(0xFFF5F6FA))
     ) {
         // Top Bar
+        OrientadorTopBar()
+
+        // Cabeçalho da subpágina
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color.White)
-                .padding(horizontal = 8.dp, vertical = 12.dp),
+                .padding(horizontal = 8.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onVoltar) {
@@ -95,12 +98,19 @@ fun OrientadorDiarioAlunoScreen(
         }
 
         if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
                 CircularProgressIndicator(color = DarkBlue)
             }
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
                 contentPadding = PaddingValues(bottom = 24.dp)
             ) {
                 // Resumo do Progresso
