@@ -1,0 +1,220 @@
+package pt.ligix.app.ui.docente
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.NotificationsNone
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.flow.first
+import pt.ligix.app.R
+import pt.ligix.app.ui.auth.DarkBlue
+import pt.ligix.app.util.SessionManager
+import pt.ligix.app.viewmodel.DocenteNotificacoesViewModel
+import pt.ligix.app.viewmodel.DocenteNotificacoesViewModelFactory
+import pt.ligix.app.viewmodel.MensagensViewModel
+import pt.ligix.app.viewmodel.MensagensViewModelFactory
+
+@Composable
+fun DocenteTopBar(
+    mensagensViewModel: MensagensViewModel? = null,
+    notificacoesViewModel: DocenteNotificacoesViewModel? = null
+) {
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+    var nomeDocente by remember { mutableStateOf("") }
+    var mostrarSininho by remember { mutableStateOf(false) }
+
+    val localMensagens = LocalDocenteMensagensViewModel.current
+    val localNotificacoes = LocalDocenteNotificacoesViewModel.current
+    val mensVm = mensagensViewModel ?: localMensagens ?: viewModel(
+        key = "docente_mensagens",
+        factory = MensagensViewModelFactory()
+    )
+    val notifVm = notificacoesViewModel ?: localNotificacoes ?: viewModel(
+        key = "docente_notificacoes",
+        factory = DocenteNotificacoesViewModelFactory(sessionManager)
+    )
+
+    val historicoMensagens by mensVm.historicoNotificacoes.collectAsState()
+    val notificacoesAtividades by notifVm.notificacoes.collectAsState()
+
+    val todasNotificacoes = remember(notificacoesAtividades, historicoMensagens) {
+        val lista = mutableListOf<Triple<String, String, String>>()
+        notificacoesAtividades.forEach { lista.add(Triple(it.id, it.titulo, it.mensagem)) }
+        historicoMensagens.forEach { lista.add(Triple(it.idMensagem, it.nomeRemetente, it.conteudo)) }
+        lista
+    }
+
+    LaunchedEffect(Unit) {
+        nomeDocente = sessionManager.nome.first().orEmpty()
+    }
+
+    val iniciais = nomeDocente.split(" ")
+        .mapNotNull { it.firstOrNull()?.toString() }
+        .take(2)
+        .joinToString("")
+        .uppercase()
+
+    if (mostrarSininho) {
+        Dialog(onDismissRequest = { mostrarSininho = false }) {
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(20.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Notificações", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
+                        if (todasNotificacoes.isNotEmpty()) {
+                            TextButton(onClick = {
+                                mensVm.limparHistoricoNotificacoes()
+                                notifVm.limparNotificacoes()
+                            }) {
+                                Text("Limpar", fontSize = 13.sp, color = Color.Gray)
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    if (todasNotificacoes.isEmpty()) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                Icons.Default.NotificationsNone,
+                                contentDescription = null,
+                                tint = Color.LightGray,
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("Sem notificações", color = Color.Gray, fontSize = 14.sp)
+                        }
+                    } else {
+                        LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
+                            items(todasNotificacoes.reversed()) { (_, titulo, mensagem) ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable { mostrarSininho = false }
+                                        .padding(vertical = 10.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(36.dp)
+                                            .clip(CircleShape)
+                                            .background(Color(0xFFE8EAF6)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Notifications,
+                                            contentDescription = null,
+                                            tint = DarkBlue,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(titulo, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                                        Text(
+                                            mensagem,
+                                            fontSize = 13.sp,
+                                            color = Color.Gray,
+                                            maxLines = 2,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                }
+                                Divider(color = Color(0xFFEEEEEE))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.logo_ligix),
+            contentDescription = "Ligix",
+            modifier = Modifier.size(40.dp)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text("LIGIX", color = DarkBlue, fontSize = 18.sp, fontWeight = FontWeight.Medium)
+        Spacer(modifier = Modifier.weight(1f))
+        IconButton(onClick = {}) {
+            Icon(Icons.Default.Search, contentDescription = "Pesquisar", tint = Color(0xFF747481))
+        }
+        Box(contentAlignment = Alignment.TopEnd) {
+            IconButton(onClick = { mostrarSininho = true }) {
+                Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = Color(0xFF747481))
+            }
+            if (todasNotificacoes.isNotEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .background(Color(0xFFC62828), CircleShape)
+                        .offset(x = (-5).dp, y = 5.dp)
+                )
+            }
+        }
+        Box(
+            modifier = Modifier
+                .size(38.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFE85D75)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                if (iniciais.isNotBlank()) iniciais else "D",
+                color = Color.White,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}

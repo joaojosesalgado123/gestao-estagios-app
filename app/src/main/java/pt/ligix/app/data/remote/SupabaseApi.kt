@@ -9,6 +9,7 @@ import pt.ligix.app.model.Docente
 import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.model.Empresa
 import pt.ligix.app.model.Estagio
+import pt.ligix.app.model.FeedbackAtividade
 import pt.ligix.app.model.ItemAvaliacao
 import pt.ligix.app.model.Mensagem
 import pt.ligix.app.model.OfertaEstagio
@@ -461,6 +462,33 @@ interface SupabaseApi {
         @Header("Prefer") prefer: String = "return=representation",
         @Body docente: Docente
     ): Response<List<Docente>>
+
+    @GET("docente")
+    suspend fun getDocenteById(
+        @Query("idutilizador") idUtilizador: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Docente>>
+
+    @PATCH("docente")
+    suspend fun updateDocenteMap(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Query("idutilizador") idUtilizador: String,
+        @Body docente: Map<String, @JvmSuppressWildcards Any?>
+    ): Response<List<Docente>>
+
+    // ==================== FEEDBACK ATIVIDADE ====================
+    @GET("feedback_atividade")
+    suspend fun getFeedbacksByEstagio(
+        @Query("idestagio") idEstagio: String,
+        @Query("select") select: String = "*",
+        @Query("order") order: String = "created_at.desc"
+    ): Response<List<FeedbackAtividade>>
+
+    @POST("feedback_atividade")
+    suspend fun createFeedbackAtividade(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Body feedback: Map<String, @JvmSuppressWildcards Any>
+    ): Response<List<FeedbackAtividade>>
 
     // ==================== ORIENTADOR EMPRESA ====================
     @GET("orientador_empresa")

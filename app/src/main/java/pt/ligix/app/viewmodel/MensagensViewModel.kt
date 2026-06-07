@@ -161,6 +161,56 @@ class MensagensViewModel : ViewModel() {
         }
     }
 
+    fun carregarConversaDocente(context: Context) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _erro.value = null
+            val sessionManager = SessionManager(context)
+            val idDocente = sessionManager.idUtilizador.first() ?: run {
+                _erro.value = "Sessão inválida."
+                _isLoading.value = false
+                return@launch
+            }
+            _idUtilizador.value = idDocente
+            try {
+                val estagiosResp = api.getEstagiosByDocente(idDocente = "eq.$idDocente")
+                val estagio = estagiosResp.body()?.firstOrNull() ?: run {
+                    _erro.value = null
+                    _isLoading.value = false
+                    return@launch
+                }
+
+                val conversaResp = api.getConversaByEstagio(idEstagio = "eq.${estagio.idEstagio}")
+                val conversa = conversaResp.body()?.firstOrNull() ?: run {
+                    _isLoading.value = false
+                    return@launch
+                }
+
+                val candidaturaResp = api.getCandidaturaById(idCandidatura = "eq.${estagio.idCandidatura}")
+                val candidatura = candidaturaResp.body()?.firstOrNull()
+                candidatura?.idOferta?.let { idOferta ->
+                    api.getOfertaById(idOferta = "eq.$idOferta").body()?.firstOrNull()?.let {
+                        _nomeEstagio.value = it.titulo
+                    }
+                }
+
+                val nomes = mutableMapOf<String, String>()
+                candidatura?.idAluno?.let { idAluno ->
+                    try { api.getUtilizadorById(id = "eq.$idAluno").body()?.firstOrNull()?.let { u -> nomes[idAluno] = u.nome } } catch (_: Exception) {}
+                }
+                estagio.idOrientador?.let { try { api.getUtilizadorById(id = "eq.$it").body()?.firstOrNull()?.let { u -> nomes[it] = u.nome } } catch (_: Exception) {} }
+                nomes[idDocente] = sessionManager.nome.first() ?: "Docente"
+                _nomesParticipantes.value = nomes
+                _conversa.value = conversa
+                carregarMensagens(conversa.idConversa, primeiraVez = true)
+                iniciarPollingMensagens(conversa.idConversa)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            _isLoading.value = false
+        }
+    }
+
     fun carregarConversa(context: Context) {
         viewModelScope.launch {
             _isLoading.value = true
