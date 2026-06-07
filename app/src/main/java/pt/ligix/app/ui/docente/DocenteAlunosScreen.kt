@@ -64,7 +64,7 @@ fun DocenteAlunosScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF6F6F8))
+            .background(Color(0xFFF5F5F7))
     ) {
         DocenteTopBar()
 
@@ -72,33 +72,38 @@ fun DocenteAlunosScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp, vertical = 30.dp)
+                .padding(horizontal = 20.dp, vertical = 24.dp)
         ) {
-            Text("Meus Orientandos", fontSize = 36.sp, fontWeight = FontWeight.Normal, color = DarkBlue)
+            Text(
+                "Meus Orientandos",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                color = DarkBlue
+            )
             Text(
                 "Gerencie o progresso académico e profissional dos alunos sob sua supervisão direta.",
-                fontSize = 18.sp,
-                color = Color(0xFF555563),
-                lineHeight = 28.sp,
+                fontSize = 14.sp,
+                color = Color.Gray,
+                lineHeight = 21.sp,
                 modifier = Modifier.padding(top = 6.dp)
             )
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(Modifier.height(20.dp))
 
             OutlinedTextField(
                 value = pesquisa,
                 onValueChange = { pesquisa = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Filtrar por nome ou curso...", color = Color(0xFFB7B7C0), fontSize = 16.sp) },
+                placeholder = { Text("Filtrar por nome ou curso...", color = Color.LightGray) },
                 leadingIcon = {
-                    Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFF80808C))
+                    Icon(Icons.Default.Search, contentDescription = null, tint = Color.LightGray)
                 },
-                shape = RoundedCornerShape(0.dp),
+                shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = DarkBlue,
-                    unfocusedBorderColor = Color(0xFFE0E0E6),
+                    unfocusedBorderColor = Color(0xFFEEEEEE),
                     focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
+                    unfocusedContainerColor = Color(0xFFF8F8F8)
                 ),
                 singleLine = true
             )
@@ -107,21 +112,33 @@ fun DocenteAlunosScreen(
                 Text(it, color = Color.Red, fontSize = 13.sp, modifier = Modifier.padding(top = 12.dp))
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(Modifier.height(24.dp))
 
             when {
                 isLoading -> CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     color = DarkBlue
                 )
+
                 orientandosFiltrados.isEmpty() -> Column(
                     modifier = Modifier.fillMaxWidth().padding(top = 32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(Icons.Default.PeopleAlt, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(48.dp))
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("Sem orientandos", color = Color.Gray, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                    Icon(
+                        Icons.Default.PeopleAlt,
+                        contentDescription = null,
+                        tint = Color.LightGray,
+                        modifier = Modifier.size(48.dp)
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "Sem orientandos",
+                        color = Color.Gray,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
+
                 else -> orientandosFiltrados.forEach { orientando ->
                     DocenteOrientandoCard(
                         orientando = orientando,
@@ -135,77 +152,106 @@ fun DocenteAlunosScreen(
                             )
                         }
                     )
-                    Spacer(modifier = Modifier.height(22.dp))
+                    Spacer(Modifier.height(16.dp))
                 }
             }
 
-            Spacer(modifier = Modifier.height(28.dp))
+            Spacer(Modifier.height(32.dp))
         }
     }
 }
 
 @Composable
-private fun DocenteOrientandoCard(
+fun DocenteOrientandoCard(
     orientando: DocenteOrientandoDetalhe,
     onVerDetalhes: () -> Unit
 ) {
+    val iniciais = orientando.nomeAluno.split(" ")
+        .mapNotNull { it.firstOrNull()?.toString() }
+        .take(2)
+        .joinToString("")
+        .uppercase()
+
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(0.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(6.dp)
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
-        Column(modifier = Modifier.padding(22.dp)) {
-            Box(
-                modifier = Modifier
-                    .size(72.dp)
-                    .clip(RoundedCornerShape(0.dp))
-                    .background(DarkBlue),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    orientando.nomeAluno.split(" ").mapNotNull { it.firstOrNull()?.toString() }.take(2).joinToString("").uppercase(),
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp
-                )
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(64.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(DarkBlue.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        iniciais.ifBlank { "A" },
+                        color = DarkBlue,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 22.sp
+                    )
+                }
+                Spacer(Modifier.width(12.dp))
+                Column {
+                    Text(
+                        orientando.nomeAluno,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = Color.Black
+                    )
+                    Text(
+                        orientando.curso.ifBlank { "Curso não definido" },
+                        fontSize = 13.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(26.dp))
-            Text(orientando.nomeAluno, fontWeight = FontWeight.Normal, fontSize = 24.sp, color = Color(0xFF202027))
-            Text(orientando.curso.ifBlank { "Curso não definido" }, fontSize = 16.sp, color = Color(0xFF555563), modifier = Modifier.padding(top = 4.dp))
-
-            Divider(modifier = Modifier.padding(vertical = 20.dp), color = Color(0xFFE6E6EA))
+            Divider(modifier = Modifier.padding(vertical = 12.dp), color = Color(0xFFEEEEEE))
 
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Business, contentDescription = null, tint = Color(0xFF777783), modifier = Modifier.size(22.dp))
-                Spacer(modifier = Modifier.width(12.dp))
+                Icon(
+                    Icons.Default.Business,
+                    contentDescription = null,
+                    tint = Color.Gray,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(Modifier.width(8.dp))
                 Column {
                     Text(
                         "EMPRESA DE ACOLHIMENTO",
-                        fontSize = 11.sp,
-                        color = Color(0xFF8A8A96),
-                        letterSpacing = 1.3.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 10.sp,
+                        color = Color.Gray,
+                        letterSpacing = 0.5.sp,
+                        fontWeight = FontWeight.Medium
                     )
                     Text(
                         orientando.nomeEmpresa.ifBlank { "Empresa não definida" },
-                        fontSize = 17.sp,
+                        fontSize = 14.sp,
                         color = DarkBlue,
                         fontWeight = FontWeight.Bold
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(Modifier.height(16.dp))
 
             Button(
                 onClick = onVerDetalhes,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
+                modifier = Modifier.fillMaxWidth().height(48.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
-                shape = RoundedCornerShape(0.dp)
+                shape = RoundedCornerShape(10.dp)
             ) {
-                Text("Ver Detalhes/Diário", fontSize = 18.sp, color = Color.White)
+                Text(
+                    "Ver Detalhes/Diário",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
+                )
             }
         }
     }

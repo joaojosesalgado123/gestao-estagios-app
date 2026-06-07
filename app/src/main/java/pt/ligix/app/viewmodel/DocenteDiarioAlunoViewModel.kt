@@ -1,17 +1,29 @@
 package pt.ligix.app.viewmodel
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.data.repository.DocenteRepository
 import pt.ligix.app.model.Atividade
 import pt.ligix.app.model.FeedbackAtividade
 import pt.ligix.app.model.Presenca
+import pt.ligix.app.util.Constants
 import pt.ligix.app.util.SessionManager
 
 class DocenteDiarioAlunoViewModel(
@@ -43,6 +55,10 @@ class DocenteDiarioAlunoViewModel(
     private val _erro = MutableStateFlow<String?>(null)
     val erro: StateFlow<String?> = _erro
 
+    private val storageClient = OkHttpClient()
+    private var urlRelatorio: String? = null
+    private var caminhoRelatorio: String? = null
+
     fun carregarDados(idEstagio: String) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -67,6 +83,79 @@ class DocenteDiarioAlunoViewModel(
             } finally {
                 _isLoading.value = false
             }
+        }
+    }
+
+    fun carregarRelatorio(idEstagio: String) {
+        viewModelScope.launch {
+            try {
+                val resp = RetrofitClient.api.getRelatorioByEstagio(idEstagio = "eq.$idEstagio")
+                val relatorio = resp.body().orEmpty()
+                    .maxByOrNull { it.dataSubmissao.ifBlank { it.createdAt } }
+                urlRelatorio = relatorio?.ficheiroUrl?.takeIf { it.isNotBlank() }
+                caminhoRelatorio = relatorio?.ficheiro
+                    ?.removePrefix("relatorios/")
+                    ?.takeIf { it.isNotBlank() }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun abrirRelatorio(context: Context) {
+        viewModelScope.launch {
+            val url = urlRelatorio ?: caminhoRelatorio?.let { caminho ->
+                gerarUrlAssinada(caminho)
+            }
+
+            if (url == null) {
+                Toast.makeText(context, "Relatório indisponível.", Toast.LENGTH_SHORT).show()
+                return@launch
+            }
+
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(context, "Não foi possível abrir o relatório.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private suspend fun gerarUrlAssinada(caminho: String): String? = withContext(Dispatchers.IO) {
+        try {
+            val token = sessionManager.obterAccessTokenValido() ?: return@withContext null
+            val requestBody = """{"expiresIn":3600}"""
+                .toRequestBody("application/json".toMediaType())
+            val request = Request.Builder()
+                .url("${Constants.SUPABASE_URL}/storage/v1/object/sign/relatorios/$caminho")
+                .header("apikey", Constants.SUPABASE_KEY)
+                .header("Authorization", "Bearer $token")
+                .header("Content-Type", "application/json")
+                .post(requestBody)
+                .build()
+
+            storageClient.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext null
+                val body = response.body?.string().orEmpty()
+                val json = JSONObject(body)
+                val signedUrl = json.optString("signedURL")
+                    .ifBlank { json.optString("signedUrl") }
+                    .takeIf { it.isNotBlank() }
+                    ?: return@withContext null
+                when {
+                    signedUrl.startsWith("http") -> signedUrl
+                    signedUrl.startsWith("/storage/") -> Constants.SUPABASE_URL + signedUrl
+                    signedUrl.startsWith("/object/") -> "${Constants.SUPABASE_URL}/storage/v1$signedUrl"
+                    signedUrl.startsWith("/") -> Constants.SUPABASE_URL + signedUrl
+                    else -> "${Constants.SUPABASE_URL}/$signedUrl"
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
 

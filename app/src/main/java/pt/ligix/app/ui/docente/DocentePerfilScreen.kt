@@ -12,11 +12,10 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ContactMail
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.Work
@@ -79,14 +78,14 @@ fun DocentePerfilScreen(
     var expandedIdioma by remember { mutableStateOf(false) }
     var editNome by remember { mutableStateOf("") }
     var editArea by remember { mutableStateOf("") }
-    var editTelemovel by remember { mutableStateOf("") }
+    var telemovelAtual by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) { viewModel.carregarPerfil(context) }
 
     LaunchedEffect(utilizador, docente) {
-        editNome = utilizador?.nome.orEmpty()
-        editArea = docente?.area.orEmpty()
-        editTelemovel = docente?.telemovel.orEmpty()
+        editNome = utilizador?.nome ?: ""
+        editArea = docente?.area ?: ""
+        telemovelAtual = docente?.telemovel ?: ""
     }
 
     LaunchedEffect(guardadoComSucesso) {
@@ -99,47 +98,68 @@ fun DocentePerfilScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF6F6F8))
+            .background(Color(0xFFF5F5F7))
             .verticalScroll(rememberScrollState())
     ) {
         DocenteTopBar()
 
         if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize().padding(top = 80.dp), contentAlignment = Alignment.Center) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 80.dp),
+                contentAlignment = Alignment.Center
+            ) {
                 CircularProgressIndicator(color = DarkBlue)
             }
             return@Column
         }
 
         Card(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
             shape = RoundedCornerShape(20.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(2.dp)
         ) {
             Column(
-                modifier = Modifier.fillMaxWidth().padding(24.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Box(
-                    modifier = Modifier.size(90.dp).clip(CircleShape).background(DarkBlue),
+                    modifier = Modifier
+                        .size(90.dp)
+                        .clip(CircleShape)
+                        .background(DarkBlue),
                     contentAlignment = Alignment.Center
                 ) {
-                    val iniciais = (utilizador?.nome ?: "D").split(" ")
-                        .mapNotNull { it.firstOrNull()?.toString() }
-                        .take(2)
-                        .joinToString("")
-                        .uppercase()
-                    Text(iniciais.ifBlank { "D" }, color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        iniciaisPerfil(utilizador?.nome ?: "D"),
+                        color = Color.White,
+                        fontSize = 36.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                Text("NOME DE UTILIZADOR", fontSize = 10.sp, color = Color.Gray, letterSpacing = 1.sp, fontWeight = FontWeight.Medium)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(utilizador?.nome ?: "—", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                docente?.area?.takeIf { it.isNotBlank() }?.let {
-                    Text(it, fontSize = 14.sp, color = DarkBlue, fontWeight = FontWeight.SemiBold)
-                }
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    "NOME DE UTILIZADOR",
+                    fontSize = 10.sp,
+                    color = Color.Gray,
+                    letterSpacing = 1.sp,
+                    fontWeight = FontWeight.Medium
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    utilizador?.nome ?: "—",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(8.dp))
                 Box(
                     modifier = Modifier
                         .background(DarkBlue.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
@@ -147,19 +167,33 @@ fun DocentePerfilScreen(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Verified, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(14.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("DOCENTE", fontSize = 11.sp, color = DarkBlue, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            "DOCENTE",
+                            fontSize = 11.sp,
+                            color = DarkBlue,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
+                        )
                     }
                 }
             }
         }
 
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Informações\nUtilizador", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Black, lineHeight = 26.sp)
+            Text(
+                "Informações\nUtilizador",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                lineHeight = 26.sp
+            )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (modoEdicao) {
                     OutlinedButton(
@@ -170,7 +204,7 @@ fun DocentePerfilScreen(
                         Text("Cancelar", fontSize = 14.sp, color = Color.Gray)
                     }
                     Button(
-                        onClick = { viewModel.guardarPerfil(editNome, editArea, editTelemovel) },
+                        onClick = { viewModel.guardarPerfil(editNome, editArea, telemovelAtual) },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
                         shape = RoundedCornerShape(10.dp),
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -180,7 +214,7 @@ fun DocentePerfilScreen(
                             CircularProgressIndicator(color = Color.White, modifier = Modifier.size(16.dp))
                         } else {
                             Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
+                            Spacer(Modifier.width(6.dp))
                             Text("Guardar", fontSize = 14.sp)
                         }
                     }
@@ -192,7 +226,7 @@ fun DocentePerfilScreen(
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
+                        Spacer(Modifier.width(6.dp))
                         Text("Editar", fontSize = 14.sp)
                     }
                 }
@@ -200,45 +234,62 @@ fun DocentePerfilScreen(
         }
 
         erroGuardar?.let {
-            Text(it, color = Color.Red, fontSize = 13.sp, modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+            Text(
+                it,
+                color = Color.Red,
+                fontSize = 13.sp,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(Modifier.height(12.dp))
 
-        PerfilSecao(titulo = "Informações Pessoais", icon = Icons.Default.Person) {
+        PerfilSecao(titulo = "Informações", icon = Icons.Default.Person) {
             if (modoEdicao) {
-                PerfilCampoEditavel(label = "NOME COMPLETO", valor = editNome, onValorChange = { editNome = it })
+                PerfilCampoEditavel(
+                    label = "NOME COMPLETO",
+                    valor = editNome,
+                    onValorChange = { editNome = it }
+                )
             } else {
-                PerfilCampo(label = "NOME COMPLETO", valor = utilizador?.nome ?: "—", icon = Icons.Default.Badge)
+                PerfilCampo(
+                    label = "NOME COMPLETO",
+                    valor = utilizador?.nome ?: "—",
+                    icon = Icons.Default.Badge
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
-
-        PerfilSecao(titulo = "Dados Académicos", icon = Icons.Default.School) {
-            if (modoEdicao) {
-                PerfilCampoEditavel(label = "ÁREA", valor = editArea, onValorChange = { editArea = it })
-            } else {
-                PerfilCampo(label = "ÁREA", valor = docente?.area?.ifBlank { "—" } ?: "—", icon = Icons.Default.Work)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(Modifier.height(12.dp))
 
         PerfilSecao(titulo = "Informações de Contacto", icon = Icons.Default.ContactMail) {
-            PerfilCampo(label = "E-MAIL INSTITUCIONAL", valor = utilizador?.email ?: "—", icon = Icons.Default.Email)
-            Spacer(modifier = Modifier.height(8.dp))
+            PerfilCampo(
+                label = "EMAIL CORPORATIVO",
+                valor = utilizador?.email ?: "—",
+                icon = Icons.Default.Email
+            )
+            Spacer(Modifier.height(8.dp))
             if (modoEdicao) {
-                PerfilCampoEditavel(label = "TELEMÓVEL", valor = editTelemovel, onValorChange = { editTelemovel = it })
+                PerfilCampoEditavel(
+                    label = "ÁREA DE TRABALHO",
+                    valor = editArea,
+                    onValorChange = { editArea = it }
+                )
             } else {
-                PerfilCampo(label = "TELEMÓVEL", valor = docente?.telemovel?.ifBlank { "—" } ?: "—", icon = Icons.Default.Phone)
+                PerfilCampo(
+                    label = "ÁREA DE TRABALHO",
+                    valor = docente?.area?.ifEmpty { "—" } ?: "—",
+                    icon = Icons.Default.Work
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(Modifier.height(12.dp))
 
         Card(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(1.dp)
@@ -246,10 +297,10 @@ fun DocentePerfilScreen(
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.Tune, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(Modifier.width(8.dp))
                     Text("Configurações", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                 }
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(Modifier.height(16.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -257,7 +308,7 @@ fun DocentePerfilScreen(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Language, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(20.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(Modifier.width(8.dp))
                         Text("Idioma", fontSize = 14.sp, color = Color.DarkGray)
                     }
                     Box {
@@ -267,30 +318,65 @@ fun DocentePerfilScreen(
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                         ) {
                             Text(idioma, fontSize = 13.sp, color = DarkBlue)
+                            Spacer(Modifier.width(4.dp))
+                            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(16.dp))
                         }
                         DropdownMenu(expanded = expandedIdioma, onDismissRequest = { expandedIdioma = false }) {
-                            DropdownMenuItem(text = { Text("Português") }, onClick = { idioma = "Português"; expandedIdioma = false })
-                            DropdownMenuItem(text = { Text("English") }, onClick = { idioma = "English"; expandedIdioma = false })
+                            DropdownMenuItem(
+                                text = { Text("Português") },
+                                onClick = {
+                                    idioma = "Português"
+                                    expandedIdioma = false
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("English") },
+                                onClick = {
+                                    idioma = "English"
+                                    expandedIdioma = false
+                                }
+                            )
                         }
                     }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(Modifier.height(16.dp))
 
-        TextButton(onClick = onLogout, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+        TextButton(
+            onClick = onLogout,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        ) {
             Icon(Icons.Default.Logout, contentDescription = null, tint = Color.Red)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("TERMINAR SESSÃO", color = Color.Red, fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
+            Spacer(Modifier.width(8.dp))
+            Text(
+                "TERMINAR SESSÃO",
+                color = Color.Red,
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                letterSpacing = 1.sp
+            )
         }
 
         Text(
             "Ligix v1.0.0",
-            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 24.dp),
             color = Color.LightGray,
             fontSize = 12.sp,
             textAlign = TextAlign.Center
         )
     }
 }
+
+private fun iniciaisPerfil(nome: String): String =
+    nome.split(" ")
+        .mapNotNull { it.firstOrNull()?.toString() }
+        .take(2)
+        .joinToString("")
+        .uppercase()
+        .ifBlank { "D" }

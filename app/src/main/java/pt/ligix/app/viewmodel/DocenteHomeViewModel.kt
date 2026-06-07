@@ -83,6 +83,7 @@ class DocenteHomeViewModel(
                 var revisoesPendentes = 0
                 var avaliacoesFalta = 0
                 val hoje = LocalDate.now()
+                val inicioSemana = hoje.minusDays(hoje.dayOfWeek.value.toLong() - 1)
 
                 for (estagio in estagios) {
                     val candidatura = api.getCandidaturaById(
@@ -111,7 +112,11 @@ class DocenteHomeViewModel(
                     ).body().orEmpty()
                     val feedbacks = repository.getFeedbacksDoEstagio(estagio.idEstagio).getOrNull().orEmpty()
                     val atividadesComFeedback = feedbacks.map { it.idAtividade }.toSet()
-                    revisoesPendentes += atividades.count { it.idAtividade !in atividadesComFeedback }
+                    revisoesPendentes += atividades.count { atividade ->
+                        parseDate(atividade.dataAtividade ?: atividade.dataRegisto)?.let { data ->
+                            !data.isBefore(inicioSemana) && !data.isAfter(hoje)
+                        } ?: false
+                    }
 
                     atividades.maxByOrNull { it.dataRegisto.ifBlank { it.dataAtividade.orEmpty() } }?.let { atividade ->
                         atividadesRecentes.add(

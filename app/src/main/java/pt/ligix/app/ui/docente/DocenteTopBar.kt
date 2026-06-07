@@ -1,6 +1,5 @@
 package pt.ligix.app.ui.docente
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -11,7 +10,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsNone
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -31,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -39,7 +36,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.flow.first
-import pt.ligix.app.R
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.viewmodel.DocenteNotificacoesViewModel
@@ -175,42 +171,39 @@ fun DocenteTopBar(
         modifier = Modifier
             .fillMaxWidth()
             .background(Color.White)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.logo_ligix),
-            contentDescription = "Ligix",
-            modifier = Modifier.size(40.dp)
+        Text(
+            "LIGIX",
+            color = DarkBlue,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 2.sp
         )
-        Spacer(modifier = Modifier.width(12.dp))
-        Text("LIGIX", color = DarkBlue, fontSize = 18.sp, fontWeight = FontWeight.Medium)
         Spacer(modifier = Modifier.weight(1f))
-        IconButton(onClick = {}) {
-            Icon(Icons.Default.Search, contentDescription = "Pesquisar", tint = Color(0xFF747481))
-        }
         Box(contentAlignment = Alignment.TopEnd) {
             IconButton(onClick = { mostrarSininho = true }) {
-                Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = Color(0xFF747481))
+                Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = DarkBlue)
             }
             if (todasNotificacoes.isNotEmpty()) {
                 Box(
                     modifier = Modifier
                         .size(8.dp)
-                        .background(Color(0xFFC62828), CircleShape)
-                        .offset(x = (-5).dp, y = 5.dp)
+                        .background(Color.Red, CircleShape)
+                        .offset(x = (-4).dp, y = 4.dp)
                 )
             }
         }
         Box(
             modifier = Modifier
-                .size(38.dp)
+                .size(36.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFE85D75)),
+                .background(Color(0xFFE57373)),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                if (iniciais.isNotBlank()) iniciais else "D",
+                if (iniciais.isNotEmpty()) iniciais else "D",
                 color = Color.White,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold

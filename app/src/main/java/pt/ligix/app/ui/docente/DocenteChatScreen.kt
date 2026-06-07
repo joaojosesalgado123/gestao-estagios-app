@@ -11,30 +11,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.AttachFile
-import androidx.compose.material.icons.filled.ChatBubbleOutline
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Send
-import androidx.compose.material.icons.filled.Work
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -115,209 +94,266 @@ fun DocenteChatScreen(modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF6F6F8))
+            .background(Color(0xFFF5F5F7))
     ) {
         if (!mostrarChat) {
-            DocenteTopBar()
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFFF5F5F7))
+            ) {
+                DocenteTopBar()
 
-            OutlinedTextField(
-                value = pesquisa,
-                onValueChange = { pesquisa = it },
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 28.dp, vertical = 28.dp),
-                placeholder = { Text("Procurar conversas ou contactos...", color = Color(0xFF80808C), fontSize = 18.sp) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFF80808C)) },
-                trailingIcon = {
-                    if (pesquisa.isNotEmpty()) {
-                        IconButton(onClick = { pesquisa = "" }) {
-                            Icon(Icons.Default.Clear, contentDescription = null, tint = Color.Gray)
+                OutlinedTextField(
+                    value = pesquisa,
+                    onValueChange = { pesquisa = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    placeholder = { Text("Procurar conversas ou contactos...", color = Color.Gray, fontSize = 14.sp) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+                    trailingIcon = {
+                        if (pesquisa.isNotEmpty()) {
+                            IconButton(onClick = { pesquisa = "" }) {
+                                Icon(Icons.Default.Clear, contentDescription = null, tint = Color.Gray)
+                            }
+                        }
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedContainerColor = Color(0xFFF0F0F0),
+                        focusedContainerColor = Color(0xFFF0F0F0),
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedBorderColor = DarkBlue
+                    ),
+                    shape = RoundedCornerShape(24.dp),
+                    singleLine = true
+                )
+
+                Divider(color = Color(0xFFEEEEEE))
+
+                mensagemErro?.let {
+                    Text(
+                        it,
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        color = Color.Red,
+                        fontSize = 13.sp
+                    )
+                }
+
+                if (isLoading) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = DarkBlue)
+                    }
+                } else if (conversa == null) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Default.ChatBubbleOutline, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(64.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Text("Sem conversas ativas", color = Color.Gray, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
+                            Text(
+                                "As mensagens aparecerão quando tiveres um estágio ativo.",
+                                color = Color.LightGray,
+                                fontSize = 13.sp,
+                                modifier = Modifier.padding(horizontal = 32.dp),
+                                textAlign = TextAlign.Center
+                            )
                         }
                     }
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedContainerColor = Color(0xFFE7E7EA),
-                    focusedContainerColor = Color(0xFFE7E7EA),
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedBorderColor = DarkBlue
-                ),
-                shape = RoundedCornerShape(12.dp),
-                singleLine = true
-            )
-
-            mensagemErro?.let {
-                Text(it, modifier = Modifier.padding(horizontal = 28.dp, vertical = 6.dp), color = Color.Red, fontSize = 13.sp)
-            }
-
-            if (isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = DarkBlue)
-                }
-            } else if (conversa == null) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(Icons.Default.ChatBubbleOutline, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(64.dp))
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text("Sem conversas ativas", color = Color.Gray, fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                        Text(
-                            "As mensagens aparecerão quando tiveres um estágio associado.",
-                            color = Color.LightGray,
-                            fontSize = 13.sp,
-                            modifier = Modifier.padding(horizontal = 32.dp),
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                }
-            } else {
-                val conversaVisivel = pesquisa.isBlank() || nomeEstagio.contains(pesquisa, ignoreCase = true)
-                if (!conversaVisivel) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("Sem resultados para \"$pesquisa\"", color = Color.Gray, fontSize = 14.sp)
-                    }
                 } else {
-                    Surface(
-                        onClick = { viewModel.abrirChat() },
-                        color = Color.White,
-                        shape = RoundedCornerShape(12.dp),
-                        shadowElevation = 2.dp,
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 28.dp)
-                    ) {
-                        Row(modifier = Modifier.padding(18.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier.size(64.dp).clip(RoundedCornerShape(12.dp)).background(DarkBlue),
-                                contentAlignment = Alignment.Center
+                    val conversaVisivel = pesquisa.isBlank() ||
+                        nomeEstagio.lowercase().contains(pesquisa.lowercase())
+                    if (!conversaVisivel) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(Icons.Default.SearchOff, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(48.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text("Sem resultados para \"$pesquisa\"", color = Color.Gray, fontSize = 14.sp)
+                            }
+                        }
+                    } else {
+                        Surface(
+                            onClick = { viewModel.abrirChat() },
+                            color = Color.White,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Default.Work, contentDescription = null, tint = Color.White, modifier = Modifier.size(30.dp))
-                            }
-                            Spacer(modifier = Modifier.width(18.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(nomeEstagio, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color(0xFF202027))
-                                val ultimaMensagem = mensagens.lastOrNull()
-                                val nomeRemetente = ultimaMensagem?.let {
-                                    nomesParticipantes[it.idRemetente]?.split(" ")?.firstOrNull().orEmpty()
+                                Box(
+                                    modifier = Modifier
+                                        .size(56.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(DarkBlue),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(Icons.Default.Work, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
                                 }
-                                Text(
-                                    text = if (ultimaMensagem != null) {
-                                        if (ultimaMensagem.ficheiroNome != null) {
-                                            "$nomeRemetente: Ficheiro ${ultimaMensagem.ficheiroNome}"
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(nomeEstagio, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                                    val ultimaMensagem = mensagens.lastOrNull()
+                                    val nomeRemetente = ultimaMensagem?.let {
+                                        nomesParticipantes[it.idRemetente]?.split(" ")?.firstOrNull() ?: ""
+                                    }
+                                    Text(
+                                        text = if (ultimaMensagem != null) {
+                                            if (ultimaMensagem.ficheiroNome != null) {
+                                                "$nomeRemetente: Ficheiro ${ultimaMensagem.ficheiroNome}"
+                                            } else {
+                                                "$nomeRemetente: ${ultimaMensagem.conteudo.take(40)}"
+                                            }
                                         } else {
-                                            "$nomeRemetente: ${ultimaMensagem.conteudo.take(42)}"
-                                        }
-                                    } else {
-                                        "Sem mensagens ainda"
-                                    },
-                                    fontSize = 17.sp,
-                                    color = Color(0xFF202027),
-                                    maxLines = 2
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Column(horizontalAlignment = Alignment.End) {
-                                val hora = mensagens.lastOrNull()?.dataEnvio?.take(16)?.takeLast(5).orEmpty()
-                                if (hora.isNotEmpty()) {
-                                    Text(hora, fontSize = 14.sp, color = DarkBlue, fontWeight = FontWeight.Bold)
+                                            "Sem mensagens ainda"
+                                        },
+                                        fontSize = 13.sp,
+                                        color = Color.Gray,
+                                        maxLines = 1
+                                    )
                                 }
-                                if (mensagensNaoVistas > 0) {
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    Box(
-                                        modifier = Modifier.size(32.dp).clip(CircleShape).background(Color(0xFF8A6D00)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(mensagensNaoVistas.coerceAtMost(99).toString(), color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column(horizontalAlignment = Alignment.End) {
+                                    val hora = mensagens.lastOrNull()?.dataEnvio?.take(16)?.takeLast(5) ?: ""
+                                    if (hora.isNotEmpty()) {
+                                        Text(hora, fontSize = 12.sp, color = DarkBlue, fontWeight = FontWeight.Medium)
+                                    }
+                                    if (mensagensNaoVistas > 0) {
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Box(
+                                            modifier = Modifier
+                                                .size(22.dp)
+                                                .clip(CircleShape)
+                                                .background(Color(0xFFF5A623)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                mensagensNaoVistas.coerceAtMost(99).toString(),
+                                                color = Color.White,
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
+                        Divider(color = Color(0xFFEEEEEE), modifier = Modifier.padding(start = 84.dp))
                     }
                 }
             }
         } else {
-            Row(
-                modifier = Modifier.fillMaxWidth().background(Color.White).padding(horizontal = 8.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = { viewModel.fecharChat() }) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Voltar", tint = Color(0xFF747481))
-                }
-                Box(
-                    modifier = Modifier.size(48.dp).clip(RoundedCornerShape(10.dp)).background(DarkBlue),
-                    contentAlignment = Alignment.Center
+            Column(modifier = Modifier.fillMaxSize()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White)
+                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(Icons.Default.Work, contentDescription = null, tint = Color.White, modifier = Modifier.size(24.dp))
-                }
-                Spacer(modifier = Modifier.width(14.dp))
-                Text(nomeEstagio, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color(0xFF202027))
-            }
-
-            Divider(color = Color(0xFFE8E8EB))
-
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
-                contentPadding = PaddingValues(vertical = 18.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                if (mensagens.isEmpty()) {
-                    item {
-                        Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
-                            Text("Sem mensagens ainda.", color = Color.LightGray, fontSize = 14.sp)
-                        }
+                    IconButton(onClick = { viewModel.fecharChat() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Voltar", tint = DarkBlue)
                     }
-                } else {
-                    items(mensagens) { mensagem ->
-                        BolhaMensagem(
-                            mensagem = mensagem,
-                            isMinha = mensagem.idRemetente == idUtilizador,
-                            nomeRemetente = nomesParticipantes[mensagem.idRemetente] ?: "Desconhecido"
-                        )
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(DarkBlue),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Default.Work, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                    }
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Column {
+                        Text(nomeEstagio, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
+                        Text("Aluno • Docente • Orientador", fontSize = 11.sp, color = Color.Gray)
                     }
                 }
-            }
 
-            mensagemErro?.let {
-                Text(
-                    it,
-                    modifier = Modifier.fillMaxWidth().background(Color.White).padding(horizontal = 16.dp, vertical = 6.dp),
-                    color = Color.Red,
-                    fontSize = 13.sp
-                )
-            }
+                Divider(color = Color(0xFFEEEEEE))
 
-            Row(
-                modifier = Modifier.fillMaxWidth().background(Color.White).padding(horizontal = 12.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = { ficheiroLauncher.launch("application/pdf") }, modifier = Modifier.size(44.dp)) {
-                    Icon(Icons.Default.AttachFile, contentDescription = "Anexar", tint = if (isSending) Color.LightGray else Color(0xFF555563))
-                }
-                OutlinedTextField(
-                    value = textoMensagem,
-                    onValueChange = { textoMensagem = it },
-                    modifier = Modifier.weight(1f),
-                    placeholder = { Text("Escreva a sua mensagem...", color = Color(0xFF80808C), fontSize = 16.sp) },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        unfocusedContainerColor = Color.White,
-                        focusedContainerColor = Color.White,
-                        unfocusedBorderColor = Color.Transparent,
-                        focusedBorderColor = DarkBlue
-                    ),
-                    maxLines = 3
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                IconButton(
-                    onClick = {
-                        if (textoMensagem.isNotBlank()) {
-                            viewModel.enviarMensagem(textoMensagem.trim())
-                            textoMensagem = ""
-                        }
-                    },
-                    enabled = !isSending && textoMensagem.isNotBlank(),
-                    modifier = Modifier.size(52.dp).clip(RoundedCornerShape(0.dp)).background(
-                        if (textoMensagem.isNotBlank()) DarkBlue else Color.LightGray
-                    )
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 12.dp),
+                    contentPadding = PaddingValues(vertical = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    if (isSending) {
-                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
+                    if (mensagens.isEmpty()) {
+                        item {
+                            Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
+                                Text("Sem mensagens ainda. Envia a primeira!", color = Color.LightGray, fontSize = 14.sp)
+                            }
+                        }
                     } else {
-                        Icon(Icons.Default.Send, contentDescription = "Enviar", tint = Color.White)
+                        items(mensagens) { mensagem ->
+                            BolhaMensagem(
+                                mensagem = mensagem,
+                                isMinha = mensagem.idRemetente == idUtilizador,
+                                nomeRemetente = nomesParticipantes[mensagem.idRemetente] ?: "Desconhecido"
+                            )
+                        }
+                    }
+                }
+
+                mensagemErro?.let {
+                    Text(
+                        it,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color.White)
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
+                        color = Color.Red,
+                        fontSize = 13.sp
+                    )
+                }
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White)
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    IconButton(
+                        onClick = { ficheiroLauncher.launch("application/pdf") },
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(Icons.Default.AttachFile, contentDescription = "Anexar", tint = if (isSending) Color.LightGray else Color.Gray)
+                    }
+                    OutlinedTextField(
+                        value = textoMensagem,
+                        onValueChange = { textoMensagem = it },
+                        modifier = Modifier.weight(1f),
+                        placeholder = { Text("Escreve uma mensagem...", color = Color.Gray, fontSize = 14.sp) },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedContainerColor = Color(0xFFF5F5F5),
+                            focusedContainerColor = Color(0xFFF5F5F5),
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedBorderColor = DarkBlue
+                        ),
+                        shape = RoundedCornerShape(24.dp),
+                        maxLines = 3
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    IconButton(
+                        onClick = {
+                            if (textoMensagem.isNotBlank()) {
+                                viewModel.enviarMensagem(textoMensagem.trim())
+                                textoMensagem = ""
+                            }
+                        },
+                        enabled = !isSending && textoMensagem.isNotBlank(),
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(if (textoMensagem.isNotBlank()) DarkBlue else Color.LightGray)
+                    ) {
+                        if (isSending) {
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
+                        } else {
+                            Icon(Icons.Default.Send, contentDescription = "Enviar", tint = Color.White)
+                        }
                     }
                 }
             }
