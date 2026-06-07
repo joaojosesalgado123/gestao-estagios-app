@@ -117,8 +117,9 @@ fun OrientadorMainScreen(onLogout: () -> Unit = {}) {
             when {
                 selectedTab == 0 -> OrientadorHomeScreen(
                     modifier = Modifier.padding(innerPadding),
-                    onVerDiario = { idEstagio ->
+                    onVerDiario = { idEstagio, nomeAluno ->
                         estagioSelecionado = idEstagio
+                        nomeSelecionado = nomeAluno
                         selectedTab = 1
                     }
                 )

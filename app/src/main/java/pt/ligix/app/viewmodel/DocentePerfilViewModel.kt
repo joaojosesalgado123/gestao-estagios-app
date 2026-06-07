@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.model.Docente
+import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.model.Utilizador
 import pt.ligix.app.util.SessionManager
 
@@ -22,6 +23,12 @@ class DocentePerfilViewModel(
 
     private val _docente = MutableStateFlow<Docente?>(null)
     val docente: StateFlow<Docente?> = _docente
+
+    private val _instituicoes = MutableStateFlow<List<InstituicaoEnsino>>(emptyList())
+    val instituicoes: StateFlow<List<InstituicaoEnsino>> = _instituicoes
+
+    private val _instituicaoNome = MutableStateFlow("")
+    val instituicaoNome: StateFlow<String> = _instituicaoNome
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -50,7 +57,25 @@ class DocentePerfilViewModel(
 
                 val docenteResp = api.getDocenteById(idUtilizador = "eq.$idUtilizador")
                 if (docenteResp.isSuccessful) {
-                    _docente.value = docenteResp.body()?.firstOrNull()
+                    val docente = docenteResp.body()?.firstOrNull()
+                    _docente.value = docente
+                    docente?.idInstituicao?.takeIf { it.isNotBlank() }?.let { idInstituicao ->
+                        val instituicaoResp = api.getInstituicaoById(
+                            idInstituicao = "eq.$idInstituicao",
+                            select = "idinstituicao,nome,sigla"
+                        )
+                        _instituicaoNome.value = instituicaoResp.body()?.firstOrNull()?.let {
+                            it.sigla?.takeIf { sigla -> sigla.isNotBlank() }?.let { sigla -> "${it.nome} ($sigla)" }
+                                ?: it.nome
+                        }.orEmpty()
+                    } ?: run {
+                        _instituicaoNome.value = ""
+                    }
+                }
+
+                val instituicoesResp = api.getInstituicoes(select = "idinstituicao,nome,sigla")
+                if (instituicoesResp.isSuccessful) {
+                    _instituicoes.value = instituicoesResp.body().orEmpty()
                 }
             } catch (e: Exception) {
                 _erroGuardar.value = "Não foi possível carregar o perfil."
@@ -60,7 +85,7 @@ class DocentePerfilViewModel(
         }
     }
 
-    fun guardarPerfil(nome: String, area: String, telemovel: String) {
+    fun guardarPerfil(nome: String, area: String, telemovel: String, idInstituicao: String) {
         viewModelScope.launch {
             _isSaving.value = true
             _erroGuardar.value = null
@@ -81,7 +106,8 @@ class DocentePerfilViewModel(
                     idUtilizador = "eq.$idUtilizador",
                     docente = mapOf(
                         "area" to area.trim().ifBlank { null },
-                        "telemovel" to telemovel.trim().ifBlank { null }
+                        "telemovel" to telemovel.trim().ifBlank { null },
+                        "idinstituicao" to idInstituicao.trim().ifBlank { null }
                     )
                 )
                 if (!docenteResp.isSuccessful) {
@@ -92,8 +118,15 @@ class DocentePerfilViewModel(
                 _utilizador.value = _utilizador.value?.copy(nome = nome.trim())
                 _docente.value = docenteResp.body()?.firstOrNull() ?: _docente.value?.copy(
                     area = area.trim(),
-                    telemovel = telemovel.trim()
+                    telemovel = telemovel.trim(),
+                    idInstituicao = idInstituicao.trim().ifBlank { null }
                 )
+                _instituicaoNome.value = _instituicoes.value.firstOrNull {
+                    it.idInstituicao == idInstituicao
+                }?.let {
+                    it.sigla?.takeIf { sigla -> sigla.isNotBlank() }?.let { sigla -> "${it.nome} ($sigla)" }
+                        ?: it.nome
+                }.orEmpty()
                 _guardadoComSucesso.value = true
             } catch (e: Exception) {
                 _erroGuardar.value = "Erro: ${e.message}"

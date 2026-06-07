@@ -48,6 +48,7 @@ fun EmpresaCriarOrientadorScreen(
     var palavraPasse by remember { mutableStateOf("") }
     var mostrarPasse by remember { mutableStateOf(false) }
     var area by remember { mutableStateOf("") }
+    var telemovel by remember { mutableStateOf("") }
 
     LaunchedEffect(sucesso) {
         if (sucesso) {
@@ -150,6 +151,30 @@ fun EmpresaCriarOrientadorScreen(
 
                     Spacer(Modifier.height(16.dp))
 
+                    // Telemóvel
+                    Text("TELEMÓVEL", fontSize = 11.sp, color = Color.Gray,
+                        letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
+                    Spacer(Modifier.height(6.dp))
+                    OutlinedTextField(
+                        value = telemovel,
+                        onValueChange = { telemovel = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("923453422", color = Color.LightGray) },
+                        shape = RoundedCornerShape(10.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = DarkBlue,
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color(0xFFF0F0F0)
+                        ),
+                        singleLine = true,
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone
+                        )
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
                     // Área
                     Text("ÁREA DE TRABALHO", fontSize = 11.sp, color = Color.Gray,
                         letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
@@ -222,7 +247,7 @@ fun EmpresaCriarOrientadorScreen(
                         value = palavraPasse,
                         onValueChange = { palavraPasse = it },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Deixar em branco para manter a atual", color = Color.LightGray) },
+                        placeholder = { Text("Palavra-passe inicial", color = Color.LightGray) },
                         shape = RoundedCornerShape(10.dp),
                         visualTransformation = if (mostrarPasse) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
@@ -241,7 +266,7 @@ fun EmpresaCriarOrientadorScreen(
                         ),
                         singleLine = true
                     )
-                    Text("Preencha apenas se pretender redefinir a credencial de acesso.",
+                    Text("Mínimo de 6 caracteres.",
                         fontSize = 12.sp, color = Color.Gray,
                         modifier = Modifier.padding(top = 6.dp))
                 }
@@ -256,7 +281,13 @@ fun EmpresaCriarOrientadorScreen(
 
             Button(
                 onClick = {
-                    viewModel.criarOrientador(nome = nome, email = email, palavraPasse = palavraPasse, area = area)
+                    viewModel.criarOrientador(
+                        nome = nome,
+                        email = email,
+                        palavraPasse = palavraPasse,
+                        area = area,
+                        telemovel = telemovel
+                    )
                 },
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),

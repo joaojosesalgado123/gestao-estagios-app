@@ -140,7 +140,8 @@ class AuthRepository {
         email: String,
         password: String,
         telemovel: String,
-        area: String
+        area: String,
+        idInstituicao: String
     ): Result<Utilizador> {
         return try {
             val idGerado = criarContaAuth(
@@ -151,7 +152,8 @@ class AuthRepository {
                     "nome" to nome,
                     "username" to username,
                     "telemovel" to telemovel,
-                    "area" to area
+                    "area" to area,
+                    "idinstituicao" to idInstituicao
                 )
             ).getOrElse { erro ->
                 return Result.failure(erro)

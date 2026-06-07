@@ -16,6 +16,8 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Verified
 import androidx.compose.material.icons.filled.Work
@@ -47,6 +49,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.ui.aluno.PerfilCampo
 import pt.ligix.app.ui.aluno.PerfilCampoEditavel
 import pt.ligix.app.ui.aluno.PerfilSecao
@@ -68,6 +71,8 @@ fun DocentePerfilScreen(
 
     val utilizador by viewModel.utilizador.collectAsState()
     val docente by viewModel.docente.collectAsState()
+    val instituicoes by viewModel.instituicoes.collectAsState()
+    val instituicaoNome by viewModel.instituicaoNome.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val isSaving by viewModel.isSaving.collectAsState()
     val erroGuardar by viewModel.erroGuardar.collectAsState()
@@ -79,6 +84,7 @@ fun DocentePerfilScreen(
     var editNome by remember { mutableStateOf("") }
     var editArea by remember { mutableStateOf("") }
     var telemovelAtual by remember { mutableStateOf("") }
+    var editIdInstituicao by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) { viewModel.carregarPerfil(context) }
 
@@ -86,6 +92,7 @@ fun DocentePerfilScreen(
         editNome = utilizador?.nome ?: ""
         editArea = docente?.area ?: ""
         telemovelAtual = docente?.telemovel ?: ""
+        editIdInstituicao = docente?.idInstituicao ?: ""
     }
 
     LaunchedEffect(guardadoComSucesso) {
@@ -204,7 +211,7 @@ fun DocentePerfilScreen(
                         Text("Cancelar", fontSize = 14.sp, color = Color.Gray)
                     }
                     Button(
-                        onClick = { viewModel.guardarPerfil(editNome, editArea, telemovelAtual) },
+                        onClick = { viewModel.guardarPerfil(editNome, editArea, telemovelAtual, editIdInstituicao) },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
                         shape = RoundedCornerShape(10.dp),
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -271,6 +278,24 @@ fun DocentePerfilScreen(
             Spacer(Modifier.height(8.dp))
             if (modoEdicao) {
                 PerfilCampoEditavel(
+                    label = "TELEMÓVEL",
+                    valor = telemovelAtual,
+                    onValorChange = { telemovelAtual = it }
+                )
+            } else {
+                PerfilCampo(
+                    label = "TELEMÓVEL",
+                    valor = docente?.telemovel?.ifEmpty { "—" } ?: "—",
+                    icon = Icons.Default.Phone
+                )
+            }
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        PerfilSecao(titulo = "Dados Profissionais", icon = Icons.Default.School) {
+            if (modoEdicao) {
+                PerfilCampoEditavel(
                     label = "ÁREA DE TRABALHO",
                     valor = editArea,
                     onValorChange = { editArea = it }
@@ -280,6 +305,28 @@ fun DocentePerfilScreen(
                     label = "ÁREA DE TRABALHO",
                     valor = docente?.area?.ifEmpty { "—" } ?: "—",
                     icon = Icons.Default.Work
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            if (modoEdicao) {
+                if (instituicoes.isNotEmpty()) {
+                    CampoInstituicaoPerfil(
+                        instituicoes = instituicoes,
+                        idSelecionado = editIdInstituicao,
+                        onSelecionar = { editIdInstituicao = it }
+                    )
+                } else {
+                    PerfilCampoEditavel(
+                        label = "ID DA INSTITUIÇÃO DE ENSINO",
+                        valor = editIdInstituicao,
+                        onValorChange = { editIdInstituicao = it }
+                    )
+                }
+            } else {
+                PerfilCampo(
+                    label = "INSTITUIÇÃO DE ENSINO",
+                    valor = instituicaoNome.ifEmpty { "—" },
+                    icon = Icons.Default.School
                 )
             }
         }
@@ -380,3 +427,62 @@ private fun iniciaisPerfil(nome: String): String =
         .joinToString("")
         .uppercase()
         .ifBlank { "D" }
+
+@Composable
+private fun CampoInstituicaoPerfil(
+    instituicoes: List<InstituicaoEnsino>,
+    idSelecionado: String,
+    onSelecionar: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selecionada = instituicoes.firstOrNull { it.idInstituicao == idSelecionado }
+    val texto = selecionada?.let { instituicao ->
+        instituicao.sigla?.takeIf { it.isNotBlank() }?.let { "${instituicao.nome} ($it)" }
+            ?: instituicao.nome
+    }.orEmpty()
+
+    Column {
+        Text(
+            "INSTITUIÇÃO DE ENSINO",
+            fontSize = 10.sp,
+            color = Color.Gray,
+            letterSpacing = 0.5.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
+        )
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(
+                onClick = { expanded = true },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text(
+                    texto.ifBlank { "Selecionar instituição" },
+                    color = if (texto.isBlank()) Color.Gray else Color.Black,
+                    modifier = Modifier.weight(1f),
+                    fontSize = 14.sp
+                )
+                Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = DarkBlue)
+            }
+            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                instituicoes.forEach { instituicao ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                instituicao.sigla?.takeIf { it.isNotBlank() }?.let {
+                                    "${instituicao.nome} ($it)"
+                                } ?: instituicao.nome
+                            )
+                        },
+                        onClick = {
+                            onSelecionar(instituicao.idInstituicao)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+}

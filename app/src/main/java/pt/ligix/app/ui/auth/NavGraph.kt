@@ -147,8 +147,8 @@ fun LigixNavGraph() {
                 onRegistarAluno = { username, nome, email, password, confirmar, telemovel, curso, numero ->
                     authViewModel.registarAluno(username, nome, email, password, confirmar, telemovel, curso, numero)
                 },
-                onRegistarDocente = { username, nome, email, password, confirmar, telemovel, area ->
-                    authViewModel.registarDocente(username, nome, email, password, confirmar, telemovel, area)
+                onRegistarDocente = { username, nome, email, password, confirmar, telemovel, area, idInstituicao ->
+                    authViewModel.registarDocente(username, nome, email, password, confirmar, telemovel, area, idInstituicao)
                 },
                 onRegistarEmpresa = { username, nome, email, password, confirmar, nipc, morada, descricao ->
                     authViewModel.registarEmpresa(username, nome, email, password, confirmar, nipc, morada, descricao)

@@ -16,6 +16,7 @@ data class OrientadorDetalhe(
     val id: String,
     val nome: String,
     val email: String,
+    val telemovel: String = "",
     val area: String = ""
 )
 
@@ -51,6 +52,7 @@ class EmpresaOrientadoresViewModel(
                             id = orientador.idUtilizador,
                             nome = nome,
                             email = utilizador?.email ?: "",
+                            telemovel = orientador.telemovel.orEmpty(),
                             area = orientador.area ?: ""
                         )
                     }
@@ -71,7 +73,8 @@ class EmpresaOrientadoresViewModel(
         } else {
             _orientadores.value.filter {
                 it.nome.contains(pesquisa, ignoreCase = true) ||
-                it.email.contains(pesquisa, ignoreCase = true)
+                it.email.contains(pesquisa, ignoreCase = true) ||
+                it.telemovel.contains(pesquisa, ignoreCase = true)
             }
         }
     }
