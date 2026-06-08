@@ -6,6 +6,7 @@ import pt.ligix.app.model.Avaliacao
 import pt.ligix.app.model.Candidatura
 import pt.ligix.app.model.Conversa
 import pt.ligix.app.model.Docente
+import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.model.Empresa
 import pt.ligix.app.model.Estagio
 import pt.ligix.app.model.ItemAvaliacao
@@ -45,11 +46,24 @@ interface SupabaseApi {
         @Query("select") select: String = "*"
     ): Response<List<Utilizador>>
 
+    @GET("utilizador")
+    suspend fun getUtilizadoresByIds(
+        @Query("idutilizador") ids: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Utilizador>>
+
     @PATCH("utilizador")
     suspend fun updateUtilizador(
         @Header("Prefer") prefer: String = "return=representation",
         @Query("idutilizador") id: String,
         @Body utilizador: Utilizador
+    ): Response<List<Utilizador>>
+
+    @PATCH("utilizador")
+    suspend fun updateUtilizadorMap(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Query("idutilizador") id: String,
+        @Body utilizador: Map<String, @JvmSuppressWildcards Any>
     ): Response<List<Utilizador>>
 
     @PATCH("utilizador")
@@ -86,10 +100,23 @@ interface SupabaseApi {
 
     // ==================== OFERTAS ====================
     @POST("oferta_estagio")
+    suspend fun createOfertaMap(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Body oferta: Map<String, @JvmSuppressWildcards Any>
+    ): Response<List<pt.ligix.app.model.OfertaEstagio>>
+
+    @POST("oferta_estagio")
     suspend fun createOferta(
         @Header("Prefer") prefer: String = "return=representation",
         @Body oferta: OfertaEstagio
     ): Response<List<OfertaEstagio>>
+
+    @PATCH("oferta_estagio")
+    suspend fun updateOfertaMap(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Query("idoferta") id: String,
+        @Body oferta: Map<String, @JvmSuppressWildcards Any>
+    ): Response<List<pt.ligix.app.model.OfertaEstagio>>
 
     @PATCH("oferta_estagio")
     suspend fun updateOferta(
@@ -175,8 +202,26 @@ interface SupabaseApi {
     ): Response<Boolean>
 
     @GET("candidatura")
+    suspend fun getCandidaturaById(
+        @Query("idcandidatura") idCandidatura: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Candidatura>>
+
+    @GET("oferta_estagio")
+    suspend fun getOfertasByEmpresa(
+        @Query("idempresa") idEmpresa: String,
+        @Query("select") select: String = "*"
+    ): Response<List<OfertaEstagio>>
+
+    @GET("candidatura")
     suspend fun getCandidaturasByOferta(
         @Query("idoferta") idOferta: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Candidatura>>
+
+    @GET("candidatura")
+    suspend fun getCandidaturasByOfertas(
+        @Query("idoferta") idOfertas: String,
         @Query("select") select: String = "*"
     ): Response<List<Candidatura>>
 
@@ -201,8 +246,20 @@ interface SupabaseApi {
     ): Response<List<Estagio>>
 
     @GET("estagio")
+    suspend fun getEstagiosByOrientador(
+        @Query("idorientador") idOrientador: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Estagio>>
+
+    @GET("estagio")
     suspend fun getEstagioByCandidatura(
         @Query("idcandidatura") idCandidatura: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Estagio>>
+
+    @GET("estagio")
+    suspend fun getEstagiosByCandidaturas(
+        @Query("idcandidatura") idCandidaturas: String,
         @Query("select") select: String = "*"
     ): Response<List<Estagio>>
 
@@ -260,6 +317,12 @@ interface SupabaseApi {
     ): Response<List<Presenca>>
 
     // ==================== AVALIAÇÃO ====================
+    @POST("avaliacao")
+    suspend fun createAvaliacaoMap(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Body body: Map<String, @JvmSuppressWildcards Any>
+    ): Response<List<Avaliacao>>
+
     @POST("avaliacao")
     suspend fun createAvaliacao(
         @Header("Prefer") prefer: String = "return=representation",
@@ -360,6 +423,38 @@ interface SupabaseApi {
         @Query("select") select: String = "*"
     ): Response<List<Aluno>>
 
+    @GET("aluno")
+    suspend fun getAlunosByIds(
+        @Query("idutilizador") ids: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Aluno>>
+
+    // ==================== INSTITUIÇÃO ====================
+    @GET("instituicao_ensino")
+    suspend fun getInstituicaoById(
+        @Query("idinstituicao") idInstituicao: String,
+        @Query("select") select: String = "*"
+    ): Response<List<InstituicaoEnsino>>
+
+    @GET("instituicao_ensino")
+    suspend fun getInstituicoesByIds(
+        @Query("idinstituicao") ids: String,
+        @Query("select") select: String = "*"
+    ): Response<List<InstituicaoEnsino>>
+
+    @GET("empresa")
+    suspend fun getEmpresaById(
+        @Query("idutilizador") idUtilizador: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Empresa>>
+
+    @PATCH("empresa")
+    suspend fun updateEmpresa(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Query("idutilizador") idUtilizador: String,
+        @Body empresa: Empresa
+    ): Response<List<Empresa>>
+
     // ==================== DOCENTE ====================
     @POST("docente")
     suspend fun createDocente(
@@ -368,6 +463,30 @@ interface SupabaseApi {
     ): Response<List<Docente>>
 
     // ==================== ORIENTADOR EMPRESA ====================
+    @GET("orientador_empresa")
+    suspend fun getOrientadoresPorUtilizador(
+        @Query("idutilizador") idUtilizador: String,
+        @Query("select") select: String = "*"
+    ): Response<List<OrientadorEmpresa>>
+
+    @GET("orientador_empresa")
+    suspend fun getOrientadoresByEmpresa(
+        @Query("idempresa") idEmpresa: String,
+        @Query("select") select: String = "*"
+    ): Response<List<OrientadorEmpresa>>
+
+    @DELETE("orientador_empresa")
+    suspend fun deleteOrientadorEmpresa(
+        @Query("idutilizador") idOrientador: String
+    ): Response<Unit>
+
+    @PATCH("orientador_empresa")
+    suspend fun updateOrientadorEmpresaTelemovel(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Query("idutilizador") idUtilizador: String,
+        @Body body: Map<String, String>
+    ): Response<List<OrientadorEmpresa>>
+
     @POST("orientador_empresa")
     suspend fun createOrientadorEmpresa(
         @Header("Prefer") prefer: String = "return=representation",

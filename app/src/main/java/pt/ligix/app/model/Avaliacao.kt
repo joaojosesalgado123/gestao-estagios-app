@@ -6,7 +6,7 @@ data class Avaliacao(
     @SerializedName("idavaliacao") val idAvaliacao: String = "",
     @SerializedName("classificacao") val classificacao: Double? = null,
     @SerializedName("comentario") val comentario: String? = null,
-    @SerializedName("data_avaliacao") val dataAvaliacao: String = "",
+    @SerializedName("data_avaliacao") val dataAvaliacao: String? = null,
     @SerializedName("idestagio") val idEstagio: String = "",
     @SerializedName("created_at") val createdAt: String = ""
 )

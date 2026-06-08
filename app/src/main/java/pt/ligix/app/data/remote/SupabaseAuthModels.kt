@@ -21,6 +21,12 @@ data class SupabaseRefreshTokenRequest(
     @SerializedName("refresh_token") val refreshToken: String
 )
 
+data class SupabaseAuthErrorResponse(
+    @SerializedName("error_code") val errorCode: String? = null,
+    @SerializedName("msg") val message: String? = null,
+    @SerializedName("message") val fallbackMessage: String? = null
+)
+
 data class SupabaseAuthUser(
     @SerializedName("id") val id: String = "",
     @SerializedName("email") val email: String? = null

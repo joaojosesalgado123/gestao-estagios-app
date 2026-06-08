@@ -415,3 +415,38 @@ create policy "relatorio_insert_participantes"
 on public.relatorio_final for insert
 to authenticated
 with check (public.can_access_estagio(idestagio));
+
+-- Storage: relatorios
+-- A app guarda relatórios em:
+--   relatorios/<idAluno>/<idEstagio>/relatorio-final-<uuid>.pdf
+drop policy if exists "relatorios_storage_insert_aluno" on storage.objects;
+create policy "relatorios_storage_insert_aluno"
+on storage.objects for insert
+to authenticated
+with check (
+    bucket_id = 'relatorios'
+    and array_length(storage.foldername(name), 1) = 2
+    and (storage.foldername(name))[1] = auth.uid()::text
+    and exists (
+        select 1
+        from public.estagio e
+        join public.candidatura c on c.idcandidatura = e.idcandidatura
+        where e.idestagio::text = (storage.foldername(name))[2]
+          and c.idaluno = auth.uid()
+    )
+);
+
+drop policy if exists "relatorios_storage_select_participantes" on storage.objects;
+create policy "relatorios_storage_select_participantes"
+on storage.objects for select
+to authenticated
+using (
+    bucket_id = 'relatorios'
+    and array_length(storage.foldername(name), 1) = 2
+    and exists (
+        select 1
+        from public.estagio e
+        where e.idestagio::text = (storage.foldername(name))[2]
+          and public.can_access_estagio(e.idestagio)
+    )
+);

@@ -225,7 +225,7 @@ class EstagioViewModel : ViewModel() {
         }
 
         val avaliacao = avaliacoes
-            .maxByOrNull { it.dataAvaliacao.ifBlank { it.createdAt } }
+            .maxByOrNull { it.dataAvaliacao?.ifBlank { it.createdAt } ?: it.createdAt }
             ?: return
 
         var notaEmpresa: Double? = null
@@ -279,10 +279,13 @@ class EstagioViewModel : ViewModel() {
             }
         }
 
-        _notaEmpresa.value = notaEmpresa
+        // Se a avaliação tem classificação direta, usa-a como nota empresa
+        val notaEmpresaFinal = avaliacao.classificacao ?: notaEmpresa
+        _notaEmpresa.value = notaEmpresaFinal
         _notaDocente.value = notaDocente
         _notaFinal.value = when {
-            notaEmpresa != null && notaDocente != null -> (notaEmpresa + notaDocente) / 2.0
+            notaEmpresaFinal != null && notaDocente != null -> (notaEmpresaFinal + notaDocente) / 2.0
+            notaEmpresaFinal != null -> notaEmpresaFinal
             avaliacao.classificacao != null -> avaliacao.classificacao
             else -> estagioAtual.classificacaoFinal
         }

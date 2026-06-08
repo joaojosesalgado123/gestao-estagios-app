@@ -108,6 +108,59 @@ class MensagensViewModel : ViewModel() {
         _mensagens.value.forEach { idsJaNotificados.add(it.idMensagem) }
     }
 
+    fun carregarConversaOrientador(context: Context) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            _erro.value = null
+            val sessionManager = SessionManager(context)
+            val idOrientador = sessionManager.idUtilizador.first() ?: run {
+                _erro.value = "Sessão inválida."
+                _isLoading.value = false
+                return@launch
+            }
+            _idUtilizador.value = idOrientador
+            try {
+                // Busca estágios onde este utilizador é orientador
+                val estagiosResp = api.getEstagiosByOrientador(idOrientador = "eq.$idOrientador")
+                val estagio = estagiosResp.body()?.firstOrNull() ?: run {
+                    _erro.value = null
+                    _isLoading.value = false
+                    return@launch
+                }
+
+                val conversaResp = api.getConversaByEstagio(idEstagio = "eq.${estagio.idEstagio}")
+                val conversa = conversaResp.body()?.firstOrNull() ?: run {
+                    _isLoading.value = false
+                    return@launch
+                }
+
+                // Nome do estágio
+                val candidaturaResp = api.getCandidaturaById(idCandidatura = "eq.${estagio.idCandidatura}")
+                val candidatura = candidaturaResp.body()?.firstOrNull()
+                candidatura?.idOferta?.let { idOferta ->
+                    api.getOfertaById(idOferta = "eq.$idOferta").body()?.firstOrNull()?.let {
+                        _nomeEstagio.value = it.titulo
+                    }
+                }
+
+                // Nomes dos participantes
+                val nomes = mutableMapOf<String, String>()
+                candidatura?.idAluno?.let { idAluno ->
+                    try { api.getUtilizadorById(id = "eq.$idAluno").body()?.firstOrNull()?.let { u -> nomes[idAluno] = u.nome } } catch (_: Exception) {}
+                }
+                estagio.idDocente?.let { try { api.getUtilizadorById(id = "eq.$it").body()?.firstOrNull()?.let { u -> nomes[it] = u.nome } } catch (_: Exception) {} }
+                nomes[idOrientador] = sessionManager.nome.first() ?: "Orientador"
+                _nomesParticipantes.value = nomes
+                _conversa.value = conversa
+                carregarMensagens(conversa.idConversa, primeiraVez = true)
+                iniciarPollingMensagens(conversa.idConversa)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            _isLoading.value = false
+        }
+    }
+
     fun carregarConversa(context: Context) {
         viewModelScope.launch {
             _isLoading.value = true
