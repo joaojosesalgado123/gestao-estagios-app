@@ -144,8 +144,8 @@ fun LigixNavGraph() {
             val loading = registoState is RegistoState.Loading
 
             RegisterScreen(
-                onRegistarAluno = { username, nome, email, password, confirmar, telemovel, curso, numero ->
-                    authViewModel.registarAluno(username, nome, email, password, confirmar, telemovel, curso, numero)
+                onRegistarAluno = { username, nome, email, password, confirmar, telemovel, idInstituicao, curso, numero ->
+                    authViewModel.registarAluno(username, nome, email, password, confirmar, telemovel, idInstituicao, curso, numero)
                 },
                 onRegistarDocente = { username, nome, email, password, confirmar, telemovel, area, idInstituicao ->
                     authViewModel.registarDocente(username, nome, email, password, confirmar, telemovel, area, idInstituicao)

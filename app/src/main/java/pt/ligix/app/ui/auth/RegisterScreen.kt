@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -25,12 +27,12 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -62,7 +64,7 @@ import pt.ligix.app.model.InstituicaoEnsino
 @Composable
 fun RegisterScreen(
     onRegistarAluno: (username: String, nome: String, email: String, password: String,
-                      confirmar: String, telemovel: String, curso: String, numero: String) -> Unit,
+                      confirmar: String, telemovel: String, idInstituicao: String, curso: String, numero: String) -> Unit,
     onRegistarDocente: (username: String, nome: String, email: String, password: String,
                         confirmar: String, telemovel: String, area: String, idInstituicao: String) -> Unit,
     onRegistarEmpresa: (username: String, nome: String, email: String, password: String,
@@ -81,6 +83,7 @@ fun RegisterScreen(
     var confirmarPassword by remember { mutableStateOf("") }
 
     var telemovelAluno by remember { mutableStateOf("") }
+    var idInstituicaoAluno by remember { mutableStateOf("") }
     var curso by remember { mutableStateOf("") }
     var numeroAluno by remember { mutableStateOf("") }
 
@@ -88,6 +91,7 @@ fun RegisterScreen(
     var area by remember { mutableStateOf("") }
     var idInstituicaoDocente by remember { mutableStateOf("") }
     var instituicoes by remember { mutableStateOf<List<InstituicaoEnsino>>(emptyList()) }
+    var instituicoesCarregadas by remember { mutableStateOf(false) }
 
     var nipc by remember { mutableStateOf("") }
     var morada by remember { mutableStateOf("") }
@@ -101,6 +105,8 @@ fun RegisterScreen(
             }
         } catch (_: Exception) {
             instituicoes = emptyList()
+        } finally {
+            instituicoesCarregadas = true
         }
     }
 
@@ -219,6 +225,13 @@ fun RegisterScreen(
                         keyboardType = KeyboardType.Phone
                     )
                     Spacer(modifier = Modifier.height(16.dp))
+                    CampoInstituicao(
+                        instituicoes = instituicoes,
+                        idSelecionado = idInstituicaoAluno,
+                        isLoading = !instituicoesCarregadas,
+                        onSelecionar = { idInstituicaoAluno = it }
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
                     CampoTexto(
                         label = "CURSO",
                         value = curso,
@@ -280,21 +293,12 @@ fun RegisterScreen(
                         icon = Icons.Default.Work
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    if (instituicoes.isNotEmpty()) {
-                        CampoInstituicao(
-                            instituicoes = instituicoes,
-                            idSelecionado = idInstituicaoDocente,
-                            onSelecionar = { idInstituicaoDocente = it }
-                        )
-                    } else {
-                        CampoTexto(
-                            label = "ID DA INSTITUIÇÃO DE ENSINO",
-                            value = idInstituicaoDocente,
-                            onValueChange = { idInstituicaoDocente = it },
-                            placeholder = "UUID da instituição",
-                            icon = Icons.Default.School
-                        )
-                    }
+                    CampoInstituicao(
+                        instituicoes = instituicoes,
+                        idSelecionado = idInstituicaoDocente,
+                        isLoading = !instituicoesCarregadas,
+                        onSelecionar = { idInstituicaoDocente = it }
+                    )
                 }
             }
 
@@ -331,7 +335,7 @@ fun RegisterScreen(
                     when (tabSelecionada) {
                         0 -> onRegistarAluno(
                             username, nome, email, password,
-                            confirmarPassword, telemovelAluno, curso, numeroAluno
+                            confirmarPassword, telemovelAluno, idInstituicaoAluno, curso, numeroAluno
                         )
                         1 -> onRegistarEmpresa(
                             username, nome, email, password,
@@ -406,14 +410,22 @@ fun RegisterScreen(
 private fun CampoInstituicao(
     instituicoes: List<InstituicaoEnsino>,
     idSelecionado: String,
+    isLoading: Boolean,
     onSelecionar: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var pesquisa by remember { mutableStateOf("") }
     val selecionada = instituicoes.firstOrNull { it.idInstituicao == idSelecionado }
     val texto = selecionada?.let { instituicao ->
-        instituicao.sigla?.takeIf { it.isNotBlank() }?.let { "${instituicao.nome} ($it)" }
-            ?: instituicao.nome
+        instituicao.textoApresentacao()
     }.orEmpty()
+    val opcoes = remember(instituicoes, pesquisa) {
+        instituicoes.filter { it.correspondePesquisa(pesquisa) }
+    }
+
+    LaunchedEffect(expanded) {
+        if (!expanded) pesquisa = ""
+    }
 
     Text(
         text = "INSTITUIÇÃO DE ENSINO",
@@ -427,6 +439,7 @@ private fun CampoInstituicao(
     Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedButton(
             onClick = { expanded = true },
+            enabled = instituicoes.isNotEmpty(),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(56.dp),
@@ -437,35 +450,85 @@ private fun CampoInstituicao(
             Icon(Icons.Default.School, contentDescription = null, tint = TextGrey)
             Spacer(modifier = Modifier.width(12.dp))
             Text(
-                text = texto.ifBlank { "Selecionar instituição" },
+                text = when {
+                    texto.isNotBlank() -> texto
+                    isLoading -> "A carregar instituições..."
+                    else -> "Instituições disponíveis"
+                },
                 color = if (texto.isBlank()) TextGrey else Color.Black,
                 modifier = Modifier.weight(1f),
                 fontSize = 14.sp
             )
             Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = TextGrey)
         }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier.fillMaxWidth(0.9f)
+    }
+    if (expanded) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp)
+                .background(FieldGrey, RoundedCornerShape(8.dp))
+                .padding(vertical = 8.dp)
         ) {
-            instituicoes.forEach { instituicao ->
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            instituicao.sigla?.takeIf { it.isNotBlank() }?.let {
-                                "${instituicao.nome} ($it)"
-                            } ?: instituicao.nome
+            OutlinedTextField(
+                value = pesquisa,
+                onValueChange = { pesquisa = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
+                placeholder = { Text("Pesquisar por nome ou sigla", color = TextGrey) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextGrey) },
+                singleLine = true,
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = FieldGrey,
+                    focusedContainerColor = FieldGrey,
+                    unfocusedBorderColor = Color.Transparent,
+                    focusedBorderColor = DarkBlue
+                ),
+                shape = RoundedCornerShape(8.dp)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            if (opcoes.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(96.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Sem instituições encontradas", color = TextGrey, fontSize = 14.sp)
+                }
+            } else {
+                val alturaLista = (opcoes.size.coerceAtMost(5) * 52).dp
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(alturaLista)
+                ) {
+                    items(opcoes, key = { it.idInstituicao }) { instituicao ->
+                        DropdownMenuItem(
+                            text = { Text(instituicao.textoApresentacao()) },
+                            onClick = {
+                                onSelecionar(instituicao.idInstituicao)
+                                expanded = false
+                            }
                         )
-                    },
-                    onClick = {
-                        onSelecionar(instituicao.idInstituicao)
-                        expanded = false
                     }
-                )
+                }
             }
         }
     }
+}
+
+private fun InstituicaoEnsino.textoApresentacao(): String =
+    sigla?.takeIf { it.isNotBlank() }?.let { "$nome ($it)" } ?: nome
+
+private fun InstituicaoEnsino.correspondePesquisa(pesquisa: String): Boolean {
+    val termo = pesquisa.trim()
+    return termo.isBlank() ||
+        nome.contains(termo, ignoreCase = true) ||
+        sigla?.contains(termo, ignoreCase = true) == true
 }
 
 @Composable

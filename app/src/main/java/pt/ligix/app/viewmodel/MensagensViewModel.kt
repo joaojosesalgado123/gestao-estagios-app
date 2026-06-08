@@ -2,8 +2,8 @@ package pt.ligix.app.viewmodel
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -398,7 +398,7 @@ class MensagensViewModel : ViewModel() {
                 ?: normalizarUrlStorage(ficheiroUrl)
 
             try {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(urlParaAbrir)).apply {
+                val intent = Intent(Intent.ACTION_VIEW, urlParaAbrir.toUri()).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK
                     addCategory(Intent.CATEGORY_BROWSABLE)
                 }

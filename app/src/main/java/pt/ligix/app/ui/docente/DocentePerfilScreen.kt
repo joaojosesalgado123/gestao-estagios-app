@@ -2,11 +2,14 @@ package pt.ligix.app.ui.docente
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ContactMail
@@ -14,9 +17,9 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Verified
@@ -29,6 +32,8 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -309,19 +314,11 @@ fun DocentePerfilScreen(
             }
             Spacer(Modifier.height(8.dp))
             if (modoEdicao) {
-                if (instituicoes.isNotEmpty()) {
-                    CampoInstituicaoPerfil(
-                        instituicoes = instituicoes,
-                        idSelecionado = editIdInstituicao,
-                        onSelecionar = { editIdInstituicao = it }
-                    )
-                } else {
-                    PerfilCampoEditavel(
-                        label = "ID DA INSTITUIÇÃO DE ENSINO",
-                        valor = editIdInstituicao,
-                        onValorChange = { editIdInstituicao = it }
-                    )
-                }
+                CampoInstituicaoPerfil(
+                    instituicoes = instituicoes,
+                    idSelecionado = editIdInstituicao,
+                    onSelecionar = { editIdInstituicao = it }
+                )
             } else {
                 PerfilCampo(
                     label = "INSTITUIÇÃO DE ENSINO",
@@ -397,7 +394,7 @@ fun DocentePerfilScreen(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
         ) {
-            Icon(Icons.Default.Logout, contentDescription = null, tint = Color.Red)
+            Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = Color.Red)
             Spacer(Modifier.width(8.dp))
             Text(
                 "TERMINAR SESSÃO",
@@ -435,11 +432,18 @@ private fun CampoInstituicaoPerfil(
     onSelecionar: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
+    var pesquisa by remember { mutableStateOf("") }
     val selecionada = instituicoes.firstOrNull { it.idInstituicao == idSelecionado }
     val texto = selecionada?.let { instituicao ->
-        instituicao.sigla?.takeIf { it.isNotBlank() }?.let { "${instituicao.nome} ($it)" }
-            ?: instituicao.nome
+        instituicao.textoApresentacao()
     }.orEmpty()
+    val opcoes = remember(instituicoes, pesquisa) {
+        instituicoes.filter { it.correspondePesquisa(pesquisa) }
+    }
+
+    LaunchedEffect(expanded) {
+        if (!expanded) pesquisa = ""
+    }
 
     Column {
         Text(
@@ -453,6 +457,7 @@ private fun CampoInstituicaoPerfil(
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(
                 onClick = { expanded = true },
+                enabled = instituicoes.isNotEmpty(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
@@ -466,23 +471,73 @@ private fun CampoInstituicaoPerfil(
                 )
                 Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = DarkBlue)
             }
-            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                instituicoes.forEach { instituicao ->
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                instituicao.sigla?.takeIf { it.isNotBlank() }?.let {
-                                    "${instituicao.nome} ($it)"
-                                } ?: instituicao.nome
+        }
+        if (expanded) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .background(Color(0xFFF5F5F5), RoundedCornerShape(10.dp))
+                    .padding(vertical = 8.dp)
+            ) {
+                OutlinedTextField(
+                    value = pesquisa,
+                    onValueChange = { pesquisa = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    placeholder = { Text("Pesquisar por nome ou sigla", color = Color.Gray) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedContainerColor = Color(0xFFF5F5F5),
+                        focusedContainerColor = Color(0xFFF5F5F5),
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedBorderColor = DarkBlue
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                if (opcoes.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(96.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Sem instituições encontradas", color = Color.Gray, fontSize = 14.sp)
+                    }
+                } else {
+                    val alturaLista = (opcoes.size.coerceAtMost(5) * 52).dp
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(alturaLista)
+                    ) {
+                        items(opcoes, key = { it.idInstituicao }) { instituicao ->
+                            DropdownMenuItem(
+                                text = { Text(instituicao.textoApresentacao()) },
+                                onClick = {
+                                    onSelecionar(instituicao.idInstituicao)
+                                    expanded = false
+                                }
                             )
-                        },
-                        onClick = {
-                            onSelecionar(instituicao.idInstituicao)
-                            expanded = false
                         }
-                    )
+                    }
                 }
             }
         }
     }
+}
+
+private fun InstituicaoEnsino.textoApresentacao(): String =
+    sigla?.takeIf { it.isNotBlank() }?.let { "$nome ($it)" } ?: nome
+
+private fun InstituicaoEnsino.correspondePesquisa(pesquisa: String): Boolean {
+    val termo = pesquisa.trim()
+    return termo.isBlank() ||
+        nome.contains(termo, ignoreCase = true) ||
+        sigla?.contains(termo, ignoreCase = true) == true
 }

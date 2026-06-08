@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.model.Aluno
+import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.model.Utilizador
 import pt.ligix.app.util.SessionManager
 
@@ -21,6 +22,12 @@ class AlunoPerfilViewModel : ViewModel() {
 
     private val _aluno = MutableStateFlow<Aluno?>(null)
     val aluno: StateFlow<Aluno?> = _aluno
+
+    private val _instituicoes = MutableStateFlow<List<InstituicaoEnsino>>(emptyList())
+    val instituicoes: StateFlow<List<InstituicaoEnsino>> = _instituicoes
+
+    private val _instituicaoNome = MutableStateFlow("")
+    val instituicaoNome: StateFlow<String> = _instituicaoNome
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -54,14 +61,36 @@ class AlunoPerfilViewModel : ViewModel() {
 
             try {
                 val respAluno = api.getAlunoById(idUtilizador = "eq.$idUtilizador")
-                if (respAluno.isSuccessful) _aluno.value = respAluno.body()?.firstOrNull()
+                if (respAluno.isSuccessful) {
+                    val aluno = respAluno.body()?.firstOrNull()
+                    _aluno.value = aluno
+                    aluno?.idInstituicao?.takeIf { it.isNotBlank() }?.let { idInstituicao ->
+                        val instituicaoResp = api.getInstituicaoById(
+                            idInstituicao = "eq.$idInstituicao",
+                            select = "idinstituicao,nome,sigla"
+                        )
+                        _instituicaoNome.value = instituicaoResp.body()?.firstOrNull()?.let {
+                            it.sigla?.takeIf { sigla -> sigla.isNotBlank() }?.let { sigla -> "${it.nome} ($sigla)" }
+                                ?: it.nome
+                        }.orEmpty()
+                    } ?: run {
+                        _instituicaoNome.value = ""
+                    }
+                }
+            } catch (_: Exception) {}
+
+            try {
+                val instituicoesResp = api.getInstituicoes(select = "idinstituicao,nome,sigla")
+                if (instituicoesResp.isSuccessful) {
+                    _instituicoes.value = instituicoesResp.body().orEmpty()
+                }
             } catch (_: Exception) {}
 
             _isLoading.value = false
         }
     }
 
-    fun guardarPerfil(nome: String, curso: String, numeroAluno: String, telemovel: String) {
+    fun guardarPerfil(nome: String, idInstituicao: String, curso: String, numeroAluno: String, telemovel: String) {
         viewModelScope.launch {
             _isSaving.value = true
             _erroGuardar.value = null
@@ -101,7 +130,8 @@ class AlunoPerfilViewModel : ViewModel() {
                     aluno = alunoAtual.copy(
                         curso = curso,
                         numeroAluno = numeroAluno,
-                        telemovel = telemovel.ifBlank { null }
+                        telemovel = telemovel.ifBlank { null },
+                        idInstituicao = idInstituicao.ifBlank { null }
                     )
                 )
                 if (!respAluno.isSuccessful) {
@@ -117,7 +147,18 @@ class AlunoPerfilViewModel : ViewModel() {
 
             // Atualiza estado local
             _utilizador.value = _utilizador.value?.copy(nome = nome)
-            _aluno.value = _aluno.value?.copy(curso = curso, numeroAluno = numeroAluno, telemovel = telemovel.ifBlank { null })
+            _aluno.value = _aluno.value?.copy(
+                curso = curso,
+                numeroAluno = numeroAluno,
+                telemovel = telemovel.ifBlank { null },
+                idInstituicao = idInstituicao.ifBlank { null }
+            )
+            _instituicaoNome.value = _instituicoes.value.firstOrNull {
+                it.idInstituicao == idInstituicao
+            }?.let {
+                it.sigla?.takeIf { sigla -> sigla.isNotBlank() }?.let { sigla -> "${it.nome} ($sigla)" }
+                    ?: it.nome
+            }.orEmpty()
             _guardadoComSucesso.value = true
             _isSaving.value = false
         }

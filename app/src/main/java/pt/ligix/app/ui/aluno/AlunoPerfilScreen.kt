@@ -2,11 +2,15 @@ package pt.ligix.app.ui.aluno
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.viewmodel.AlunoPerfilViewModel
 import pt.ligix.app.viewmodel.AlunoPerfilViewModelFactory
@@ -36,6 +41,8 @@ fun AlunoPerfilScreen(
 
     val utilizador by viewModel.utilizador.collectAsState()
     val aluno by viewModel.aluno.collectAsState()
+    val instituicoes by viewModel.instituicoes.collectAsState()
+    val instituicaoNome by viewModel.instituicaoNome.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val isSaving by viewModel.isSaving.collectAsState()
     val erroGuardar by viewModel.erroGuardar.collectAsState()
@@ -47,6 +54,7 @@ fun AlunoPerfilScreen(
 
     // Campos editáveis
     var editNome by remember { mutableStateOf("") }
+    var editIdInstituicao by remember { mutableStateOf("") }
     var editCurso by remember { mutableStateOf("") }
     var editNumeroAluno by remember { mutableStateOf("") }
     var editTelemovel by remember { mutableStateOf("") }
@@ -56,6 +64,7 @@ fun AlunoPerfilScreen(
     // Quando os dados carregam, preenche os campos de edição
     LaunchedEffect(utilizador, aluno) {
         editNome = utilizador?.nome ?: ""
+        editIdInstituicao = aluno?.idInstituicao ?: ""
         editCurso = aluno?.curso ?: ""
         editNumeroAluno = aluno?.numeroAluno ?: ""
         editTelemovel = aluno?.telemovel ?: ""
@@ -143,7 +152,7 @@ fun AlunoPerfilScreen(
                         Text("Cancelar", fontSize = 14.sp, color = Color.Gray)
                     }
                     Button(
-                        onClick = { viewModel.guardarPerfil(editNome, editCurso, editNumeroAluno, editTelemovel) },
+                        onClick = { viewModel.guardarPerfil(editNome, editIdInstituicao, editCurso, editNumeroAluno, editTelemovel) },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
                         shape = RoundedCornerShape(10.dp),
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -192,11 +201,23 @@ fun AlunoPerfilScreen(
         // Dados Académicos
         PerfilSecao(titulo = "Dados Académicos", icon = Icons.Default.School) {
             if (modoEdicao) {
+                CampoInstituicaoAlunoPerfil(
+                    instituicoes = instituicoes,
+                    idSelecionado = editIdInstituicao,
+                    onSelecionar = { editIdInstituicao = it }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
                 PerfilCampoEditavel(label = "CURSO", valor = editCurso, onValorChange = { editCurso = it })
                 Spacer(modifier = Modifier.height(8.dp))
                 PerfilCampoEditavel(label = "NÚMERO DE ALUNO", valor = editNumeroAluno, onValorChange = { editNumeroAluno = it })
             } else {
-                aluno?.curso?.let { PerfilCampo(label = "CURSO", valor = it, icon = Icons.Default.MenuBook) }
+                PerfilCampo(
+                    label = "INSTITUIÇÃO DE ENSINO",
+                    valor = instituicaoNome.ifEmpty { "—" },
+                    icon = Icons.Default.School
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                aluno?.curso?.let { PerfilCampo(label = "CURSO", valor = it, icon = Icons.AutoMirrored.Filled.MenuBook) }
                 Spacer(modifier = Modifier.height(8.dp))
                 aluno?.numeroAluno?.let { PerfilCampo(label = "NÚMERO DE ALUNO", valor = it, icon = Icons.Default.Numbers) }
             }
@@ -255,7 +276,7 @@ fun AlunoPerfilScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         TextButton(onClick = onLogout, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-            Icon(Icons.Default.Logout, contentDescription = null, tint = Color.Red)
+            Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = Color.Red)
             Spacer(modifier = Modifier.width(8.dp))
             Text("TERMINAR SESSÃO", color = Color.Red, fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
         }
@@ -318,4 +339,119 @@ fun PerfilCampoEditavel(label: String, valor: String, onValorChange: (String) ->
             singleLine = true
         )
     }
+}
+
+@Composable
+private fun CampoInstituicaoAlunoPerfil(
+    instituicoes: List<InstituicaoEnsino>,
+    idSelecionado: String,
+    onSelecionar: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var pesquisa by remember { mutableStateOf("") }
+    val selecionada = instituicoes.firstOrNull { it.idInstituicao == idSelecionado }
+    val texto = selecionada?.textoApresentacao().orEmpty()
+    val opcoes = remember(instituicoes, pesquisa) {
+        instituicoes.filter { it.correspondePesquisa(pesquisa) }
+    }
+
+    LaunchedEffect(expanded) {
+        if (!expanded) pesquisa = ""
+    }
+
+    Column {
+        Text(
+            "INSTITUIÇÃO DE ENSINO",
+            fontSize = 10.sp,
+            color = Color.Gray,
+            letterSpacing = 0.5.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
+        )
+        Box(modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(
+                onClick = { expanded = true },
+                enabled = instituicoes.isNotEmpty(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text(
+                    texto.ifBlank { "Selecionar instituição" },
+                    color = if (texto.isBlank()) Color.Gray else Color.Black,
+                    modifier = Modifier.weight(1f),
+                    fontSize = 14.sp
+                )
+                Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = DarkBlue)
+            }
+        }
+        if (expanded) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+                    .background(Color(0xFFF5F5F5), RoundedCornerShape(10.dp))
+                    .padding(vertical = 8.dp)
+            ) {
+                OutlinedTextField(
+                    value = pesquisa,
+                    onValueChange = { pesquisa = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    placeholder = { Text("Pesquisar por nome ou sigla", color = Color.Gray) },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedContainerColor = Color(0xFFF5F5F5),
+                        focusedContainerColor = Color(0xFFF5F5F5),
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedBorderColor = DarkBlue
+                    ),
+                    shape = RoundedCornerShape(8.dp)
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                if (opcoes.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(96.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Sem instituições encontradas", color = Color.Gray, fontSize = 14.sp)
+                    }
+                } else {
+                    val alturaLista = (opcoes.size.coerceAtMost(5) * 52).dp
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(alturaLista)
+                    ) {
+                        items(opcoes, key = { it.idInstituicao }) { instituicao ->
+                            DropdownMenuItem(
+                                text = { Text(instituicao.textoApresentacao()) },
+                                onClick = {
+                                    onSelecionar(instituicao.idInstituicao)
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun InstituicaoEnsino.textoApresentacao(): String =
+    sigla?.takeIf { it.isNotBlank() }?.let { "$nome ($it)" } ?: nome
+
+private fun InstituicaoEnsino.correspondePesquisa(pesquisa: String): Boolean {
+    val termo = pesquisa.trim()
+    return termo.isBlank() ||
+        nome.contains(termo, ignoreCase = true) ||
+        sigla?.contains(termo, ignoreCase = true) == true
 }
