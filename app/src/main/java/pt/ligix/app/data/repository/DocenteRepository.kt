@@ -4,7 +4,6 @@ import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.model.Aluno
 import pt.ligix.app.model.Docente
 import pt.ligix.app.model.Estagio
-import pt.ligix.app.model.FeedbackAtividade
 import pt.ligix.app.model.OfertaEstagio
 
 class DocenteRepository {
@@ -153,16 +152,4 @@ class DocenteRepository {
         }
     }
 
-    suspend fun getFeedbacksDoEstagio(idEstagio: String): Result<List<FeedbackAtividade>> {
-        return try {
-            val response = api.getFeedbacksByEstagio(idEstagio = "eq.$idEstagio")
-            if (response.isSuccessful) {
-                Result.success(response.body().orEmpty())
-            } else {
-                Result.success(emptyList())
-            }
-        } catch (e: Exception) {
-            Result.success(emptyList())
-        }
-    }
 }
