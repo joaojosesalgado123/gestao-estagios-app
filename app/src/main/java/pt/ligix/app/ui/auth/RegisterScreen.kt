@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Work
@@ -60,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.model.InstituicaoEnsino
+import pt.ligix.app.ui.common.PhoneNumberInput
 
 @Composable
 fun RegisterScreen(
@@ -216,13 +216,12 @@ fun RegisterScreen(
 
             when (tabSelecionada) {
                 0 -> {
-                    CampoTexto(
+                    PhoneNumberInput(
                         label = "TELEMÓVEL",
                         value = telemovelAluno,
                         onValueChange = { telemovelAluno = it },
-                        placeholder = "923453422",
-                        icon = Icons.Default.Phone,
-                        keyboardType = KeyboardType.Phone
+                        labelColor = Color.Black,
+                        containerColor = FieldGrey
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     CampoInstituicao(
@@ -276,13 +275,12 @@ fun RegisterScreen(
                     )
                 }
                 2 -> {
-                    CampoTexto(
+                    PhoneNumberInput(
                         label = "TELEMÓVEL",
                         value = telemovelDocente,
                         onValueChange = { telemovelDocente = it },
-                        placeholder = "923453422",
-                        icon = Icons.Default.Phone,
-                        keyboardType = KeyboardType.Phone
+                        labelColor = Color.Black,
+                        containerColor = FieldGrey
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     CampoTexto(

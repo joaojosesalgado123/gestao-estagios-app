@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.ui.auth.DarkBlue
+import pt.ligix.app.ui.common.PhoneNumberInput
+import pt.ligix.app.util.PhoneNumberValidator
 import pt.ligix.app.viewmodel.AlunoPerfilViewModel
 import pt.ligix.app.viewmodel.AlunoPerfilViewModelFactory
 import pt.ligix.app.viewmodel.NotificacaoMsg
@@ -230,9 +232,20 @@ fun AlunoPerfilScreen(
             utilizador?.email?.let { PerfilCampo(label = "E-MAIL INSTITUCIONAL", valor = it, icon = Icons.Default.Email) }
             Spacer(modifier = Modifier.height(8.dp))
             if (modoEdicao) {
-                PerfilCampoEditavel(label = "TELEMÓVEL", valor = editTelemovel, onValorChange = { editTelemovel = it })
+                PhoneNumberInput(
+                    label = "TELEMÓVEL",
+                    value = editTelemovel,
+                    onValueChange = { editTelemovel = it },
+                    containerColor = Color(0xFFF8F8F8)
+                )
             } else {
-                aluno?.telemovel?.let { PerfilCampo(label = "TELEMÓVEL", valor = it, icon = Icons.Default.Phone) }
+                aluno?.telemovel?.let {
+                    PerfilCampo(
+                        label = "TELEMÓVEL",
+                        valor = PhoneNumberValidator.formatForDisplay(it),
+                        icon = Icons.Default.Phone
+                    )
+                }
             }
         }
 

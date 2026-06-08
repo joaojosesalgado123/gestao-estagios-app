@@ -11,6 +11,7 @@ import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.model.Aluno
 import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.model.Utilizador
+import pt.ligix.app.util.PhoneNumberValidator
 import pt.ligix.app.util.SessionManager
 
 class AlunoPerfilViewModel : ViewModel() {
@@ -91,6 +92,13 @@ class AlunoPerfilViewModel : ViewModel() {
     }
 
     fun guardarPerfil(nome: String, idInstituicao: String, curso: String, numeroAluno: String, telemovel: String) {
+        val telemovelValidado = PhoneNumberValidator.normalizeToE164(telemovel)
+        if (!telemovelValidado.isValid) {
+            _erroGuardar.value = telemovelValidado.errorMessage
+            return
+        }
+        val telemovelNormalizado = telemovelValidado.e164
+
         viewModelScope.launch {
             _isSaving.value = true
             _erroGuardar.value = null
@@ -130,7 +138,7 @@ class AlunoPerfilViewModel : ViewModel() {
                     aluno = alunoAtual.copy(
                         curso = curso,
                         numeroAluno = numeroAluno,
-                        telemovel = telemovel.ifBlank { null },
+                        telemovel = telemovelNormalizado,
                         idInstituicao = idInstituicao.ifBlank { null }
                     )
                 )
@@ -150,7 +158,7 @@ class AlunoPerfilViewModel : ViewModel() {
             _aluno.value = _aluno.value?.copy(
                 curso = curso,
                 numeroAluno = numeroAluno,
-                telemovel = telemovel.ifBlank { null },
+                telemovel = telemovelNormalizado,
                 idInstituicao = idInstituicao.ifBlank { null }
             )
             _instituicaoNome.value = _instituicoes.value.firstOrNull {

@@ -12,6 +12,7 @@ import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.model.Docente
 import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.model.Utilizador
+import pt.ligix.app.util.PhoneNumberValidator
 import pt.ligix.app.util.SessionManager
 
 class DocentePerfilViewModel(
@@ -86,6 +87,13 @@ class DocentePerfilViewModel(
     }
 
     fun guardarPerfil(nome: String, area: String, telemovel: String, idInstituicao: String) {
+        val telemovelValidado = PhoneNumberValidator.normalizeToE164(telemovel)
+        if (!telemovelValidado.isValid) {
+            _erroGuardar.value = telemovelValidado.errorMessage
+            return
+        }
+        val telemovelNormalizado = telemovelValidado.e164
+
         viewModelScope.launch {
             _isSaving.value = true
             _erroGuardar.value = null
@@ -106,7 +114,7 @@ class DocentePerfilViewModel(
                     idUtilizador = "eq.$idUtilizador",
                     docente = mapOf(
                         "area" to area.trim().ifBlank { null },
-                        "telemovel" to telemovel.trim().ifBlank { null },
+                        "telemovel" to telemovelNormalizado,
                         "idinstituicao" to idInstituicao.trim().ifBlank { null }
                     )
                 )
@@ -118,7 +126,7 @@ class DocentePerfilViewModel(
                 _utilizador.value = _utilizador.value?.copy(nome = nome.trim())
                 _docente.value = docenteResp.body()?.firstOrNull() ?: _docente.value?.copy(
                     area = area.trim(),
-                    telemovel = telemovel.trim(),
+                    telemovel = telemovelNormalizado.orEmpty(),
                     idInstituicao = idInstituicao.trim().ifBlank { null }
                 )
                 _instituicaoNome.value = _instituicoes.value.firstOrNull {

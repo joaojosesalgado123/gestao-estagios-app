@@ -59,6 +59,8 @@ import pt.ligix.app.ui.aluno.PerfilCampo
 import pt.ligix.app.ui.aluno.PerfilCampoEditavel
 import pt.ligix.app.ui.aluno.PerfilSecao
 import pt.ligix.app.ui.auth.DarkBlue
+import pt.ligix.app.ui.common.PhoneNumberInput
+import pt.ligix.app.util.PhoneNumberValidator
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.viewmodel.DocentePerfilViewModel
 import pt.ligix.app.viewmodel.DocentePerfilViewModelFactory
@@ -282,15 +284,16 @@ fun DocentePerfilScreen(
             )
             Spacer(Modifier.height(8.dp))
             if (modoEdicao) {
-                PerfilCampoEditavel(
+                PhoneNumberInput(
                     label = "TELEMÓVEL",
-                    valor = telemovelAtual,
-                    onValorChange = { telemovelAtual = it }
+                    value = telemovelAtual,
+                    onValueChange = { telemovelAtual = it },
+                    containerColor = Color(0xFFF8F8F8)
                 )
             } else {
                 PerfilCampo(
                     label = "TELEMÓVEL",
-                    valor = docente?.telemovel?.ifEmpty { "—" } ?: "—",
+                    valor = PhoneNumberValidator.formatForDisplay(docente?.telemovel),
                     icon = Icons.Default.Phone
                 )
             }

@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.model.Utilizador
+import pt.ligix.app.util.PhoneNumberValidator
 import pt.ligix.app.util.SessionManager
 
 class OrientadorPerfilViewModel(
@@ -67,6 +68,13 @@ class OrientadorPerfilViewModel(
     }
 
     fun guardarPerfil(nome: String, area: String, telemovel: String) {
+        val telemovelValidado = PhoneNumberValidator.normalizeToE164(telemovel)
+        if (!telemovelValidado.isValid) {
+            _erroGuardar.value = telemovelValidado.errorMessage
+            return
+        }
+        val telemovelNormalizado = telemovelValidado.e164
+
         viewModelScope.launch {
             _isSaving.value = true
             _erroGuardar.value = null
@@ -87,7 +95,7 @@ class OrientadorPerfilViewModel(
                     idUtilizador = "eq.$idUtilizador",
                     body = mapOf(
                         "area" to area.trim().ifBlank { null },
-                        "telemovel" to telemovel.trim().ifBlank { null }
+                        "telemovel" to telemovelNormalizado
                     )
                 )
                 if (!orientadorResp.isSuccessful) {
@@ -96,7 +104,7 @@ class OrientadorPerfilViewModel(
                 }
                 val orientadorAtualizado = orientadorResp.body()?.firstOrNull()
                 _area.value = orientadorAtualizado?.area ?: area.trim()
-                _telemovel.value = orientadorAtualizado?.telemovel ?: telemovel.trim()
+                _telemovel.value = orientadorAtualizado?.telemovel ?: telemovelNormalizado.orEmpty()
 
                 _utilizador.value = _utilizador.value?.copy(nome = nome)
                 _guardadoComSucesso.value = true

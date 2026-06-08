@@ -11,13 +11,12 @@ import kotlinx.coroutines.launch
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.data.remote.SupabaseAuthClient
 import pt.ligix.app.data.remote.SupabaseSignUpRequest
-import pt.ligix.app.data.repository.EmpresaRepository
 import pt.ligix.app.model.OrientadorEmpresa
+import pt.ligix.app.util.PhoneNumberValidator
 import pt.ligix.app.util.SessionManager
 import java.util.UUID
 
 class EmpresaCriarOrientadorViewModel(
-    private val repository: EmpresaRepository,
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
@@ -49,6 +48,12 @@ class EmpresaCriarOrientadorViewModel(
             _erro.value = "A palavra-passe deve ter pelo menos 6 caracteres."
             return
         }
+        val telemovelValidado = PhoneNumberValidator.normalizeToE164(telemovel, required = true)
+        if (!telemovelValidado.isValid) {
+            _erro.value = telemovelValidado.errorMessage
+            return
+        }
+        val telemovelNormalizado = telemovelValidado.e164.orEmpty()
 
         viewModelScope.launch {
             _isLoading.value = true
@@ -70,7 +75,7 @@ class EmpresaCriarOrientadorViewModel(
                             "nome" to nome,
                             "role" to "orientador",
                             "username" to usernameUnico,
-                            "telemovel" to telemovel
+                            "telemovel" to telemovelNormalizado
                         )
                     )
                 )
@@ -94,7 +99,7 @@ class EmpresaCriarOrientadorViewModel(
                     idEmpresa = idEmpresa,
                     area = area,
                     status = "ativo",
-                    telemovel = telemovel
+                    telemovel = telemovelNormalizado
                 )
                 val orientadorResponse = api.createOrientadorEmpresa(orientadorEmpresa = orientadorEmpresa)
                 if (!orientadorResponse.isSuccessful) {
@@ -138,11 +143,10 @@ class EmpresaCriarOrientadorViewModel(
 }
 
 class EmpresaCriarOrientadorViewModelFactory(
-    private val repository: EmpresaRepository,
     private val sessionManager: SessionManager
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return EmpresaCriarOrientadorViewModel(repository, sessionManager) as T
+        return EmpresaCriarOrientadorViewModel(sessionManager) as T
     }
 }

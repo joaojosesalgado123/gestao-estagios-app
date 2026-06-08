@@ -7,13 +7,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import pt.ligix.app.data.remote.RetrofitClient
-import pt.ligix.app.data.repository.EmpresaRepository
-import pt.ligix.app.util.SessionManager
+import pt.ligix.app.util.PhoneNumberValidator
 
-class EmpresaEditarOrientadorViewModel(
-    private val repository: EmpresaRepository,
-    private val sessionManager: SessionManager
-) : ViewModel() {
+class EmpresaEditarOrientadorViewModel : ViewModel() {
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -39,6 +35,12 @@ class EmpresaEditarOrientadorViewModel(
             _erro.value = "Insira um email válido."
             return
         }
+        val telemovelValidado = PhoneNumberValidator.normalizeToE164(telemovel, required = true)
+        if (!telemovelValidado.isValid) {
+            _erro.value = telemovelValidado.errorMessage
+            return
+        }
+        val telemovelNormalizado = telemovelValidado.e164.orEmpty()
 
         viewModelScope.launch {
             _isLoading.value = true
@@ -65,7 +67,7 @@ class EmpresaEditarOrientadorViewModel(
                     idUtilizador = "eq.$id",
                     body = mapOf(
                         "area" to area,
-                        "telemovel" to telemovel
+                        "telemovel" to telemovelNormalizado
                     )
                 )
                 if (!perfilResponse.isSuccessful) {
@@ -102,12 +104,9 @@ class EmpresaEditarOrientadorViewModel(
     }
 }
 
-class EmpresaEditarOrientadorViewModelFactory(
-    private val repository: EmpresaRepository,
-    private val sessionManager: SessionManager
-) : ViewModelProvider.Factory {
+class EmpresaEditarOrientadorViewModelFactory : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return EmpresaEditarOrientadorViewModel(repository, sessionManager) as T
+        return EmpresaEditarOrientadorViewModel() as T
     }
 }
