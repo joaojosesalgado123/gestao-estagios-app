@@ -1100,7 +1100,7 @@ fun NotaFinalScreen(
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
                     if (notaFinal == null)
-                        "Ainda não existe avaliação final para este estágio."
+                        "A nota final fica disponível quando a avaliação da empresa e a avaliação do docente estiverem submetidas."
                     else
                         "Parabéns pelo percurso realizado. Esta é a tua avaliação final.",
                     color = Color(0xFF5F6270),

@@ -191,6 +191,10 @@ fun OrientadorCard(
                 fontSize = 18.sp, color = Color.Black)
             Text(orientador.email, fontSize = 13.sp,
                 color = Color.Gray, modifier = Modifier.padding(top = 2.dp))
+            if (orientador.telemovel.isNotBlank()) {
+                Text(orientador.telemovel, fontSize = 13.sp,
+                    color = Color.Gray, modifier = Modifier.padding(top = 2.dp))
+            }
 
             Spacer(Modifier.height(16.dp))
 

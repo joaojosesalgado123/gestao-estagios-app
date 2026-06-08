@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -19,6 +20,7 @@ import androidx.compose.material.icons.filled.Badge
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
@@ -28,6 +30,8 @@ import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
@@ -37,6 +41,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -51,13 +56,15 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import pt.ligix.app.data.remote.RetrofitClient
+import pt.ligix.app.model.InstituicaoEnsino
 
 @Composable
 fun RegisterScreen(
     onRegistarAluno: (username: String, nome: String, email: String, password: String,
                       confirmar: String, telemovel: String, curso: String, numero: String) -> Unit,
     onRegistarDocente: (username: String, nome: String, email: String, password: String,
-                        confirmar: String, telemovel: String, area: String) -> Unit,
+                        confirmar: String, telemovel: String, area: String, idInstituicao: String) -> Unit,
     onRegistarEmpresa: (username: String, nome: String, email: String, password: String,
                         confirmar: String, nipc: String, morada: String, descricao: String) -> Unit,
     onEntrar: () -> Unit,
@@ -79,10 +86,23 @@ fun RegisterScreen(
 
     var telemovelDocente by remember { mutableStateOf("") }
     var area by remember { mutableStateOf("") }
+    var idInstituicaoDocente by remember { mutableStateOf("") }
+    var instituicoes by remember { mutableStateOf<List<InstituicaoEnsino>>(emptyList()) }
 
     var nipc by remember { mutableStateOf("") }
     var morada by remember { mutableStateOf("") }
     var descricao by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        try {
+            val response = RetrofitClient.api.getInstituicoes(select = "idinstituicao,nome,sigla")
+            if (response.isSuccessful) {
+                instituicoes = response.body().orEmpty()
+            }
+        } catch (_: Exception) {
+            instituicoes = emptyList()
+        }
+    }
 
     Box(
         modifier = Modifier
@@ -259,6 +279,22 @@ fun RegisterScreen(
                         placeholder = "Engenharia Informática",
                         icon = Icons.Default.Work
                     )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    if (instituicoes.isNotEmpty()) {
+                        CampoInstituicao(
+                            instituicoes = instituicoes,
+                            idSelecionado = idInstituicaoDocente,
+                            onSelecionar = { idInstituicaoDocente = it }
+                        )
+                    } else {
+                        CampoTexto(
+                            label = "ID DA INSTITUIÇÃO DE ENSINO",
+                            value = idInstituicaoDocente,
+                            onValueChange = { idInstituicaoDocente = it },
+                            placeholder = "UUID da instituição",
+                            icon = Icons.Default.School
+                        )
+                    }
                 }
             }
 
@@ -303,7 +339,7 @@ fun RegisterScreen(
                         )
                         2 -> onRegistarDocente(
                             username, nome, email, password,
-                            confirmarPassword, telemovelDocente, area
+                            confirmarPassword, telemovelDocente, area, idInstituicaoDocente
                         )
                     }
                 },
@@ -362,6 +398,72 @@ fun RegisterScreen(
             )
 
             Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+}
+
+@Composable
+private fun CampoInstituicao(
+    instituicoes: List<InstituicaoEnsino>,
+    idSelecionado: String,
+    onSelecionar: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val selecionada = instituicoes.firstOrNull { it.idInstituicao == idSelecionado }
+    val texto = selecionada?.let { instituicao ->
+        instituicao.sigla?.takeIf { it.isNotBlank() }?.let { "${instituicao.nome} ($it)" }
+            ?: instituicao.nome
+    }.orEmpty()
+
+    Text(
+        text = "INSTITUIÇÃO DE ENSINO",
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Bold,
+        color = Color.Black,
+        letterSpacing = 1.sp,
+        modifier = Modifier.fillMaxWidth()
+    )
+    Spacer(modifier = Modifier.height(8.dp))
+    Box(modifier = Modifier.fillMaxWidth()) {
+        OutlinedButton(
+            onClick = { expanded = true },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp),
+            shape = RoundedCornerShape(8.dp),
+            colors = ButtonDefaults.outlinedButtonColors(containerColor = FieldGrey),
+            border = null
+        ) {
+            Icon(Icons.Default.School, contentDescription = null, tint = TextGrey)
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = texto.ifBlank { "Selecionar instituição" },
+                color = if (texto.isBlank()) TextGrey else Color.Black,
+                modifier = Modifier.weight(1f),
+                fontSize = 14.sp
+            )
+            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = TextGrey)
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.fillMaxWidth(0.9f)
+        ) {
+            instituicoes.forEach { instituicao ->
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            instituicao.sigla?.takeIf { it.isNotBlank() }?.let {
+                                "${instituicao.nome} ($it)"
+                            } ?: instituicao.nome
+                        )
+                    },
+                    onClick = {
+                        onSelecionar(instituicao.idInstituicao)
+                        expanded = false
+                    }
+                )
+            }
         }
     }
 }

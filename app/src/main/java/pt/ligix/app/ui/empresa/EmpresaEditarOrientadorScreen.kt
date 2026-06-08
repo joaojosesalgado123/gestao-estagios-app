@@ -16,8 +16,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -47,9 +45,8 @@ fun EmpresaEditarOrientadorScreen(
 
     var nome by remember { mutableStateOf(orientador.nome) }
     var email by remember { mutableStateOf(orientador.email) }
+    var telemovel by remember { mutableStateOf(orientador.telemovel) }
     var area by remember { mutableStateOf(orientador.area) }
-    var palavraPasse by remember { mutableStateOf("") }
-    var mostrarPasse by remember { mutableStateOf(false) }
 
     LaunchedEffect(sucesso) {
         if (sucesso) {
@@ -150,6 +147,30 @@ fun EmpresaEditarOrientadorScreen(
 
                     Spacer(Modifier.height(16.dp))
 
+                    // Telemóvel
+                    Text("TELEMÓVEL", fontSize = 11.sp, color = Color.Gray,
+                        letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
+                    Spacer(Modifier.height(6.dp))
+                    OutlinedTextField(
+                        value = telemovel,
+                        onValueChange = { telemovel = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("923453422", color = Color.LightGray) },
+                        shape = RoundedCornerShape(10.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = DarkBlue,
+                            unfocusedBorderColor = Color.Transparent,
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color(0xFFF0F0F0)
+                        ),
+                        singleLine = true,
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone
+                        )
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
                     // Área
                     Text("ÁREA DE TRABALHO", fontSize = 11.sp, color = Color.Gray,
                         letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
@@ -212,36 +233,7 @@ fun EmpresaEditarOrientadorScreen(
                         singleLine = true
                     )
 
-                    Spacer(Modifier.height(16.dp))
-
-                    // Palavra-passe
-                    Text("PALAVRA-PASSE", fontSize = 11.sp, color = Color.Gray,
-                        letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
-                    Spacer(Modifier.height(6.dp))
-                    OutlinedTextField(
-                        value = palavraPasse,
-                        onValueChange = { palavraPasse = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Deixar em branco para manter a atual", color = Color.LightGray) },
-                        shape = RoundedCornerShape(10.dp),
-                        visualTransformation = if (mostrarPasse) VisualTransformation.None else PasswordVisualTransformation(),
-                        trailingIcon = {
-                            IconButton(onClick = { mostrarPasse = !mostrarPasse }) {
-                                Icon(
-                                    if (mostrarPasse) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                    contentDescription = null, tint = Color.Gray
-                                )
-                            }
-                        },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = DarkBlue,
-                            unfocusedBorderColor = Color.Transparent,
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color(0xFFF0F0F0)
-                        ),
-                        singleLine = true
-                    )
-                    Text("Preencha apenas se pretender redefinir a credencial de acesso.",
+                    Text("A palavra-passe deve ser alterada pelo próprio orientador através da recuperação de acesso.",
                         fontSize = 12.sp, color = Color.Gray,
                         modifier = Modifier.padding(top = 6.dp))
                 }
@@ -260,7 +252,7 @@ fun EmpresaEditarOrientadorScreen(
                         id = orientador.id,
                         nome = nome,
                         email = email,
-                        palavraPasse = palavraPasse.ifBlank { null },
+                        telemovel = telemovel,
                         area = area
                     )
                 },

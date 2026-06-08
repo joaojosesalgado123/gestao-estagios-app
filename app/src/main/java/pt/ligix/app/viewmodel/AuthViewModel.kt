@@ -90,9 +90,10 @@ class AuthViewModel(
     // RF01 - Registar Docente
     fun registarDocente(
         username: String, nome: String, email: String, password: String,
-        confirmarPassword: String, telemovel: String, area: String
+        confirmarPassword: String, telemovel: String, area: String, idInstituicao: String
     ) {
-        if (username.isBlank() || nome.isBlank() || email.isBlank() || password.isBlank()) {
+        if (username.isBlank() || nome.isBlank() || email.isBlank() ||
+            password.isBlank() || telemovel.isBlank() || area.isBlank() || idInstituicao.isBlank()) {
             _registoState.value = RegistoState.Erro("Preencha todos os campos obrigatórios")
             return
         }
@@ -103,7 +104,7 @@ class AuthViewModel(
         viewModelScope.launch {
             _registoState.value = RegistoState.Loading
             val result = repository.registarDocente(
-                username, nome, email, password, telemovel, area
+                username, nome, email, password, telemovel, area, idInstituicao
             )
             result.fold(
                 onSuccess = {

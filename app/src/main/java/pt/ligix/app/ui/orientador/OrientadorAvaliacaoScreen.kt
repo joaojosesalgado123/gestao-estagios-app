@@ -47,7 +47,7 @@ fun OrientadorAvaliacaoScreen(
     val isSaving by viewModel.isSaving.collectAsState()
     val erro by viewModel.erro.collectAsState()
     val sucesso by viewModel.sucesso.collectAsState()
-    val avaliacaoExistente by viewModel.avaliacaoExistente.collectAsState()
+    val minhaAvaliacao by viewModel.minhaAvaliacao.collectAsState()
     val relatorioSubmetido by viewModel.relatorioSubmetido.collectAsState()
     val horasCompletas by viewModel.horasCompletas.collectAsState()
 
@@ -89,7 +89,7 @@ fun OrientadorAvaliacaoScreen(
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = DarkBlue)
             }
-        } else if (avaliacaoExistente != null) {
+        } else if (minhaAvaliacao != null) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -100,9 +100,9 @@ fun OrientadorAvaliacaoScreen(
                     Spacer(Modifier.height(16.dp))
                     Text("Avaliação já submetida", fontSize = 20.sp,
                         fontWeight = FontWeight.Bold, color = DarkBlue)
-                    Text("A avaliação de $nomeAluno já foi registada com a classificação de ${
-                        String.format("%.1f", avaliacaoExistente!!.classificacao)
-                    } valores.",
+                    Text("A sua avaliação de $nomeAluno já foi registada como um item de avaliação com a classificação de ${
+                        minhaAvaliacao!!.classificacao?.let { String.format(java.util.Locale.US, "%.1f", it.coerceIn(0.0, 20.0)) } ?: "—"
+                    } valores. A nota final do aluno só é calculada quando existirem também as avaliações da empresa e do docente.",
                         fontSize = 14.sp, color = Color.Gray, textAlign = TextAlign.Center,
                         modifier = Modifier.padding(top = 8.dp))
                 }
@@ -151,6 +151,9 @@ fun OrientadorAvaliacaoScreen(
                             Spacer(Modifier.height(8.dp))
                             Text("Utilize a escala de 1 a 5, onde:",
                                 fontSize = 13.sp, color = Color.Gray)
+                            Text("Estes critérios servem como apoio à classificação escrita de 0 a 20.",
+                                fontSize = 12.sp, color = Color.Gray,
+                                modifier = Modifier.padding(top = 2.dp))
                             Spacer(Modifier.height(10.dp))
                             listOf("Insuficiente", "Suficiente", "Bom", "Muito Bom", "Excelente")
                                 .forEachIndexed { index, label ->
@@ -198,7 +201,7 @@ fun OrientadorAvaliacaoScreen(
                         icon = Icons.Default.Group, valor = trabalhoEquipa,
                         onValorChange = { trabalhoEquipa = it })
 
-                    // Classificação Final manual
+                    // Nota manual do avaliador
                     Card(
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
                         shape = RoundedCornerShape(16.dp),
@@ -210,10 +213,10 @@ fun OrientadorAvaliacaoScreen(
                                 Icon(Icons.Default.Star, contentDescription = null,
                                     tint = DarkBlue, modifier = Modifier.size(22.dp))
                                 Spacer(Modifier.width(10.dp))
-                                Text("Classificação Final", fontSize = 16.sp,
+                                Text("Nota da Avaliação", fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold, color = Color.Black)
                             }
-                            Text("Insira a nota final de 0 a 20 valores.",
+                            Text("Insira a sua nota de 0 a 20 valores.",
                                 fontSize = 12.sp, color = Color.Gray,
                                 modifier = Modifier.padding(top = 4.dp, bottom = 12.dp))
                             OutlinedTextField(
@@ -329,7 +332,7 @@ fun OrientadorAvaliacaoScreen(
                         } else {
                             Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Enviar Classificação", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                            Text("Enviar Avaliação", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
 

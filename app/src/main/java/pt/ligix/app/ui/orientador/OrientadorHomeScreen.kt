@@ -28,7 +28,10 @@ import pt.ligix.app.viewmodel.OrientadorHomeViewModel
 import pt.ligix.app.viewmodel.OrientadorHomeViewModelFactory
 
 @Composable
-fun OrientadorHomeScreen(modifier: Modifier = Modifier, onVerDiario: (String) -> Unit = {}) {
+fun OrientadorHomeScreen(
+    modifier: Modifier = Modifier,
+    onVerDiario: (String, String) -> Unit = { _, _ -> }
+) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
     val viewModel: OrientadorHomeViewModel = viewModel(
@@ -146,7 +149,7 @@ fun OrientadorHomeScreen(modifier: Modifier = Modifier, onVerDiario: (String) ->
                                 }
                             }
                             Spacer(Modifier.width(8.dp))
-                            IconButton(onClick = { onVerDiario(idEstagio) }) {
+                            IconButton(onClick = { onVerDiario(idEstagio, nomeAluno) }) {
                                 Icon(Icons.Default.RemoveRedEye, contentDescription = "Ver atividades",
                                     tint = DarkBlue, modifier = Modifier.size(24.dp))
                             }
