@@ -151,15 +151,6 @@ class OrientadorDiarioAlunoViewModel(
         }
     }
 
-    fun submeterFeedback(idAtividade: String, feedback: String) {
-        viewModelScope.launch {
-            try {
-                // Implementar quando houver tabela de feedback
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-    }
 }
 
 class OrientadorDiarioAlunoViewModelFactory(

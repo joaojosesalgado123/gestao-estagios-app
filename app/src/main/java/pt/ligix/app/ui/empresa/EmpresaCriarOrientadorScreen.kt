@@ -21,8 +21,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import pt.ligix.app.data.repository.EmpresaRepository
 import pt.ligix.app.ui.auth.DarkBlue
+import pt.ligix.app.ui.common.PhoneNumberInput
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.viewmodel.EmpresaCriarOrientadorViewModel
 import pt.ligix.app.viewmodel.EmpresaCriarOrientadorViewModelFactory
@@ -36,7 +36,7 @@ fun EmpresaCriarOrientadorScreen(
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
     val viewModel: EmpresaCriarOrientadorViewModel = viewModel(
-        factory = EmpresaCriarOrientadorViewModelFactory(EmpresaRepository(), sessionManager)
+        factory = EmpresaCriarOrientadorViewModelFactory(sessionManager)
     )
 
     val isLoading by viewModel.isLoading.collectAsState()
@@ -151,26 +151,11 @@ fun EmpresaCriarOrientadorScreen(
 
                     Spacer(Modifier.height(16.dp))
 
-                    // Telemóvel
-                    Text("TELEMÓVEL", fontSize = 11.sp, color = Color.Gray,
-                        letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
-                    Spacer(Modifier.height(6.dp))
-                    OutlinedTextField(
+                    PhoneNumberInput(
+                        label = "TELEMÓVEL",
                         value = telemovel,
                         onValueChange = { telemovel = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("923453422", color = Color.LightGray) },
-                        shape = RoundedCornerShape(10.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = DarkBlue,
-                            unfocusedBorderColor = Color.Transparent,
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color(0xFFF0F0F0)
-                        ),
-                        singleLine = true,
-                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone
-                        )
+                        containerColor = Color(0xFFF0F0F0)
                     )
 
                     Spacer(Modifier.height(16.dp))

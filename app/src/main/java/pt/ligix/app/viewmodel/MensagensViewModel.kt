@@ -1,6 +1,9 @@
 package pt.ligix.app.viewmodel
 
 import android.content.Context
+import android.content.Intent
+import android.widget.Toast
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -14,10 +17,14 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.model.Conversa
 import pt.ligix.app.model.Mensagem
+import pt.ligix.app.util.Constants
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.util.SessionTokenProvider
 
@@ -30,6 +37,11 @@ data class NotificacaoMsg(
 class MensagensViewModel : ViewModel() {
 
     private val api = RetrofitClient.api
+    private val storageClient = OkHttpClient.Builder()
+        .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
+        .writeTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+        .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+        .build()
 
     private val _conversa = MutableStateFlow<Conversa?>(null)
     val conversa: StateFlow<Conversa?> = _conversa
@@ -369,6 +381,101 @@ class MensagensViewModel : ViewModel() {
         }
     }
 
+    fun abrirFicheiroMensagem(context: Context, mensagem: Mensagem) {
+        val ficheiroUrl = mensagem.ficheiroUrl?.takeIf { it.isNotBlank() }
+        if (ficheiroUrl == null) {
+            _erro.value = "Ficheiro indisponível."
+            Toast.makeText(context, "Ficheiro indisponível.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        viewModelScope.launch {
+            val caminho = extrairCaminhoMensagem(ficheiroUrl)
+            val urlParaAbrir = caminho?.let {
+                gerarUrlAssinadaMensagem(context.applicationContext, it)
+                    ?: urlPublicaMensagem(it)
+            }
+                ?: normalizarUrlStorage(ficheiroUrl)
+
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, urlParaAbrir.toUri()).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    addCategory(Intent.CATEGORY_BROWSABLE)
+                }
+                context.startActivity(intent)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _erro.value = "Não foi possível abrir o ficheiro."
+                Toast.makeText(context, "Não foi possível abrir o ficheiro.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun extrairCaminhoMensagem(url: String): String? {
+        val semQuery = url.substringBefore("?")
+        val marcadores = listOf(
+            "/storage/v1/object/public/mensagens/",
+            "/storage/v1/object/sign/mensagens/",
+            "/storage/v1/object/mensagens/"
+        )
+
+        marcadores.forEach { marcador ->
+            if (semQuery.contains(marcador)) {
+                return semQuery.substringAfter(marcador).takeIf { it.isNotBlank() }
+            }
+        }
+
+        return semQuery
+            .takeIf { !it.startsWith("http") && !it.startsWith("/") }
+            ?.takeIf { it.isNotBlank() }
+    }
+
+    private suspend fun gerarUrlAssinadaMensagem(context: Context, caminho: String): String? = withContext(Dispatchers.IO) {
+        try {
+            val token = SessionManager(context).obterAccessTokenValido()
+                ?: SessionTokenProvider.accessToken
+                ?: return@withContext null
+            val requestBody = """{"expiresIn":3600}"""
+                .toRequestBody("application/json".toMediaType())
+            val request = Request.Builder()
+                .url("${Constants.SUPABASE_URL.trimEnd('/')}/storage/v1/object/sign/mensagens/$caminho")
+                .header("apikey", Constants.SUPABASE_KEY)
+                .header("Authorization", "Bearer $token")
+                .header("Content-Type", "application/json")
+                .post(requestBody)
+                .build()
+
+            storageClient.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext null
+                val body = response.body?.string().orEmpty()
+                val json = JSONObject(body)
+                val signedUrl = json.optString("signedURL")
+                    .ifBlank { json.optString("signedUrl") }
+                    .takeIf { it.isNotBlank() }
+                    ?: return@withContext null
+                normalizarUrlStorage(signedUrl)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    private fun normalizarUrlStorage(url: String): String {
+        val baseUrl = Constants.SUPABASE_URL.trimEnd('/')
+        return when {
+            url.startsWith("http") -> url
+            url.startsWith("/storage/") -> baseUrl + url
+            url.startsWith("/object/") -> "$baseUrl/storage/v1$url"
+            url.startsWith("/") -> baseUrl + url
+            else -> "$baseUrl/$url"
+        }
+    }
+
+    private fun urlPublicaMensagem(caminho: String): String {
+        return "${Constants.SUPABASE_URL.trimEnd('/')}/storage/v1/object/public/mensagens/$caminho"
+    }
+
     fun enviarFicheiro(bytes: ByteArray, nomeOriginal: String) {
         val idConversa = _conversa.value?.idConversa ?: return
         val idRemetente = _idUtilizador.value.ifBlank { return }
@@ -377,25 +484,20 @@ class MensagensViewModel : ViewModel() {
             try {
                 _erro.value = null
                 val path = "mensagens/$idConversa/${System.currentTimeMillis()}_$nomeOriginal"
-                val uploadUrl = "${pt.ligix.app.util.Constants.SUPABASE_URL}/storage/v1/object/mensagens/$path"
-                val client = okhttp3.OkHttpClient.Builder()
-                    .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS)
-                    .writeTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
-                    .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
-                    .build()
+                val uploadUrl = "${Constants.SUPABASE_URL.trimEnd('/')}/storage/v1/object/mensagens/$path"
                 val requestBody = bytes.toRequestBody("application/pdf".toMediaType())
-                val requestBuilder = okhttp3.Request.Builder()
+                val requestBuilder = Request.Builder()
                     .url(uploadUrl)
-                    .header("apikey", pt.ligix.app.util.Constants.SUPABASE_KEY)
+                    .header("apikey", Constants.SUPABASE_KEY)
                     .header("Content-Type", "application/pdf")
                     .post(requestBody)
                 SessionTokenProvider.accessToken?.let { token ->
                     requestBuilder.header("Authorization", "Bearer $token")
                 }
                 val request = requestBuilder.build()
-                val response = withContext(Dispatchers.IO) { client.newCall(request).execute() }
+                val response = withContext(Dispatchers.IO) { storageClient.newCall(request).execute() }
                 if (response.isSuccessful) {
-                    val publicUrl = "${pt.ligix.app.util.Constants.SUPABASE_URL}/storage/v1/object/public/mensagens/$path"
+                    val publicUrl = urlPublicaMensagem(path)
                     val mensagem = mapOf(
                         "idremetente" to idRemetente,
                         "conteudo" to "",

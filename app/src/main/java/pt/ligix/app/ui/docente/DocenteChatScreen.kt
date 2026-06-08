@@ -11,6 +11,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -129,7 +131,7 @@ fun DocenteChatScreen(modifier: Modifier = Modifier) {
                     singleLine = true
                 )
 
-                Divider(color = Color(0xFFEEEEEE))
+                HorizontalDivider(color = Color(0xFFEEEEEE))
 
                 mensagemErro?.let {
                     Text(
@@ -237,7 +239,7 @@ fun DocenteChatScreen(modifier: Modifier = Modifier) {
                                 }
                             }
                         }
-                        Divider(color = Color(0xFFEEEEEE), modifier = Modifier.padding(start = 84.dp))
+                        HorizontalDivider(color = Color(0xFFEEEEEE), modifier = Modifier.padding(start = 84.dp))
                     }
                 }
             }
@@ -251,7 +253,7 @@ fun DocenteChatScreen(modifier: Modifier = Modifier) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { viewModel.fecharChat() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Voltar", tint = DarkBlue)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar", tint = DarkBlue)
                     }
                     Box(
                         modifier = Modifier
@@ -269,7 +271,7 @@ fun DocenteChatScreen(modifier: Modifier = Modifier) {
                     }
                 }
 
-                Divider(color = Color(0xFFEEEEEE))
+                HorizontalDivider(color = Color(0xFFEEEEEE))
 
                 LazyColumn(
                     state = listState,
@@ -290,7 +292,8 @@ fun DocenteChatScreen(modifier: Modifier = Modifier) {
                             BolhaMensagem(
                                 mensagem = mensagem,
                                 isMinha = mensagem.idRemetente == idUtilizador,
-                                nomeRemetente = nomesParticipantes[mensagem.idRemetente] ?: "Desconhecido"
+                                nomeRemetente = nomesParticipantes[mensagem.idRemetente] ?: "Desconhecido",
+                                onAbrirFicheiro = { viewModel.abrirFicheiroMensagem(context, it) }
                             )
                         }
                     }
@@ -352,7 +355,7 @@ fun DocenteChatScreen(modifier: Modifier = Modifier) {
                         if (isSending) {
                             CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
                         } else {
-                            Icon(Icons.Default.Send, contentDescription = "Enviar", tint = Color.White)
+                            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Enviar", tint = Color.White)
                         }
                     }
                 }

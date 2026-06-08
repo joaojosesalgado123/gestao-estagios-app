@@ -38,18 +38,21 @@ begin
             idutilizador,
             numero_aluno,
             curso,
-            telemovel
+            telemovel,
+            idinstituicao
         )
         values (
             new.id,
             coalesce(metadata->>'numero_aluno', ''),
             coalesce(metadata->>'curso', ''),
-            nullif(metadata->>'telemovel', '')
+            nullif(metadata->>'telemovel', ''),
+            nullif(metadata->>'idinstituicao', '')::uuid
         )
         on conflict (idutilizador) do update
         set numero_aluno = excluded.numero_aluno,
             curso = excluded.curso,
-            telemovel = excluded.telemovel;
+            telemovel = excluded.telemovel,
+            idinstituicao = excluded.idinstituicao;
     elsif profile_role = 'docente' then
         insert into public.docente (
             idutilizador,

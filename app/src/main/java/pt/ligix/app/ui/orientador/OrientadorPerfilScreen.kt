@@ -24,6 +24,8 @@ import pt.ligix.app.ui.aluno.PerfilCampo
 import pt.ligix.app.ui.aluno.PerfilCampoEditavel
 import pt.ligix.app.ui.aluno.PerfilSecao
 import pt.ligix.app.ui.auth.DarkBlue
+import pt.ligix.app.ui.common.PhoneNumberInput
+import pt.ligix.app.util.PhoneNumberValidator
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.viewmodel.OrientadorPerfilViewModel
 import pt.ligix.app.viewmodel.OrientadorPerfilViewModelFactory
@@ -200,10 +202,18 @@ fun OrientadorPerfilScreen(
                 icon = Icons.Default.Email)
             Spacer(Modifier.height(8.dp))
             if (modoEdicao) {
-                PerfilCampoEditavel(label = "TELEMÓVEL", valor = editTelemovel,
-                    onValorChange = { editTelemovel = it })
+                PhoneNumberInput(
+                    label = "TELEMÓVEL",
+                    value = editTelemovel,
+                    onValueChange = { editTelemovel = it },
+                    containerColor = Color(0xFFF8F8F8)
+                )
             } else {
-                PerfilCampo(label = "TELEMÓVEL", valor = telemovelBD.ifEmpty { "—" }, icon = Icons.Default.Phone)
+                PerfilCampo(
+                    label = "TELEMÓVEL",
+                    valor = PhoneNumberValidator.formatForDisplay(telemovelBD),
+                    icon = Icons.Default.Phone
+                )
             }
             Spacer(Modifier.height(8.dp))
             if (modoEdicao) {

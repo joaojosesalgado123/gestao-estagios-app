@@ -99,6 +99,7 @@ class AuthRepository {
         email: String,
         password: String,
         telemovel: String,
+        idInstituicao: String,
         curso: String,
         numeroAluno: String
     ): Result<Utilizador> {
@@ -112,6 +113,7 @@ class AuthRepository {
                     "username" to username,
                     "numero_aluno" to numeroAluno,
                     "curso" to curso,
+                    "idinstituicao" to idInstituicao,
                     "telemovel" to telemovel
                 )
             ).getOrElse { erro ->

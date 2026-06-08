@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.model.Empresa
 import pt.ligix.app.model.Utilizador
+import pt.ligix.app.util.PhoneNumberValidator
 import pt.ligix.app.util.SessionManager
 
 class EmpresaPerfilViewModel : ViewModel() {
@@ -59,6 +60,13 @@ class EmpresaPerfilViewModel : ViewModel() {
     }
 
     fun guardarPerfil(nome: String, nipc: String, morada: String, telemovel: String, descricao: String) {
+        val telemovelValidado = PhoneNumberValidator.normalizeToE164(telemovel)
+        if (!telemovelValidado.isValid) {
+            _erroGuardar.value = telemovelValidado.errorMessage
+            return
+        }
+        val telemovelNormalizado = telemovelValidado.e164
+
         viewModelScope.launch {
             _isSaving.value = true
             _erroGuardar.value = null
@@ -94,7 +102,7 @@ class EmpresaPerfilViewModel : ViewModel() {
                     empresa = empresaAtual.copy(
                         nipc = nipc.ifBlank { null },
                         morada = morada.ifBlank { null },
-                        telemovel = telemovel.ifBlank { null },
+                        telemovel = telemovelNormalizado,
                         descricao = descricao.ifBlank { null }
                     )
                 )
@@ -112,7 +120,7 @@ class EmpresaPerfilViewModel : ViewModel() {
             _empresa.value = _empresa.value?.copy(
                 nipc = nipc.ifBlank { null },
                 morada = morada.ifBlank { null },
-                telemovel = telemovel.ifBlank { null },
+                telemovel = telemovelNormalizado,
                 descricao = descricao.ifBlank { null }
             )
             _guardadoComSucesso.value = true

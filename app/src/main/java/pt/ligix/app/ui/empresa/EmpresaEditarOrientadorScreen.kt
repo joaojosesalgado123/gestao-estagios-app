@@ -14,14 +14,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import pt.ligix.app.data.repository.EmpresaRepository
 import pt.ligix.app.ui.auth.DarkBlue
-import pt.ligix.app.util.SessionManager
+import pt.ligix.app.ui.common.PhoneNumberInput
 import pt.ligix.app.viewmodel.EmpresaEditarOrientadorViewModel
 import pt.ligix.app.viewmodel.EmpresaEditarOrientadorViewModelFactory
 import pt.ligix.app.viewmodel.OrientadorDetalhe
@@ -33,10 +31,8 @@ fun EmpresaEditarOrientadorScreen(
     onVoltar: () -> Unit = {},
     onGuardado: () -> Unit = {}
 ) {
-    val context = LocalContext.current
-    val sessionManager = remember { SessionManager(context) }
     val viewModel: EmpresaEditarOrientadorViewModel = viewModel(
-        factory = EmpresaEditarOrientadorViewModelFactory(EmpresaRepository(), sessionManager)
+        factory = EmpresaEditarOrientadorViewModelFactory()
     )
 
     val isLoading by viewModel.isLoading.collectAsState()
@@ -147,26 +143,11 @@ fun EmpresaEditarOrientadorScreen(
 
                     Spacer(Modifier.height(16.dp))
 
-                    // Telemóvel
-                    Text("TELEMÓVEL", fontSize = 11.sp, color = Color.Gray,
-                        letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
-                    Spacer(Modifier.height(6.dp))
-                    OutlinedTextField(
+                    PhoneNumberInput(
+                        label = "TELEMÓVEL",
                         value = telemovel,
                         onValueChange = { telemovel = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("923453422", color = Color.LightGray) },
-                        shape = RoundedCornerShape(10.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = DarkBlue,
-                            unfocusedBorderColor = Color.Transparent,
-                            focusedContainerColor = Color.White,
-                            unfocusedContainerColor = Color(0xFFF0F0F0)
-                        ),
-                        singleLine = true,
-                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone
-                        )
+                        containerColor = Color(0xFFF0F0F0)
                     )
 
                     Spacer(Modifier.height(16.dp))

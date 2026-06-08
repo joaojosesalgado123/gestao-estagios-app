@@ -22,8 +22,7 @@ data class DocenteAtividadeResumo(
     val nomeEmpresa: String,
     val tituloOferta: String,
     val tituloAtividade: String,
-    val data: String,
-    val pendente: Boolean
+    val data: String
 )
 
 data class DocentePrazoResumo(
@@ -111,8 +110,6 @@ class DocenteHomeViewModel(
                     val atividades = api.getAtividadesByEstagio(
                         idEstagio = "eq.${estagio.idEstagio}"
                     ).body().orEmpty()
-                    val feedbacks = repository.getFeedbacksDoEstagio(estagio.idEstagio).getOrNull().orEmpty()
-                    val atividadesComFeedback = feedbacks.map { it.idAtividade }.toSet()
                     revisoesPendentes += atividades.count { atividade ->
                         parseDate(atividade.dataAtividade ?: atividade.dataRegisto)?.let { data ->
                             !data.isBefore(inicioSemana) && !data.isAfter(hoje)
@@ -128,8 +125,7 @@ class DocenteHomeViewModel(
                                 nomeEmpresa = nomeEmpresa,
                                 tituloOferta = oferta?.titulo.orEmpty(),
                                 tituloAtividade = atividade.titulo,
-                                data = atividade.dataRegisto.ifBlank { atividade.dataAtividade.orEmpty() },
-                                pendente = atividade.idAtividade !in atividadesComFeedback
+                                data = atividade.dataRegisto.ifBlank { atividade.dataAtividade.orEmpty() }
                             )
                         )
                     }

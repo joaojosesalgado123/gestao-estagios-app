@@ -41,7 +41,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import pt.ligix.app.data.repository.DocenteRepository
 import pt.ligix.app.model.ATIVIDADE_CATEGORIA_IMPORTANTE
 import pt.ligix.app.model.ATIVIDADE_CATEGORIA_REUNIAO
 import pt.ligix.app.model.Atividade
@@ -74,7 +73,7 @@ fun DocenteDiarioAlunoScreen(
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
     val viewModel: DocenteDiarioAlunoViewModel = viewModel(
-        factory = DocenteDiarioAlunoViewModelFactory(DocenteRepository(), sessionManager)
+        factory = DocenteDiarioAlunoViewModelFactory(sessionManager)
     )
 
     val atividades by viewModel.atividades.collectAsState()

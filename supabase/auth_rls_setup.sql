@@ -92,18 +92,21 @@ begin
             idutilizador,
             numero_aluno,
             curso,
-            telemovel
+            telemovel,
+            idinstituicao
         )
         values (
             new.id,
             coalesce(metadata->>'numero_aluno', ''),
             coalesce(metadata->>'curso', ''),
-            nullif(metadata->>'telemovel', '')
+            nullif(metadata->>'telemovel', ''),
+            nullif(metadata->>'idinstituicao', '')::uuid
         )
         on conflict (idutilizador) do update
         set numero_aluno = excluded.numero_aluno,
             curso = excluded.curso,
-            telemovel = excluded.telemovel;
+            telemovel = excluded.telemovel,
+            idinstituicao = excluded.idinstituicao;
     elsif profile_role = 'docente' then
         insert into public.docente (
             idutilizador,
@@ -441,6 +444,41 @@ with check (
         select 1
         from public.conversa c
         where c.idconversa = mensagem.idconversa
+          and public.can_access_estagio(c.idestagio)
+    )
+);
+
+-- Storage: mensagens
+-- A app guarda anexos de chat em:
+--   bucket mensagens, caminho mensagens/<idConversa>/<timestamp>_<nome>.pdf
+drop policy if exists "mensagens_storage_insert_participantes" on storage.objects;
+create policy "mensagens_storage_insert_participantes"
+on storage.objects for insert
+to authenticated
+with check (
+    bucket_id = 'mensagens'
+    and array_length(storage.foldername(name), 1) >= 2
+    and (storage.foldername(name))[1] = 'mensagens'
+    and exists (
+        select 1
+        from public.conversa c
+        where c.idconversa::text = (storage.foldername(name))[2]
+          and public.can_access_estagio(c.idestagio)
+    )
+);
+
+drop policy if exists "mensagens_storage_select_participantes" on storage.objects;
+create policy "mensagens_storage_select_participantes"
+on storage.objects for select
+to authenticated
+using (
+    bucket_id = 'mensagens'
+    and array_length(storage.foldername(name), 1) >= 2
+    and (storage.foldername(name))[1] = 'mensagens'
+    and exists (
+        select 1
+        from public.conversa c
+        where c.idconversa::text = (storage.foldername(name))[2]
           and public.can_access_estagio(c.idestagio)
     )
 );
