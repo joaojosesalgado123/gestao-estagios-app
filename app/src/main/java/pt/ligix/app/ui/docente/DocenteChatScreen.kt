@@ -290,7 +290,8 @@ fun DocenteChatScreen(modifier: Modifier = Modifier) {
                             BolhaMensagem(
                                 mensagem = mensagem,
                                 isMinha = mensagem.idRemetente == idUtilizador,
-                                nomeRemetente = nomesParticipantes[mensagem.idRemetente] ?: "Desconhecido"
+                                nomeRemetente = nomesParticipantes[mensagem.idRemetente] ?: "Desconhecido",
+                                onAbrirFicheiro = { viewModel.abrirFicheiroMensagem(context, it) }
                             )
                         }
                     }
