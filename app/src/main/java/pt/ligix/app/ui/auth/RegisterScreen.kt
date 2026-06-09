@@ -59,7 +59,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.model.InstituicaoEnsino
+import pt.ligix.app.ui.common.DropdownDismissController
 import pt.ligix.app.ui.common.PhoneNumberInput
+import pt.ligix.app.ui.common.dismissDropdownsOnOutsideTap
+import pt.ligix.app.ui.common.dropdownDismissBounds
+import pt.ligix.app.ui.common.rememberDropdownDismissController
 
 @Composable
 fun RegisterScreen(
@@ -75,6 +79,7 @@ fun RegisterScreen(
 ) {
     var tabSelecionada by remember { mutableIntStateOf(0) }
     val tabs = listOf("Aluno", "Empresa", "Docente")
+    val dropdownDismissController = rememberDropdownDismissController()
 
     var username by remember { mutableStateOf("") }
     var nome by remember { mutableStateOf("") }
@@ -114,6 +119,7 @@ fun RegisterScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
+            .dismissDropdownsOnOutsideTap(dropdownDismissController)
     ) {
         Column(
             modifier = Modifier
@@ -221,13 +227,17 @@ fun RegisterScreen(
                         value = telemovelAluno,
                         onValueChange = { telemovelAluno = it },
                         labelColor = Color.Black,
-                        containerColor = FieldGrey
+                        containerColor = FieldGrey,
+                        dismissController = dropdownDismissController,
+                        dropdownId = "registo_aluno_indicativo"
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     CampoInstituicao(
                         instituicoes = instituicoes,
                         idSelecionado = idInstituicaoAluno,
                         isLoading = !instituicoesCarregadas,
+                        dismissController = dropdownDismissController,
+                        dropdownId = "registo_aluno_instituicao",
                         onSelecionar = { idInstituicaoAluno = it }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -280,7 +290,9 @@ fun RegisterScreen(
                         value = telemovelDocente,
                         onValueChange = { telemovelDocente = it },
                         labelColor = Color.Black,
-                        containerColor = FieldGrey
+                        containerColor = FieldGrey,
+                        dismissController = dropdownDismissController,
+                        dropdownId = "registo_docente_indicativo"
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     CampoTexto(
@@ -295,6 +307,8 @@ fun RegisterScreen(
                         instituicoes = instituicoes,
                         idSelecionado = idInstituicaoDocente,
                         isLoading = !instituicoesCarregadas,
+                        dismissController = dropdownDismissController,
+                        dropdownId = "registo_docente_instituicao",
                         onSelecionar = { idInstituicaoDocente = it }
                     )
                 }
@@ -409,10 +423,13 @@ private fun CampoInstituicao(
     instituicoes: List<InstituicaoEnsino>,
     idSelecionado: String,
     isLoading: Boolean,
+    dismissController: DropdownDismissController,
+    dropdownId: String,
     onSelecionar: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     var pesquisa by remember { mutableStateOf("") }
+    val activeDropdownId = dismissController.activeId
     val selecionada = instituicoes.firstOrNull { it.idInstituicao == idSelecionado }
     val texto = selecionada?.let { instituicao ->
         instituicao.textoApresentacao()
@@ -422,7 +439,16 @@ private fun CampoInstituicao(
     }
 
     LaunchedEffect(expanded) {
-        if (!expanded) pesquisa = ""
+        if (!expanded) {
+            pesquisa = ""
+            dismissController.hide(dropdownId)
+        }
+    }
+
+    LaunchedEffect(activeDropdownId) {
+        if (activeDropdownId != dropdownId) {
+            expanded = false
+        }
     }
 
     Text(
@@ -436,11 +462,20 @@ private fun CampoInstituicao(
     Spacer(modifier = Modifier.height(8.dp))
     Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedButton(
-            onClick = { expanded = true },
+            onClick = {
+                if (expanded) {
+                    expanded = false
+                    dismissController.hide(dropdownId)
+                } else {
+                    expanded = true
+                    dismissController.show(dropdownId)
+                }
+            },
             enabled = instituicoes.isNotEmpty(),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp),
+                .height(56.dp)
+                .dropdownDismissBounds(dismissController, dropdownId, expanded, boundsId = "anchor"),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.outlinedButtonColors(containerColor = FieldGrey),
             border = null
@@ -467,6 +502,7 @@ private fun CampoInstituicao(
                 .padding(top = 8.dp)
                 .background(FieldGrey, RoundedCornerShape(8.dp))
                 .padding(vertical = 8.dp)
+                .dropdownDismissBounds(dismissController, dropdownId, expanded)
         ) {
             OutlinedTextField(
                 value = pesquisa,

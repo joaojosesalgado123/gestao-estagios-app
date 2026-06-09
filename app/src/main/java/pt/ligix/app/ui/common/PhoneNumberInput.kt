@@ -52,7 +52,9 @@ fun PhoneNumberInput(
     modifier: Modifier = Modifier,
     placeholder: String = "912345678",
     labelColor: Color = Color.Gray,
-    containerColor: Color = FieldGrey
+    containerColor: Color = FieldGrey,
+    dismissController: DropdownDismissController? = null,
+    dropdownId: String = "phone_country_picker"
 ) {
     val countries = remember { PhoneNumberValidator.countries }
     val initialState = remember { PhoneNumberValidator.inputState(value) }
@@ -60,6 +62,7 @@ fun PhoneNumberInput(
     var nationalNumber by remember { mutableStateOf(initialState.nationalNumber) }
     var expanded by remember { mutableStateOf(false) }
     var search by remember { mutableStateOf("") }
+    val activeDropdownId = dismissController?.activeId
     val filteredCountries = remember(countries, search) {
         val term = search.trim()
         if (term.isBlank()) {
@@ -74,7 +77,16 @@ fun PhoneNumberInput(
     }
 
     LaunchedEffect(expanded) {
-        if (!expanded) search = ""
+        if (!expanded) {
+            search = ""
+            dismissController?.hide(dropdownId)
+        }
+    }
+
+    LaunchedEffect(activeDropdownId) {
+        if (dismissController != null && activeDropdownId != dropdownId) {
+            expanded = false
+        }
     }
 
     LaunchedEffect(value) {
@@ -104,10 +116,23 @@ fun PhoneNumberInput(
             verticalAlignment = Alignment.Top
         ) {
             OutlinedButton(
-                onClick = { expanded = true },
+                onClick = {
+                    if (expanded) {
+                        expanded = false
+                        dismissController?.hide(dropdownId)
+                    } else {
+                        expanded = true
+                        dismissController?.show(dropdownId)
+                    }
+                },
                 modifier = Modifier
                     .width(112.dp)
-                    .height(56.dp),
+                    .height(56.dp)
+                    .then(
+                        dismissController?.let {
+                            Modifier.dropdownDismissBounds(it, dropdownId, expanded, boundsId = "anchor")
+                        } ?: Modifier
+                    ),
                 shape = RoundedCornerShape(10.dp),
                 colors = ButtonDefaults.outlinedButtonColors(containerColor = containerColor)
             ) {
@@ -165,7 +190,10 @@ fun PhoneNumberInput(
                             nationalNumber = nationalNumber
                         )
                     )
-                }
+                },
+                modifier = dismissController?.let {
+                    Modifier.dropdownDismissBounds(it, dropdownId, expanded)
+                } ?: Modifier
             )
         }
     }
@@ -176,10 +204,11 @@ private fun CountryPicker(
     countries: List<PhoneCountry>,
     search: String,
     onSearchChange: (String) -> Unit,
-    onSelect: (PhoneCountry) -> Unit
+    onSelect: (PhoneCountry) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(top = 8.dp)
             .background(Color(0xFFF5F5F5), RoundedCornerShape(10.dp))

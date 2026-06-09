@@ -26,7 +26,11 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.ui.auth.DarkBlue
+import pt.ligix.app.ui.common.DropdownDismissController
 import pt.ligix.app.ui.common.PhoneNumberInput
+import pt.ligix.app.ui.common.dismissDropdownsOnOutsideTap
+import pt.ligix.app.ui.common.dropdownDismissBounds
+import pt.ligix.app.ui.common.rememberDropdownDismissController
 import pt.ligix.app.util.PhoneNumberValidator
 import pt.ligix.app.viewmodel.AlunoPerfilViewModel
 import pt.ligix.app.viewmodel.AlunoPerfilViewModelFactory
@@ -53,6 +57,7 @@ fun AlunoPerfilScreen(
     var modoEdicao by remember { mutableStateOf(false) }
     var idioma by remember { mutableStateOf("Português") }
     var expandedIdioma by remember { mutableStateOf(false) }
+    val dropdownDismissController = rememberDropdownDismissController()
 
     // Campos editáveis
     var editNome by remember { mutableStateOf("") }
@@ -81,6 +86,7 @@ fun AlunoPerfilScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F7))
+            .dismissDropdownsOnOutsideTap(dropdownDismissController)
             .verticalScroll(rememberScrollState())
     ) {
         // Top Bar
@@ -206,6 +212,8 @@ fun AlunoPerfilScreen(
                 CampoInstituicaoAlunoPerfil(
                     instituicoes = instituicoes,
                     idSelecionado = editIdInstituicao,
+                    dismissController = dropdownDismissController,
+                    dropdownId = "aluno_perfil_instituicao",
                     onSelecionar = { editIdInstituicao = it }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -236,7 +244,9 @@ fun AlunoPerfilScreen(
                     label = "TELEMÓVEL",
                     value = editTelemovel,
                     onValueChange = { editTelemovel = it },
-                    containerColor = Color(0xFFF8F8F8)
+                    containerColor = Color(0xFFF8F8F8),
+                    dismissController = dropdownDismissController,
+                    dropdownId = "aluno_perfil_indicativo"
                 )
             } else {
                 aluno?.telemovel?.let {
@@ -358,10 +368,13 @@ fun PerfilCampoEditavel(label: String, valor: String, onValorChange: (String) ->
 private fun CampoInstituicaoAlunoPerfil(
     instituicoes: List<InstituicaoEnsino>,
     idSelecionado: String,
+    dismissController: DropdownDismissController,
+    dropdownId: String,
     onSelecionar: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     var pesquisa by remember { mutableStateOf("") }
+    val activeDropdownId = dismissController.activeId
     val selecionada = instituicoes.firstOrNull { it.idInstituicao == idSelecionado }
     val texto = selecionada?.textoApresentacao().orEmpty()
     val opcoes = remember(instituicoes, pesquisa) {
@@ -369,7 +382,16 @@ private fun CampoInstituicaoAlunoPerfil(
     }
 
     LaunchedEffect(expanded) {
-        if (!expanded) pesquisa = ""
+        if (!expanded) {
+            pesquisa = ""
+            dismissController.hide(dropdownId)
+        }
+    }
+
+    LaunchedEffect(activeDropdownId) {
+        if (activeDropdownId != dropdownId) {
+            expanded = false
+        }
     }
 
     Column {
@@ -383,11 +405,20 @@ private fun CampoInstituicaoAlunoPerfil(
         )
         Box(modifier = Modifier.fillMaxWidth()) {
             OutlinedButton(
-                onClick = { expanded = true },
+                onClick = {
+                    if (expanded) {
+                        expanded = false
+                        dismissController.hide(dropdownId)
+                    } else {
+                        expanded = true
+                        dismissController.show(dropdownId)
+                    }
+                },
                 enabled = instituicoes.isNotEmpty(),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
+                    .height(56.dp)
+                    .dropdownDismissBounds(dismissController, dropdownId, expanded, boundsId = "anchor"),
                 shape = RoundedCornerShape(10.dp)
             ) {
                 Text(
@@ -406,6 +437,7 @@ private fun CampoInstituicaoAlunoPerfil(
                     .padding(top = 8.dp)
                     .background(Color(0xFFF5F5F5), RoundedCornerShape(10.dp))
                     .padding(vertical = 8.dp)
+                    .dropdownDismissBounds(dismissController, dropdownId, expanded)
             ) {
                 OutlinedTextField(
                     value = pesquisa,
