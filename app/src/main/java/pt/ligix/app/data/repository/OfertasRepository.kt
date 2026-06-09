@@ -23,7 +23,7 @@ class OfertasRepository {
 
     suspend fun getOfertas(): Result<List<OfertaEstagio>> {
         return try {
-            val response = api.getTodasOfertas()
+            val response = api.getOfertasDisponiveisAluno()
             if (response.isSuccessful) {
                 Result.success(response.body().orEmpty().comNomesEmpresa())
             } else {
@@ -34,13 +34,15 @@ class OfertasRepository {
         }
     }
 
-    suspend fun getOfertaPorId(idOferta: String): Result<OfertaEstagio?> {
+    suspend fun ofertaTemVagas(idOferta: String): Result<Boolean> {
         return try {
-            val response = api.getOfertaPorId(idOferta = "eq.$idOferta")
+            val response = api.ofertaTemVagas(
+                params = mapOf("p_idoferta" to idOferta)
+            )
             if (response.isSuccessful) {
-                Result.success(response.body().orEmpty().comNomesEmpresa().firstOrNull())
+                Result.success(response.body() == true)
             } else {
-                Result.failure(Exception("Erro: ${response.code()}"))
+                Result.failure(Exception("Não foi possível confirmar as vagas da oferta."))
             }
         } catch (e: Exception) {
             Result.failure(Exception("Sem ligação à internet"))
@@ -64,25 +66,21 @@ class OfertasRepository {
     }
 
     suspend fun criarCandidatura(
-        idAluno: String,
         idOferta: String,
         cvFicheiro: String,
         cartaFicheiro: String
     ): Result<Unit> {
         return try {
             val body = mapOf(
-                "idaluno" to idAluno,
-                "idoferta" to idOferta,
-                "status" to "pendente",
-                "cv_ficheiro" to cvFicheiro,
-                "carta_motivacao_ficheiro" to cartaFicheiro,
-                "data" to java.time.LocalDate.now().toString()
+                "p_idoferta" to idOferta,
+                "p_cv_ficheiro" to cvFicheiro,
+                "p_carta_motivacao_ficheiro" to cartaFicheiro
             )
-            val response = api.createCandidaturaMap(body)
-            if (response.isSuccessful || response.code() == 201) {
+            val response = api.criarCandidaturaAluno(body)
+            if (response.isSuccessful && response.body() == true) {
                 Result.success(Unit)
             } else {
-                Result.failure(Exception("Erro ao criar candidatura: ${response.code()}"))
+                Result.failure(Exception("Esta oferta já não tem vagas disponíveis ou já tens uma candidatura ativa."))
             }
         } catch (e: Exception) {
             Result.failure(Exception("Sem ligação à internet"))
