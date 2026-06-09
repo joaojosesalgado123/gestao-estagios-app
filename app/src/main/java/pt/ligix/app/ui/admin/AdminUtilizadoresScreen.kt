@@ -46,7 +46,7 @@ fun AdminUtilizadoresScreen(
     val erro by viewModel.erro.collectAsState()
 
     // Estado local: utilizador escolhido para rejeitar (null = dialog fechado)
-    var utilizadorARejeitar by remember { mutableStateOf<pt.ligix.app.model.Utilizador?>(null) }
+    var utilizadorARejeitar by remember { mutableStateOf<Utilizador?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.carregarDados()

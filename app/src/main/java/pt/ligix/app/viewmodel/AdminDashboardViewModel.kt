@@ -52,18 +52,4 @@ class AdminDashboardViewModel(
         }
     }
 
-    fun rejeitarEmpresa(idEmpresa: String) {
-        viewModelScope.launch {
-            repository.rejeitarEmpresa(idEmpresa)
-                .onSuccess {
-                    _empresasPendentes.value = _empresasPendentes.value
-                        .filterNot { it.idEmpresa == idEmpresa }
-                }
-                .onFailure { e -> _erro.value = e.message ?: "Erro ao rejeitar" }
-        }
-    }
-
-    fun limparErro() {
-        _erro.value = null
-    }
 }
