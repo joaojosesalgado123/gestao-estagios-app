@@ -6,14 +6,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import pt.ligix.app.data.repository.AdminRepository
-import pt.ligix.app.model.Empresa
 
 class AdminDashboardViewModel(
     private val repository: AdminRepository
 ) : ViewModel() {
 
-    private val _empresasPendentes = MutableStateFlow<List<Empresa>>(emptyList())
-    val empresasPendentes: StateFlow<List<Empresa>> = _empresasPendentes
+    private val _empresasPendentes = MutableStateFlow<List<EmpresaPendenteCard>>(emptyList())
+    val empresasPendentes: StateFlow<List<EmpresaPendenteCard>> = _empresasPendentes
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -26,7 +25,7 @@ class AdminDashboardViewModel(
             _isLoading.value = true
             _erro.value = null
 
-            repository.getEmpresasPendentes()
+            repository.getEmpresasPendentesComNome()
                 .onSuccess { lista -> _empresasPendentes.value = lista }
                 .onFailure { e -> _erro.value = e.message ?: "Erro desconhecido" }
 
@@ -39,7 +38,7 @@ class AdminDashboardViewModel(
             repository.aprovarEmpresa(idEmpresa)
                 .onSuccess {
                     _empresasPendentes.value = _empresasPendentes.value
-                        .filterNot { it.idUtilizador == idEmpresa }
+                        .filterNot { it.idEmpresa == idEmpresa }
                 }
                 .onFailure { e -> _erro.value = e.message ?: "Erro ao aprovar" }
         }
@@ -50,7 +49,7 @@ class AdminDashboardViewModel(
             repository.rejeitarEmpresa(idEmpresa)
                 .onSuccess {
                     _empresasPendentes.value = _empresasPendentes.value
-                        .filterNot { it.idUtilizador == idEmpresa }
+                        .filterNot { it.idEmpresa == idEmpresa }
                 }
                 .onFailure { e -> _erro.value = e.message ?: "Erro ao rejeitar" }
         }

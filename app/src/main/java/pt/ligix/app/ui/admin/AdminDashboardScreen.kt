@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pt.ligix.app.data.repository.AdminRepository
-import pt.ligix.app.model.Empresa
+import pt.ligix.app.viewmodel.EmpresaPendenteCard
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.auth.LigixGold
 import pt.ligix.app.viewmodel.AdminDashboardViewModel
@@ -47,113 +47,119 @@ fun AdminDashboardScreen(
             .fillMaxSize()
             .background(Color(0xFFF5F5F7))
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 20.dp, vertical = 24.dp)
     ) {
-        // Cabeçalho
-        Text(
-            text = "Resumo Diário",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            color = DarkBlue
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Visão geral do ecossistema de estágios. Acompanhe as métricas essenciais e gira as pendências do dia.",
-            fontSize = 14.sp,
-            color = Color.Gray,
-            lineHeight = 20.sp
-        )
+        AdminTopBar()
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
+            // Cabeçalho
+            Text(
+                text = "Resumo Diário",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
+                color = DarkBlue
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Visão geral do ecossistema de estágios. Acompanhe as métricas essenciais e gira as pendências do dia.",
+                fontSize = 14.sp,
+                color = Color.Gray,
+                lineHeight = 20.sp
+            )
 
-        // Cards de métricas (por agora só o de pendentes está ligado a dados reais)
-        CardMetrica(
-            titulo = "TOTAL DE UTILIZADORES",
-            valor = "—",
-            icone = Icons.Default.People,
-            corAcento = DarkBlue
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        CardMetrica(
-            titulo = "ESTAGIÁRIOS ATIVOS",
-            valor = "—",
-            icone = Icons.Default.School,
-            corAcento = LigixGold
-        )
-        Spacer(modifier = Modifier.height(12.dp))
-        CardMetrica(
-            titulo = "PENDENTES",
-            valor = empresasPendentes.size.toString(),
-            icone = Icons.AutoMirrored.Filled.Assignment,
-            corAcento = DarkBlue
-        )
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Spacer(modifier = Modifier.height(32.dp))
+            // Cards de métricas (por agora só o de pendentes está ligado a dados reais)
+            CardMetrica(
+                titulo = "TOTAL DE UTILIZADORES",
+                valor = "—",
+                icone = Icons.Default.People,
+                corAcento = DarkBlue
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            CardMetrica(
+                titulo = "ESTAGIÁRIOS ATIVOS",
+                valor = "—",
+                icone = Icons.Default.School,
+                corAcento = LigixGold
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            CardMetrica(
+                titulo = "PENDENTES",
+                valor = empresasPendentes.size.toString(),
+                icone = Icons.AutoMirrored.Filled.Assignment,
+                corAcento = DarkBlue
+            )
 
-        // Secção de empresas pendentes
-        Text(
-            text = "Empresas Pendentes",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            color = DarkBlue
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = "Instituições à espera de aprovação.",
-            fontSize = 13.sp,
-            color = Color.Gray
-        )
+            Spacer(modifier = Modifier.height(32.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
+            // Secção de empresas pendentes
+            Text(
+                text = "Empresas Pendentes",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = DarkBlue
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Instituições à espera de aprovação.",
+                fontSize = 13.sp,
+                color = Color.Gray
+            )
 
-        // Conteúdo da lista — três estados possíveis
-        when {
-            isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = DarkBlue)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Conteúdo da lista — três estados possíveis
+            when {
+                isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = DarkBlue)
+                    }
+                }
+
+                erro != null -> {
+                    Card(
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE))
+                    ) {
+                        Text(
+                            text = erro ?: "",
+                            modifier = Modifier.padding(16.dp),
+                            color = Color(0xFFC62828),
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+
+                empresasPendentes.isEmpty() -> {
+                    Card(
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White)
+                    ) {
+                        Text(
+                            text = "Sem empresas pendentes neste momento.",
+                            modifier = Modifier.fillMaxWidth().padding(24.dp),
+                            color = Color.Gray,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+
+                else -> {
+                    empresasPendentes.forEach { empresa ->
+                        CardEmpresaPendente(
+                            empresa = empresa,
+                            onAprovar = { viewModel.aprovarEmpresa(empresa.idEmpresa) }
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
                 }
             }
-            erro != null -> {
-                Card(
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE))
-                ) {
-                    Text(
-                        text = erro ?: "",
-                        modifier = Modifier.padding(16.dp),
-                        color = Color(0xFFC62828),
-                        fontSize = 14.sp
-                    )
-                }
-            }
-            empresasPendentes.isEmpty() -> {
-                Card(
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White)
-                ) {
-                    Text(
-                        text = "Sem empresas pendentes neste momento.",
-                        modifier = Modifier.fillMaxWidth().padding(24.dp),
-                        color = Color.Gray,
-                        fontSize = 14.sp
-                    )
-                }
-            }
-            else -> {
-                empresasPendentes.forEach { empresa ->
-                    CardEmpresaPendente(
-                        empresa = empresa,
-                        onAprovar = { viewModel.aprovarEmpresa(empresa.idUtilizador) }
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-            }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
@@ -207,13 +213,16 @@ private fun CardMetrica(
 
 @Composable
 private fun CardEmpresaPendente(
-    empresa: Empresa,
+    empresa: EmpresaPendenteCard,
     onAprovar: () -> Unit
 ) {
-    // Iniciais para o avatar
-    val iniciais = (empresa.descricao ?: empresa.idUtilizador)
+    // Iniciais a partir do nome real
+    val iniciais = empresa.nome.split(" ")
+        .mapNotNull { it.firstOrNull()?.toString() }
         .take(2)
+        .joinToString("")
         .uppercase()
+        .ifBlank { "EM" }
 
     Card(
         shape = RoundedCornerShape(20.dp),
@@ -221,7 +230,6 @@ private fun CardEmpresaPendente(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Avatar com iniciais
                 Box(
                     modifier = Modifier
                         .size(48.dp)
@@ -238,13 +246,13 @@ private fun CardEmpresaPendente(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = empresa.descricao ?: "Empresa sem nome",
+                        text = empresa.nome,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
                     )
                     Text(
-                        text = empresa.morada ?: "Sem morada",
+                        text = empresa.descricao ?: "Sem descrição",
                         fontSize = 13.sp,
                         color = Color.Gray
                     )
