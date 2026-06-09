@@ -8,6 +8,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -194,6 +196,8 @@ private fun ConteudoDetalhe(
             colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
             modifier = Modifier.fillMaxWidth()
         ) {
+            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             Text("Aprovar Registo", color = Color.White, fontSize = 14.sp)
         }
 
@@ -207,6 +211,8 @@ private fun ConteudoDetalhe(
             ),
             modifier = Modifier.fillMaxWidth()
         ) {
+            Icon(Icons.Default.Cancel, contentDescription = null, tint = Color(0xFFC62828), modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             Text("Rejeitar Registo", color = Color(0xFFC62828), fontSize = 14.sp)
         }
     } else {

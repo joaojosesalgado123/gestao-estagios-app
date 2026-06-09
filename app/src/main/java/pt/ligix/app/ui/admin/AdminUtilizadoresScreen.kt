@@ -8,6 +8,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -328,6 +330,8 @@ private fun CardUtilizador(
                     colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
                     modifier = Modifier.weight(1f)
                 ) {
+                    Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text("Editar", color = Color.White, fontSize = 13.sp)
                 }
                 Spacer(modifier = Modifier.width(8.dp))
@@ -336,6 +340,8 @@ private fun CardUtilizador(
                     border = BorderStroke(1.dp, Color(0xFFC62828)),
                     modifier = Modifier.weight(1f)
                 ) {
+                    Icon(Icons.Default.Cancel, contentDescription = null, tint = Color(0xFFC62828), modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text("Rejeitar", color = Color(0xFFC62828), fontSize = 13.sp)
                 }
             }

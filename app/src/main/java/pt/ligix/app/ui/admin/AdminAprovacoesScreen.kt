@@ -6,6 +6,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -216,6 +220,8 @@ private fun CardAprovacaoEmpresa(
                         colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
                         modifier = Modifier.weight(1f)
                     ) {
+                        Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(14.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
                         Text("Aprovar", color = Color.White, fontSize = 12.sp)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
@@ -224,6 +230,8 @@ private fun CardAprovacaoEmpresa(
                         border = BorderStroke(1.dp, Color(0xFFC62828)),
                         modifier = Modifier.weight(1f)
                     ) {
+                        Icon(Icons.Default.Cancel, contentDescription = null, tint = Color(0xFFC62828), modifier = Modifier.size(14.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
                         Text("Rejeitar", color = Color(0xFFC62828), fontSize = 12.sp)
                     }
                     Spacer(modifier = Modifier.width(8.dp))
@@ -231,6 +239,8 @@ private fun CardAprovacaoEmpresa(
                         onClick = onDetalhes,
                         modifier = Modifier.weight(1f)
                     ) {
+                        Icon(Icons.Default.Visibility, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(14.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
                         Text("Detalhes", color = DarkBlue, fontSize = 12.sp)
                     }
                 }
@@ -263,7 +273,7 @@ private fun CardResumoAtividade(resumo: ResumoAtividadeEmpresas?) {
 
             LinhaResumo("Pendentes", resumo?.pendentes)
             Spacer(modifier = Modifier.height(12.dp))
-            LinhaResumo("Aprovadas (Mês)", resumo?.aprovadasNoMes)
+            LinhaResumo("Aprovadas", resumo?.aprovadasNoMes)
             Spacer(modifier = Modifier.height(12.dp))
             LinhaResumo("Rejeitadas", resumo?.rejeitadas)
         }
