@@ -69,7 +69,7 @@ fun AdminMainScreen(onLogout: () -> Unit = {}) {
             when (selectedTab) {
                 0 -> AdminDashboardScreen()
                 1 -> AdminPlaceholder("Utilizadores", onLogout)
-                2 -> AdminPlaceholder("Aprovações", onLogout)
+                2 -> AdminAprovacoesScreen()
                 3 -> AdminPlaceholder("Orientadores", onLogout)
                 4 -> AdminPlaceholder("Perfil", onLogout)
             }
