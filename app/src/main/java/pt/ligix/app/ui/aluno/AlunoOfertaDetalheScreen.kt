@@ -12,6 +12,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -54,16 +55,20 @@ fun AlunoOfertaDetalheScreen(
     var erro by remember { mutableStateOf<String?>(null) }
     var sucesso by remember { mutableStateOf(false) }
     var jaCandidatou by remember { mutableStateOf(false) }
+    var temVagas by remember { mutableStateOf(true) }
+    var verificouVagas by remember { mutableStateOf(false) }
     var nomeEmpresa by remember(oferta.idEmpresa, oferta.nomeEmpresa) {
         mutableStateOf(oferta.nomeEmpresa.orEmpty())
     }
 
-    // Verifica ao entrar no ecrã se já se candidatou
+    // Verifica ao entrar no ecrã se já se candidatou e se a oferta ainda tem vaga.
     LaunchedEffect(oferta.idOferta) {
         val idAluno = sessionManager.idUtilizador.first()
         if (idAluno != null) {
             jaCandidatou = alunoRepo.verificarCandidaturaExistente(idAluno, oferta.idOferta)
         }
+        temVagas = repository.ofertaTemVagas(oferta.idOferta).getOrElse { true }
+        verificouVagas = true
     }
 
     LaunchedEffect(oferta.idEmpresa) {
@@ -110,7 +115,7 @@ fun AlunoOfertaDetalheScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onVoltar) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Voltar", tint = DarkBlue)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar", tint = DarkBlue)
             }
             Text(
                 "Detalhe da Oferta",
@@ -217,6 +222,21 @@ fun AlunoOfertaDetalheScreen(
                                 Text("Já te candidataste a esta oferta. Aguarda a resposta da empresa.", fontSize = 12.sp, color = Color(0xFF388E3C))
                             }
                         }
+                    } else if (verificouVagas && !temVagas) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFFFFF3E0), RoundedCornerShape(10.dp))
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFFE65100), modifier = Modifier.size(24.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text("Oferta sem vagas disponíveis", fontWeight = FontWeight.Bold, color = Color(0xFFE65100), fontSize = 14.sp)
+                                Text("Esta oferta já atingiu o número de vagas definido pela empresa.", fontSize = 12.sp, color = Color(0xFFE65100))
+                            }
+                        }
                     } else {
                         Text("Candidatar-se à Vaga", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                         Text("Preenche os campos abaixo para iniciar a tua jornada profissional.", fontSize = 13.sp, color = Color.Gray)
@@ -262,6 +282,19 @@ fun AlunoOfertaDetalheScreen(
                                         return@launch
                                     }
 
+                                    val vagaDisponivel = repository.ofertaTemVagas(oferta.idOferta)
+                                    if (vagaDisponivel.isFailure) {
+                                        erro = vagaDisponivel.exceptionOrNull()?.message
+                                        isLoading = false
+                                        return@launch
+                                    }
+                                    if (vagaDisponivel.getOrDefault(false).not()) {
+                                        temVagas = false
+                                        erro = "Esta oferta já não tem vagas disponíveis."
+                                        isLoading = false
+                                        return@launch
+                                    }
+
                                     val cvBytes = withContext(Dispatchers.IO) {
                                         context.contentResolver.openInputStream(cvUri!!)?.use { it.readBytes() }
                                     }
@@ -295,7 +328,6 @@ fun AlunoOfertaDetalheScreen(
                                     }
 
                                     val result = repository.criarCandidatura(
-                                        idAluno = idAluno,
                                         idOferta = oferta.idOferta,
                                         cvFicheiro = cvPath,
                                         cartaFicheiro = cartaPath
