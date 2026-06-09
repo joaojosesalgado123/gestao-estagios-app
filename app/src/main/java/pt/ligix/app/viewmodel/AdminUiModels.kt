@@ -12,3 +12,13 @@ data class EmpresaPendenteCard(
     val descricao: String?,
     val createdAt: String?
 )
+
+/**
+ * Resumo de atividade das aprovações de empresas, mostrado no fim do
+ * ecrã de Aprovações. As "aprovadas no mês" referem-se ao mês atual.
+ */
+data class ResumoAtividadeEmpresas(
+    val pendentes: Int,
+    val aprovadasNoMes: Int,
+    val rejeitadas: Int
+)

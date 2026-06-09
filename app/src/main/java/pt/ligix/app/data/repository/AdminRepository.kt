@@ -3,6 +3,10 @@ package pt.ligix.app.data.repository
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.model.Empresa
 import pt.ligix.app.viewmodel.EmpresaPendenteCard
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import pt.ligix.app.viewmodel.ResumoAtividadeEmpresas
 
 class AdminRepository {
 
@@ -51,6 +55,44 @@ class AdminRepository {
 
     suspend fun rejeitarEmpresa(idEmpresa: String): Result<Empresa> {
         return atualizarStatusEmpresa(idEmpresa, "rejeitada")
+    }
+
+    suspend fun getResumoAtividadeEmpresas(): Result<ResumoAtividadeEmpresas> {
+        return try {
+            // Contar pendentes
+            val pendentesResp = api.getEmpresasByStatus(status = "eq.pendente")
+            if (!pendentesResp.isSuccessful) {
+                return Result.failure(Exception("Erro: ${pendentesResp.code()}"))
+            }
+            val pendentes = pendentesResp.body().orEmpty().size
+
+            // Contar aprovadas e filtrar para o mês atual
+            val aprovadasResp = api.getEmpresasByStatus(status = "eq.aprovada")
+            if (!aprovadasResp.isSuccessful) {
+                return Result.failure(Exception("Erro: ${aprovadasResp.code()}"))
+            }
+            val mesAtual = SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(Date())
+            val aprovadasNoMes = aprovadasResp.body().orEmpty().count { empresa ->
+                empresa.createdAt?.startsWith(mesAtual) == true
+            }
+
+            // Contar rejeitadas
+            val rejeitadasResp = api.getEmpresasByStatus(status = "eq.rejeitada")
+            if (!rejeitadasResp.isSuccessful) {
+                return Result.failure(Exception("Erro: ${rejeitadasResp.code()}"))
+            }
+            val rejeitadas = rejeitadasResp.body().orEmpty().size
+
+            Result.success(
+                ResumoAtividadeEmpresas(
+                    pendentes = pendentes,
+                    aprovadasNoMes = aprovadasNoMes,
+                    rejeitadas = rejeitadas
+                )
+            )
+        } catch (e: Exception) {
+            Result.failure(Exception("Sem ligação à internet"))
+        }
     }
 
     private suspend fun atualizarStatusEmpresa(

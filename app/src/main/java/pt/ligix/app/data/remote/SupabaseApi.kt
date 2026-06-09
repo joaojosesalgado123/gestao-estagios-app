@@ -98,6 +98,12 @@ interface SupabaseApi {
         @Query("select") select: String = "*"
     ): Response<List<Empresa>>
 
+    @GET("empresa")
+    suspend fun getEmpresasByStatus(
+        @Query("status") status: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Empresa>>
+
     // ==================== OFERTAS ====================
     @POST("oferta_estagio")
     suspend fun createOfertaMap(
