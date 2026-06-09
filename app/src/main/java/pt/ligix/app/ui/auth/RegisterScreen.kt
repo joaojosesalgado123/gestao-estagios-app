@@ -72,7 +72,7 @@ fun RegisterScreen(
     onRegistarDocente: (username: String, nome: String, email: String, password: String,
                         confirmar: String, telemovel: String, area: String, idInstituicao: String) -> Unit,
     onRegistarEmpresa: (username: String, nome: String, email: String, password: String,
-                        confirmar: String, nipc: String, morada: String, descricao: String) -> Unit,
+                        confirmar: String, telemovel: String, nipc: String, morada: String, descricao: String) -> Unit,
     onEntrar: () -> Unit,
     isLoading: Boolean = false,
     erroMensagem: String? = null
@@ -99,6 +99,7 @@ fun RegisterScreen(
     var instituicoesCarregadas by remember { mutableStateOf(false) }
 
     var nipc by remember { mutableStateOf("") }
+    var telemovelEmpresa by remember { mutableStateOf("") }
     var morada by remember { mutableStateOf("") }
     var descricao by remember { mutableStateOf("") }
 
@@ -259,6 +260,16 @@ fun RegisterScreen(
                     )
                 }
                 1 -> {
+                    PhoneNumberInput(
+                        label = "TELEMÓVEL",
+                        value = telemovelEmpresa,
+                        onValueChange = { telemovelEmpresa = it },
+                        labelColor = Color.Black,
+                        containerColor = FieldGrey,
+                        dismissController = dropdownDismissController,
+                        dropdownId = "registo_empresa_indicativo"
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
                     CampoTexto(
                         label = "NIPC",
                         value = nipc,
@@ -351,7 +362,7 @@ fun RegisterScreen(
                         )
                         1 -> onRegistarEmpresa(
                             username, nome, email, password,
-                            confirmarPassword, nipc, morada, descricao
+                            confirmarPassword, telemovelEmpresa, nipc, morada, descricao
                         )
                         2 -> onRegistarDocente(
                             username, nome, email, password,
