@@ -55,6 +55,7 @@ fun DocenteTopBar(
 
     val localMensagens = LocalDocenteMensagensViewModel.current
     val localNotificacoes = LocalDocenteNotificacoesViewModel.current
+    val onPerfilClick = LocalDocentePerfilClick.current
     val mensVm = mensagensViewModel ?: localMensagens ?: viewModel(
         key = "docente_mensagens",
         factory = MensagensViewModelFactory()
@@ -199,7 +200,8 @@ fun DocenteTopBar(
             modifier = Modifier
                 .size(36.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFE57373)),
+                .background(Color(0xFFE57373))
+                .clickable(onClick = onPerfilClick),
             contentAlignment = Alignment.Center
         ) {
             Text(

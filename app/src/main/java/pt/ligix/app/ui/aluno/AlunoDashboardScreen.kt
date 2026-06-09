@@ -1,6 +1,7 @@
 package pt.ligix.app.ui.aluno
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -34,6 +35,7 @@ fun AlunoDashboardScreen(
     mensagensNaoVistas: Int = 0,
     historicoNotificacoes: List<NotificacaoMsg> = emptyList(),
     onSininho: () -> Unit = {},
+    onPerfil: () -> Unit = {},
     onProcurarEstagios: () -> Unit,
     onRegistarAtividade: () -> Unit,
     onMensagens: () -> Unit
@@ -133,7 +135,11 @@ fun AlunoDashboardScreen(
 
                 // Avatar
                 Box(
-                    modifier = Modifier.size(36.dp).clip(CircleShape).background(DarkBlue),
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(CircleShape)
+                        .background(DarkBlue)
+                        .clickable(onClick = onPerfil),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(nome.firstOrNull()?.toString() ?: "A", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)

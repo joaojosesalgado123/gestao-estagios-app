@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.first
 fun AlunoOfertasScreen(
     historicoNotificacoes: List<NotificacaoMsg> = emptyList(),
     onSininho: () -> Unit = {},
+    onPerfil: () -> Unit = {},
     onOfertaClick: (OfertaEstagio) -> Unit
 ) {
     val context = LocalContext.current
@@ -102,7 +103,11 @@ fun AlunoOfertasScreen(
 
             // Avatar
             Box(
-                modifier = Modifier.size(36.dp).clip(CircleShape).background(DarkBlue),
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(DarkBlue)
+                    .clickable(onClick = onPerfil),
                 contentAlignment = Alignment.Center
             ) {
                 Text(nomeUtilizador, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
