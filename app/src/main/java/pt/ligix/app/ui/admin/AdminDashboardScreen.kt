@@ -28,7 +28,8 @@ import pt.ligix.app.viewmodel.AdminDashboardViewModelFactory
 
 @Composable
 fun AdminDashboardScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onAbrirDetalheEmpresa: (String) -> Unit = {}
 ) {
     val viewModel: AdminDashboardViewModel = viewModel(
         factory = AdminDashboardViewModelFactory(AdminRepository())
@@ -151,7 +152,8 @@ fun AdminDashboardScreen(
                     empresasPendentes.forEach { empresa ->
                         CardEmpresaPendente(
                             empresa = empresa,
-                            onAprovar = { viewModel.aprovarEmpresa(empresa.idEmpresa) }
+                            onAprovar = { viewModel.aprovarEmpresa(empresa.idEmpresa) },
+                            onDetalhes = { onAbrirDetalheEmpresa(empresa.idEmpresa) }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                     }
@@ -214,7 +216,8 @@ private fun CardMetrica(
 @Composable
 private fun CardEmpresaPendente(
     empresa: EmpresaPendenteCard,
-    onAprovar: () -> Unit
+    onAprovar: () -> Unit,
+    onDetalhes: () -> Unit
 ) {
     // Iniciais a partir do nome real
     val iniciais = empresa.nome.split(" ")
@@ -263,7 +266,7 @@ private fun CardEmpresaPendente(
 
             Row(modifier = Modifier.fillMaxWidth()) {
                 OutlinedButton(
-                    onClick = { /* abrir detalhes — próximo ecrã */ },
+                    onClick = onDetalhes,
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("Detalhes", color = DarkBlue)

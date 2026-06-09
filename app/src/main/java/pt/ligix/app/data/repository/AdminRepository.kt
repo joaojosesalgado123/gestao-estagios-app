@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import pt.ligix.app.viewmodel.ResumoAtividadeEmpresas
+import pt.ligix.app.viewmodel.EmpresaDetalhe
 
 class AdminRepository {
 
@@ -88,6 +89,44 @@ class AdminRepository {
                     pendentes = pendentes,
                     aprovadasNoMes = aprovadasNoMes,
                     rejeitadas = rejeitadas
+                )
+            )
+        } catch (e: Exception) {
+            Result.failure(Exception("Sem ligação à internet"))
+        }
+    }
+
+    suspend fun getEmpresaDetalhe(idEmpresa: String): Result<EmpresaDetalhe> {
+        return try {
+            // 1. Buscar a empresa
+            val empresaResp = api.getEmpresaById(idUtilizador = "eq.$idEmpresa")
+            if (!empresaResp.isSuccessful) {
+                return Result.failure(Exception("Erro: ${empresaResp.code()}"))
+            }
+            val empresa = empresaResp.body()?.firstOrNull()
+                ?: return Result.failure(Exception("Empresa não encontrada"))
+
+            // 2. Buscar o utilizador correspondente (para o nome)
+            val utilizadoresResp = api.getUtilizadoresByIds(ids = inFilter(listOf(idEmpresa)))
+            if (!utilizadoresResp.isSuccessful) {
+                return Result.failure(Exception("Erro: ${utilizadoresResp.code()}"))
+            }
+            val nome = utilizadoresResp.body().orEmpty()
+                .firstOrNull { it.idUtilizador == idEmpresa }
+                ?.nome
+                ?: "Empresa sem nome"
+
+            // 3. Combinar
+            Result.success(
+                EmpresaDetalhe(
+                    idEmpresa = empresa.idUtilizador,
+                    nome = nome,
+                    nipc = empresa.nipc,
+                    morada = empresa.morada,
+                    descricao = empresa.descricao,
+                    telemovel = empresa.telemovel,
+                    createdAt = empresa.createdAt,
+                    status = empresa.status
                 )
             )
         } catch (e: Exception) {

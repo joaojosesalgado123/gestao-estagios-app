@@ -27,7 +27,8 @@ import java.util.Locale
 
 @Composable
 fun AdminAprovacoesScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onAbrirDetalheEmpresa: (String) -> Unit = {}
 ) {
     val viewModel: AdminAprovacoesViewModel = viewModel(
         factory = AdminAprovacoesViewModelFactory(AdminRepository())
@@ -107,7 +108,8 @@ fun AdminAprovacoesScreen(
                         CardAprovacaoEmpresa(
                             empresa = empresa,
                             onAprovar = { viewModel.aprovarEmpresa(empresa.idEmpresa) },
-                            onRejeitar = { viewModel.rejeitarEmpresa(empresa.idEmpresa) }
+                            onRejeitar = { viewModel.rejeitarEmpresa(empresa.idEmpresa) },
+                            onDetalhes = { onAbrirDetalheEmpresa(empresa.idEmpresa) }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                     }
@@ -127,7 +129,8 @@ fun AdminAprovacoesScreen(
 private fun CardAprovacaoEmpresa(
     empresa: EmpresaPendenteCard,
     onAprovar: () -> Unit,
-    onRejeitar: () -> Unit
+    onRejeitar: () -> Unit,
+    onDetalhes: () -> Unit
 ) {
     val iniciais = empresa.nome.split(" ")
         .mapNotNull { it.firstOrNull()?.toString() }
@@ -225,7 +228,7 @@ private fun CardAprovacaoEmpresa(
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     OutlinedButton(
-                        onClick = { /* próximo ecrã: detalhes */ },
+                        onClick = onDetalhes,
                         modifier = Modifier.weight(1f)
                     ) {
                         Text("Detalhes", color = DarkBlue, fontSize = 12.sp)
