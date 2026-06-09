@@ -23,7 +23,7 @@ fun AdminMainScreen(onLogout: () -> Unit = {}) {
     var selectedTab by remember { mutableStateOf(0) }
 
     Scaffold(
-        topBar = { AdminTopBar() },
+
         bottomBar = {
             NavigationBar(containerColor = Color.White) {
                 NavigationBarItem(
