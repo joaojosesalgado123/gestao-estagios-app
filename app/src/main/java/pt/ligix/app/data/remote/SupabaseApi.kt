@@ -280,6 +280,12 @@ interface SupabaseApi {
         @Query("select") select: String = "*"
     ): Response<List<Estagio>>
 
+    @GET("estagio")
+    suspend fun getEstagiosByStatus(
+        @Query("status") status: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Estagio>>
+
     // ==================== ATIVIDADES ====================
     @POST("atividade")
     suspend fun createAtividade(

@@ -20,6 +20,9 @@ class AdminDashboardViewModel(
     private val _erro = MutableStateFlow<String?>(null)
     val erro: StateFlow<String?> = _erro
 
+    private val _estatisticas = MutableStateFlow<EstatisticasDashboard?>(null)
+    val estatisticas: StateFlow<EstatisticasDashboard?> = _estatisticas
+
     fun carregarDados() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -27,7 +30,12 @@ class AdminDashboardViewModel(
 
             repository.getEmpresasPendentesComNome()
                 .onSuccess { lista -> _empresasPendentes.value = lista }
-                .onFailure { e -> _erro.value = e.message ?: "Erro desconhecido" }
+                .onFailure { e -> _erro.value = e.message ?: "Erro a carregar empresas" }
+
+            repository.getEstatisticasDashboard()
+                .onSuccess { _estatisticas.value = it }
+                .onFailure { e -> _erro.value = e.message ?: "Erro a carregar estatísticas" }
+
 
             _isLoading.value = false
         }

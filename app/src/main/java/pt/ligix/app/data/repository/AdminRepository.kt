@@ -9,6 +9,7 @@ import java.util.Locale
 import pt.ligix.app.viewmodel.ResumoAtividadeEmpresas
 import pt.ligix.app.viewmodel.EmpresaDetalhe
 import pt.ligix.app.viewmodel.EmpresaListagem
+import pt.ligix.app.viewmodel.EstatisticasDashboard
 import pt.ligix.app.viewmodel.UtilizadorEdicao
 
 class AdminRepository {
@@ -311,6 +312,41 @@ class AdminRepository {
                 )
             }
             Result.success(listagem)
+        } catch (e: Exception) {
+            Result.failure(Exception("Sem ligação à internet"))
+        }
+    }
+
+    suspend fun getEstatisticasDashboard(): Result<EstatisticasDashboard> {
+        return try {
+            // Total de utilizadores (excluindo admin para alinhar com listagem)
+            val utilResp = api.getUtilizadoresComFiltro(role = "neq.admin")
+            if (!utilResp.isSuccessful) {
+                return Result.failure(Exception("Erro: ${utilResp.code()}"))
+            }
+            val totalUtilizadores = utilResp.body().orEmpty().size
+
+            // Estagiários ativos
+            val estagiosResp = api.getEstagiosByStatus(status = "eq.ativo")
+            if (!estagiosResp.isSuccessful) {
+                return Result.failure(Exception("Erro: ${estagiosResp.code()}"))
+            }
+            val estagiariosAtivos = estagiosResp.body().orEmpty().size
+
+            // Empresas pendentes
+            val empresasResp = api.getEmpresasByStatus(status = "eq.pendente")
+            if (!empresasResp.isSuccessful) {
+                return Result.failure(Exception("Erro: ${empresasResp.code()}"))
+            }
+            val empresasPendentes = empresasResp.body().orEmpty().size
+
+            Result.success(
+                EstatisticasDashboard(
+                    totalUtilizadores = totalUtilizadores,
+                    estagiariosAtivos = estagiariosAtivos,
+                    empresasPendentes = empresasPendentes
+                )
+            )
         } catch (e: Exception) {
             Result.failure(Exception("Sem ligação à internet"))
         }

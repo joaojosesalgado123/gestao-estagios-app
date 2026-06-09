@@ -51,3 +51,12 @@ data class EmpresaListagem(
     val status: String,
     val createdAt: String?
 )
+
+/**
+ * Estatísticas mostradas nos cards de métricas do Dashboard do admin.
+ */
+data class EstatisticasDashboard(
+    val totalUtilizadores: Int,
+    val estagiariosAtivos: Int,
+    val empresasPendentes: Int
+)

@@ -7,8 +7,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.School
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,6 +40,7 @@ fun AdminDashboardScreen(
     val empresasPendentes by viewModel.empresasPendentes.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val erro by viewModel.erro.collectAsState()
+    val estatisticas by viewModel.estatisticas.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.carregarDados()
@@ -69,24 +72,24 @@ fun AdminDashboardScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Cards de métricas (por agora só o de pendentes está ligado a dados reais)
+
             CardMetrica(
                 titulo = "TOTAL DE UTILIZADORES",
-                valor = "—",
+                valor = estatisticas?.totalUtilizadores?.toString() ?: "—",
                 icone = Icons.Default.People,
                 corAcento = DarkBlue
             )
             Spacer(modifier = Modifier.height(12.dp))
             CardMetrica(
                 titulo = "ESTAGIÁRIOS ATIVOS",
-                valor = "—",
+                valor = estatisticas?.estagiariosAtivos?.toString() ?: "—",
                 icone = Icons.Default.School,
                 corAcento = LigixGold
             )
             Spacer(modifier = Modifier.height(12.dp))
             CardMetrica(
                 titulo = "PENDENTES",
-                valor = empresasPendentes.size.toString(),
+                valor = estatisticas?.empresasPendentes?.toString() ?: "—",
                 icone = Icons.AutoMirrored.Filled.Assignment,
                 corAcento = DarkBlue
             )
@@ -269,6 +272,8 @@ private fun CardEmpresaPendente(
                     onClick = onDetalhes,
                     modifier = Modifier.weight(1f)
                 ) {
+                    Icon(Icons.Default.Visibility, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text("Detalhes", color = DarkBlue)
                 }
                 Spacer(modifier = Modifier.width(8.dp))
@@ -277,6 +282,8 @@ private fun CardEmpresaPendente(
                     colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
                     modifier = Modifier.weight(1f)
                 ) {
+                    Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text("Aprovar", color = Color.White)
                 }
             }
