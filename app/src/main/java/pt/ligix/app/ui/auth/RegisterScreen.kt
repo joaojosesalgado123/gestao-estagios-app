@@ -85,6 +85,16 @@ fun RegisterScreen(
     var tabSelecionada by remember { mutableIntStateOf(0) }
     val tabs = listOf("Aluno", "Empresa", "Docente")
     val dropdownDismissController = rememberDropdownDismissController()
+    val emailLabel = if (tabSelecionada == 1) {
+        "E-MAIL CORPORATIVO"
+    } else {
+        "E-MAIL INSTITUCIONAL"
+    }
+    val emailPlaceholder = when (tabSelecionada) {
+        0 -> "aluno@universidade.pt"
+        1 -> "empresa@empresa.pt"
+        else -> "docente@universidade.pt"
+    }
 
     var username by remember { mutableStateOf("") }
     var nome by remember { mutableStateOf("") }
@@ -245,10 +255,10 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             CampoTexto(
-                label = "E-MAIL INSTITUCIONAL",
+                label = emailLabel,
                 value = email,
                 onValueChange = { email = it },
-                placeholder = "nome@universidade.pt",
+                placeholder = emailPlaceholder,
                 icon = Icons.Default.Email,
                 keyboardType = KeyboardType.Email
             )
