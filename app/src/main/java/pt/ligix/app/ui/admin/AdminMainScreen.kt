@@ -67,7 +67,7 @@ fun AdminMainScreen(onLogout: () -> Unit = {}) {
             contentAlignment = Alignment.Center
         ) {
             when (selectedTab) {
-                0 -> AdminPlaceholder("Início", onLogout)
+                0 -> AdminDashboardScreen()
                 1 -> AdminPlaceholder("Utilizadores", onLogout)
                 2 -> AdminPlaceholder("Aprovações", onLogout)
                 3 -> AdminPlaceholder("Orientadores", onLogout)
