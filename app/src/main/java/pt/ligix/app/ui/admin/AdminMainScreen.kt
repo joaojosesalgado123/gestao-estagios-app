@@ -10,13 +10,9 @@ import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import pt.ligix.app.ui.auth.DarkBlue
 
 @Composable
 fun AdminMainScreen(onLogout: () -> Unit = {}) {
@@ -98,35 +94,10 @@ fun AdminMainScreen(onLogout: () -> Unit = {}) {
                     3 -> AdminEmpresasScreen(
                         onAbrirDetalheEmpresa = { id -> idEmpresaEmDetalhe = id }
                     )
-                    4 -> AdminPlaceholder("Perfil", onLogout)
+                    4 -> AdminPerfilScreen(onLogout = onLogout)
                 }
             }
         }
     }
 }
 
-@Composable
-private fun AdminPlaceholder(titulo: String, onLogout: () -> Unit) {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = titulo,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = DarkBlue
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Em construção", fontSize = 14.sp, color = Color.Gray)
-            Spacer(modifier = Modifier.height(24.dp))
-            Button(
-                onClick = onLogout,
-                colors = ButtonDefaults.buttonColors(containerColor = DarkBlue)
-            ) {
-                Text("Terminar Sessão", color = Color.White)
-            }
-        }
-    }
-}
