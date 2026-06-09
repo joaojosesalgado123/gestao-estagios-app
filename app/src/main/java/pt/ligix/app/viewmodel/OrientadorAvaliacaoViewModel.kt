@@ -119,7 +119,6 @@ class OrientadorAvaliacaoViewModel(
                     "idavaliacao" to avaliacao.idAvaliacao,
                     "idavaliador" to idAvaliador,
                     "classificacao" to notaFinal,
-                    "criterio" to "Avaliação final",
                     "comentario" to comentarioItemAvaliacao(
                         papel = papel,
                         comentario = comentario,
@@ -144,7 +143,6 @@ class OrientadorAvaliacaoViewModel(
                         idAvaliacao = avaliacao.idAvaliacao,
                         idAvaliador = idAvaliador,
                         classificacao = notaFinal,
-                        criterio = "Avaliação final",
                         comentario = itemMap["comentario"] as String,
                         dataAvaliacao = agora
                     )
@@ -209,14 +207,6 @@ class OrientadorAvaliacaoViewModel(
                 it.ehItemDeNotaFinal()
         }
             .maxByOrNull { it.dataAvaliacao.ifBlank { "" } }
-
-    private fun ItemAvaliacao.ehItemDeNotaFinal(): Boolean {
-        val criterioNormalizado = criterio.trim()
-        val comentarioNormalizado = comentario.orEmpty()
-        return criterioNormalizado.isBlank() ||
-            criterioNormalizado.contains("final", ignoreCase = true) ||
-            comentarioNormalizado.contains("Avaliador:", ignoreCase = true)
-    }
 
     private fun comentarioItemAvaliacao(
         papel: String,
