@@ -22,3 +22,19 @@ data class ResumoAtividadeEmpresas(
     val aprovadasNoMes: Int,
     val rejeitadas: Int
 )
+
+/**
+ * Tudo o que o ecrã de edição de utilizador precisa: dados básicos (editáveis)
+ * + uma lista de pares (label, valor) com os campos específicos da role,
+ * mostrados como leitura apenas.
+ */
+data class UtilizadorEdicao(
+    val idUtilizador: String,
+    val nome: String,
+    val email: String,
+    val role: String,
+    val username: String,
+    val language: String,
+    val createdAt: String?,
+    val camposExtras: List<Pair<String, String?>>
+)

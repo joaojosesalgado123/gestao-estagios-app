@@ -28,7 +28,8 @@ import pt.ligix.app.viewmodel.FiltroRole
 
 @Composable
 fun AdminUtilizadoresScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onEditarUtilizador: (String, String) -> Unit = { _, _ -> }
 ) {
     val viewModel: AdminUtilizadoresViewModel = viewModel(
         factory = AdminUtilizadoresViewModelFactory(AdminRepository())
@@ -165,7 +166,7 @@ fun AdminUtilizadoresScreen(
                     utilizadoresFiltrados.forEach { utilizador ->
                         CardUtilizador(
                             utilizador = utilizador,
-                            onEditar = { /* TODO(admin): abrir AdminEditarUtilizadorScreen */ },
+                            onEditar = {onEditarUtilizador(utilizador.idUtilizador ?: "", utilizador.role)},
                             onRejeitar = { /* TODO(admin): abrir AdminEditarUtilizadorScreen com ação rejeitar */ }
                         )
                         Spacer(modifier = Modifier.height(12.dp))

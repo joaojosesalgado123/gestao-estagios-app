@@ -22,11 +22,13 @@ import pt.ligix.app.ui.auth.DarkBlue
 fun AdminMainScreen(onLogout: () -> Unit = {}) {
     var selectedTab by remember { mutableStateOf(0) }
     var idEmpresaEmDetalhe by remember { mutableStateOf<String?>(null) }
+    var utilizadorEmEdicao by remember { mutableStateOf<Pair<String, String>?>(null) }
+
 
     Scaffold(
         bottomBar = {
             // Esconde a bottom bar quando estamos num sub-ecrã (detalhe)
-            if (idEmpresaEmDetalhe == null) {
+            if (idEmpresaEmDetalhe == null && utilizadorEmEdicao == null) {
                 NavigationBar(containerColor = Color.White) {
                     NavigationBarItem(
                         selected = selectedTab == 0,
@@ -70,17 +72,26 @@ fun AdminMainScreen(onLogout: () -> Unit = {}) {
         ) {
             // Se há uma empresa em detalhe, mostra o sub-ecrã sobre tudo
             val empresaId = idEmpresaEmDetalhe
+            val utilEdicao = utilizadorEmEdicao
             if (empresaId != null) {
                 AdminDetalheEmpresaScreen(
                     idEmpresa = empresaId,
                     onVoltar = { idEmpresaEmDetalhe = null }
+                )
+            } else if (utilEdicao != null) {
+                AdminEditarUtilizadorScreen(
+                    idUtilizador = utilEdicao.first,
+                    role = utilEdicao.second,
+                    onVoltar = { utilizadorEmEdicao = null }
                 )
             } else {
                 when (selectedTab) {
                     0 -> AdminDashboardScreen(
                         onAbrirDetalheEmpresa = { id -> idEmpresaEmDetalhe = id }
                     )
-                    1 ->  AdminUtilizadoresScreen()
+                    1 ->  AdminUtilizadoresScreen(
+                        onEditarUtilizador = { id, role -> utilizadorEmEdicao = id to role }
+                    )
                     2 -> AdminAprovacoesScreen(
                         onAbrirDetalheEmpresa = { id -> idEmpresaEmDetalhe = id }
                     )

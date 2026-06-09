@@ -8,6 +8,7 @@ import java.util.Date
 import java.util.Locale
 import pt.ligix.app.viewmodel.ResumoAtividadeEmpresas
 import pt.ligix.app.viewmodel.EmpresaDetalhe
+import pt.ligix.app.viewmodel.UtilizadorEdicao
 
 class AdminRepository {
 
@@ -144,6 +145,125 @@ class AdminRepository {
             }
         } catch (e: Exception) {
             Result.failure(Exception("Sem ligação à internet"))
+        }
+    }
+
+    suspend fun getUtilizadorParaEdicao(idutilizador: String, role: String): Result<UtilizadorEdicao> {
+        return try {
+            val utilResp = api.getUtilizadoresByIds(ids = inFilter(listOf(idutilizador)))
+            if (!utilResp.isSuccessful) {
+                return Result.failure(Exception("Erro: ${utilResp.code()}"))
+            }
+            val utilizador = utilResp.body()?.firstOrNull()
+                ?: return Result.failure(Exception("Utilizador não encontrado"))
+
+            val extras: List<Pair<String, String?>> = when (role) {
+                "aluno" -> fetchCamposAluno(idutilizador)
+                "docente" -> fetchCamposDocente(idutilizador)
+                "orientador" -> fetchCamposOrientador(idutilizador)
+                "empresa" -> fetchCamposEmpresa(idutilizador)
+                else -> emptyList()
+            }
+
+            Result.success(
+                UtilizadorEdicao(
+                    idUtilizador = utilizador.idUtilizador ?: "",
+                    nome = utilizador.nome,
+                    email = utilizador.email,
+                    role = utilizador.role,
+                    username = utilizador.username,
+                    language = utilizador.language,
+                    createdAt = utilizador.createdAt,
+                    camposExtras = extras
+                )
+            )
+        } catch (e: Exception) {
+            Result.failure(Exception("Sem ligação à internet"))
+        }
+    }
+
+    suspend fun atualizarDadosBasicosUtilizador(
+        idutilizador: String,
+        novoNome: String,
+        novoEmail: String
+    ): Result<pt.ligix.app.model.Utilizador> {
+        return try {
+            val getResp = api.getUtilizadoresByIds(ids = inFilter(listOf(idutilizador)))
+            if (!getResp.isSuccessful) {
+                return Result.failure(Exception("Erro: ${getResp.code()}"))
+            }
+            val atual = getResp.body()?.firstOrNull()
+                ?: return Result.failure(Exception("Utilizador não encontrado"))
+
+            val novo = atual.copy(nome = novoNome, email = novoEmail)
+
+            val updResp = api.adminUpdateUtilizador(
+                id = "eq.$idutilizador",
+                utilizador = novo
+            )
+            if (updResp.isSuccessful) {
+                Result.success(updResp.body()?.firstOrNull() ?: novo)
+            } else {
+                Result.failure(Exception("Erro: ${updResp.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Sem ligação à internet"))
+        }
+    }
+
+    private suspend fun fetchCamposAluno(id: String): List<Pair<String, String?>> {
+        return try {
+            val resp = api.getAlunoById(idUtilizador = "eq.$id")
+            val aluno = resp.body()?.firstOrNull() ?: return emptyList()
+            listOf(
+                "NÚMERO DE ALUNO" to aluno.numeroAluno,
+                "CURSO" to aluno.curso,
+                "TELEMÓVEL" to aluno.telemovel
+            )
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    private suspend fun fetchCamposDocente(id: String): List<Pair<String, String?>> {
+        return try {
+            val resp = api.getDocenteById(idUtilizador = "eq.$id")
+            val docente = resp.body()?.firstOrNull() ?: return emptyList()
+            listOf(
+                "ÁREA" to docente.area,
+                "TELEMÓVEL" to docente.telemovel
+            )
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    private suspend fun fetchCamposOrientador(id: String): List<Pair<String, String?>> {
+        return try {
+            val resp = api.getOrientadoresPorUtilizador(idUtilizador = "eq.$id")
+            val orientador = resp.body()?.firstOrNull() ?: return emptyList()
+            listOf(
+                "ÁREA" to orientador.area,
+                "TELEMÓVEL" to orientador.telemovel,
+                "ESTADO" to orientador.status
+            )
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    private suspend fun fetchCamposEmpresa(id: String): List<Pair<String, String?>> {
+        return try {
+            val resp = api.getEmpresaById(idUtilizador = "eq.$id")
+            val empresa = resp.body()?.firstOrNull() ?: return emptyList()
+            listOf(
+                "NIPC" to empresa.nipc,
+                "MORADA" to empresa.morada,
+                "TELEMÓVEL" to empresa.telemovel,
+                "DESCRIÇÃO" to empresa.descricao
+            )
+        } catch (e: Exception) {
+            emptyList()
         }
     }
 
