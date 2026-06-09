@@ -59,4 +59,18 @@ class AdminUtilizadoresViewModel(
     fun atualizarPesquisa(termo: String) {
         _termoPesquisa.value = termo
     }
+    fun rejeitarUtilizador(idutilizador: String) {
+        viewModelScope.launch {
+            repository.eliminarUtilizador(idutilizador)
+                .onSuccess {
+                    _utilizadores.value = _utilizadores.value
+                        .filterNot { it.idUtilizador == idutilizador }
+                }
+                .onFailure { e -> _erro.value = e.message ?: "Erro ao rejeitar utilizador" }
+        }
+    }
+
+    fun limparErro() {
+        _erro.value = null
+    }
 }

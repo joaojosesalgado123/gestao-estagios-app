@@ -267,6 +267,19 @@ class AdminRepository {
         }
     }
 
+    suspend fun eliminarUtilizador(idutilizador: String): Result<Unit> {
+        return try {
+            val response = api.adminDeleteUtilizador(id = "eq.$idutilizador")
+            if (response.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Erro: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Sem ligação à internet"))
+        }
+    }
+
     private suspend fun atualizarStatusEmpresa(
         idEmpresa: String,
         novoStatus: String

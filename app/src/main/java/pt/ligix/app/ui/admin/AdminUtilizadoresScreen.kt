@@ -25,6 +25,8 @@ import pt.ligix.app.ui.auth.LigixGold
 import pt.ligix.app.viewmodel.AdminUtilizadoresViewModel
 import pt.ligix.app.viewmodel.AdminUtilizadoresViewModelFactory
 import pt.ligix.app.viewmodel.FiltroRole
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 
 @Composable
 fun AdminUtilizadoresScreen(
@@ -40,6 +42,9 @@ fun AdminUtilizadoresScreen(
     val termoPesquisa by viewModel.termoPesquisa.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val erro by viewModel.erro.collectAsState()
+
+    // Estado local: utilizador escolhido para rejeitar (null = dialog fechado)
+    var utilizadorARejeitar by remember { mutableStateOf<pt.ligix.app.model.Utilizador?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.carregarDados()
@@ -167,11 +172,47 @@ fun AdminUtilizadoresScreen(
                         CardUtilizador(
                             utilizador = utilizador,
                             onEditar = {onEditarUtilizador(utilizador.idUtilizador ?: "", utilizador.role)},
-                            onRejeitar = { /* TODO(admin): abrir AdminEditarUtilizadorScreen com ação rejeitar */ }
+                            onRejeitar = { utilizadorARejeitar = utilizador }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
+            }
+
+            // Dialog de confirmação de rejeição
+            val alvo = utilizadorARejeitar
+            if (alvo != null) {
+                AlertDialog(
+                    onDismissRequest = { utilizadorARejeitar = null },
+                    title = {
+                        Text(
+                            "Rejeitar utilizador?",
+                            fontWeight = FontWeight.Bold,
+                            color = DarkBlue
+                        )
+                    },
+                    text = {
+                        Text(
+                            "Tem a certeza que pretende rejeitar e eliminar o utilizador \"${alvo.nome}\" (${alvo.email})? Esta ação não pode ser desfeita."
+                        )
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                viewModel.rejeitarUtilizador(alvo.idUtilizador ?: "")
+                                utilizadorARejeitar = null
+                            }
+                        ) {
+                            Text("Rejeitar", color = Color(0xFFC62828), fontWeight = FontWeight.Bold)
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { utilizadorARejeitar = null }) {
+                            Text("Cancelar", color = Color.DarkGray)
+                        }
+                    },
+                    containerColor = Color.White
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
