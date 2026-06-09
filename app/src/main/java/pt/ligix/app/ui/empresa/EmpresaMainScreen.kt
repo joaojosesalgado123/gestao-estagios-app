@@ -159,7 +159,10 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        CompositionLocalProvider(LocalEmpresaNotificacoesViewModel provides notificacoesViewModel) {
+        CompositionLocalProvider(
+            LocalEmpresaNotificacoesViewModel provides notificacoesViewModel,
+            LocalEmpresaPerfilClick provides { navegarParaAba(4) }
+        ) {
         Scaffold(
             bottomBar = {
                 NavigationBar(containerColor = Color.White) {

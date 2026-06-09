@@ -70,6 +70,12 @@ fun DocenteMainScreen(onLogout: () -> Unit = {}) {
     val novaNotificacao by mensagensViewModel.novaNotificacao.collectAsState()
     val historicoNotificacoes by mensagensViewModel.historicoNotificacoes.collectAsState()
 
+    fun navegarParaPerfil() {
+        selectedTab = 3
+        estagioSelecionado = ""
+        mostrarAvaliacao = false
+    }
+
     LaunchedEffect(Unit) {
         mensagensViewModel.carregarConversaDocente(context)
         notificacoesViewModel.iniciar(context)
@@ -84,7 +90,8 @@ fun DocenteMainScreen(onLogout: () -> Unit = {}) {
     Box(modifier = Modifier.fillMaxSize()) {
         CompositionLocalProvider(
             LocalDocenteNotificacoesViewModel provides notificacoesViewModel,
-            LocalDocenteMensagensViewModel provides mensagensViewModel
+            LocalDocenteMensagensViewModel provides mensagensViewModel,
+            LocalDocentePerfilClick provides { navegarParaPerfil() }
         ) {
             Scaffold(
                 bottomBar = {
@@ -125,7 +132,7 @@ fun DocenteMainScreen(onLogout: () -> Unit = {}) {
                         )
                         NavigationBarItem(
                             selected = selectedTab == 3,
-                            onClick = { selectedTab = 3 },
+                            onClick = { navegarParaPerfil() },
                             icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                             label = { Text("Perfil", fontSize = 10.sp) }
                         )

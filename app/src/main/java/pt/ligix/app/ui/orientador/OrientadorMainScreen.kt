@@ -68,12 +68,17 @@ fun OrientadorMainScreen(onLogout: () -> Unit = {}) {
         }
     }
 
-
+    fun navegarParaPerfil() {
+        selectedTab = 3
+        estagioSelecionado = ""
+        mostrarAvaliacao = false
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         CompositionLocalProvider(
             LocalOrientadorNotificacoesViewModel provides notificacoesViewModel,
-            LocalOrientadorMensagensViewModel provides mensagensViewModel
+            LocalOrientadorMensagensViewModel provides mensagensViewModel,
+            LocalOrientadorPerfilClick provides { navegarParaPerfil() }
         ) {
         Scaffold(
             bottomBar = {
@@ -107,7 +112,7 @@ fun OrientadorMainScreen(onLogout: () -> Unit = {}) {
                     )
                     NavigationBarItem(
                         selected = selectedTab == 3,
-                        onClick = { selectedTab = 3 },
+                        onClick = { navegarParaPerfil() },
                         icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                         label = { Text("Perfil", fontSize = 10.sp) }
                     )

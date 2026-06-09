@@ -6,3 +6,4 @@ import pt.ligix.app.viewmodel.OrientadorNotificacoesViewModel
 
 val LocalOrientadorNotificacoesViewModel = compositionLocalOf<OrientadorNotificacoesViewModel?> { null }
 val LocalOrientadorMensagensViewModel = compositionLocalOf<MensagensViewModel?> { null }
+val LocalOrientadorPerfilClick = compositionLocalOf<() -> Unit> { {} }

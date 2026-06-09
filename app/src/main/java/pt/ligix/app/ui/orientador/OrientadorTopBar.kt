@@ -41,6 +41,7 @@ fun OrientadorTopBar(
     var mostrarSininho by remember { mutableStateOf(false) }
 
     val localMensVm = LocalOrientadorMensagensViewModel.current
+    val onPerfilClick = LocalOrientadorPerfilClick.current
     val mensVm = mensagensViewModel ?: localMensVm ?: viewModel(
         key = "orientador_mensagens",
         factory = MensagensViewModelFactory()
@@ -149,7 +150,11 @@ fun OrientadorTopBar(
             }
         }
         Box(
-            modifier = Modifier.size(36.dp).clip(CircleShape).background(Color(0xFFE57373)),
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFE57373))
+                .clickable(onClick = onPerfilClick),
             contentAlignment = Alignment.Center
         ) {
             Text(if (iniciais.isNotEmpty()) iniciais else "O",

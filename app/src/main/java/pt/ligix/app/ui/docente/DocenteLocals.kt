@@ -6,3 +6,4 @@ import pt.ligix.app.viewmodel.MensagensViewModel
 
 val LocalDocenteNotificacoesViewModel = compositionLocalOf<DocenteNotificacoesViewModel?> { null }
 val LocalDocenteMensagensViewModel = compositionLocalOf<MensagensViewModel?> { null }
+val LocalDocentePerfilClick = compositionLocalOf<() -> Unit> { {} }
