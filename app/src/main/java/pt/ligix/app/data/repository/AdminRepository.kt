@@ -134,6 +134,19 @@ class AdminRepository {
         }
     }
 
+    suspend fun getUtilizadoresNaoAdmin(): Result<List<pt.ligix.app.model.Utilizador>> {
+        return try {
+            val response = api.getUtilizadoresComFiltro(role = "neq.admin")
+            if (response.isSuccessful) {
+                Result.success(response.body().orEmpty())
+            } else {
+                Result.failure(Exception("Erro: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Sem ligação à internet"))
+        }
+    }
+
     private suspend fun atualizarStatusEmpresa(
         idEmpresa: String,
         novoStatus: String

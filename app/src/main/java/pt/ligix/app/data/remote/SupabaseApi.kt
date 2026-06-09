@@ -52,6 +52,12 @@ interface SupabaseApi {
         @Query("select") select: String = "*"
     ): Response<List<Utilizador>>
 
+    @GET("utilizador")
+    suspend fun getUtilizadoresComFiltro(
+        @Query("role") role: String? = null,
+        @Query("select") select: String = "*"
+    ): Response<List<Utilizador>>
+
     @PATCH("utilizador")
     suspend fun updateUtilizador(
         @Header("Prefer") prefer: String = "return=representation",

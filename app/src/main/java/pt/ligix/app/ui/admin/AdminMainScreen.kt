@@ -80,7 +80,7 @@ fun AdminMainScreen(onLogout: () -> Unit = {}) {
                     0 -> AdminDashboardScreen(
                         onAbrirDetalheEmpresa = { id -> idEmpresaEmDetalhe = id }
                     )
-                    1 -> AdminPlaceholder("Utilizadores", onLogout)
+                    1 ->  AdminUtilizadoresScreen()
                     2 -> AdminAprovacoesScreen(
                         onAbrirDetalheEmpresa = { id -> idEmpresaEmDetalhe = id }
                     )
