@@ -38,3 +38,16 @@ data class UtilizadorEdicao(
     val createdAt: String?,
     val camposExtras: List<Pair<String, String?>>
 )
+
+/**
+ * Modelo de UI para um cartão na listagem de empresas. Combina dados
+ * de `empresa` com o nome vindo de `utilizador`, e inclui o status
+ * para mostrar o badge colorido na UI.
+ */
+data class EmpresaListagem(
+    val idEmpresa: String,
+    val nome: String,
+    val descricao: String?,
+    val status: String,
+    val createdAt: String?
+)

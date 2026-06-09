@@ -8,6 +8,7 @@ import java.util.Date
 import java.util.Locale
 import pt.ligix.app.viewmodel.ResumoAtividadeEmpresas
 import pt.ligix.app.viewmodel.EmpresaDetalhe
+import pt.ligix.app.viewmodel.EmpresaListagem
 import pt.ligix.app.viewmodel.UtilizadorEdicao
 
 class AdminRepository {
@@ -275,6 +276,41 @@ class AdminRepository {
             } else {
                 Result.failure(Exception("Erro: ${response.code()}"))
             }
+        } catch (e: Exception) {
+            Result.failure(Exception("Sem ligação à internet"))
+        }
+    }
+
+    suspend fun getTodasEmpresasComNome(): Result<List<EmpresaListagem>> {
+        return try {
+            // 1. Buscar todas as empresas
+            val empresasResp = api.getTodasEmpresas()
+            if (!empresasResp.isSuccessful) {
+                return Result.failure(Exception("Erro: ${empresasResp.code()}"))
+            }
+            val empresas = empresasResp.body().orEmpty()
+            if (empresas.isEmpty()) return Result.success(emptyList())
+
+            // 2. Buscar os utilizadores (para os nomes)
+            val ids = empresas.map { it.idUtilizador }
+            val utilizadoresResp = api.getUtilizadoresByIds(ids = inFilter(ids))
+            if (!utilizadoresResp.isSuccessful) {
+                return Result.failure(Exception("Erro: ${utilizadoresResp.code()}"))
+            }
+            val nomesPorId = utilizadoresResp.body().orEmpty()
+                .associateBy({ it.idUtilizador }, { it.nome })
+
+            // 3. Combinar
+            val listagem = empresas.map { empresa ->
+                EmpresaListagem(
+                    idEmpresa = empresa.idUtilizador,
+                    nome = nomesPorId[empresa.idUtilizador] ?: "Empresa sem nome",
+                    descricao = empresa.descricao,
+                    status = empresa.status,
+                    createdAt = empresa.createdAt
+                )
+            }
+            Result.success(listagem)
         } catch (e: Exception) {
             Result.failure(Exception("Sem ligação à internet"))
         }

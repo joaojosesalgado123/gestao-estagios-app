@@ -4,10 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.School
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -51,8 +51,8 @@ fun AdminMainScreen(onLogout: () -> Unit = {}) {
                     NavigationBarItem(
                         selected = selectedTab == 3,
                         onClick = { selectedTab = 3 },
-                        icon = { Icon(Icons.Default.School, contentDescription = "Orientadores") },
-                        label = { Text("Orientadores", fontSize = 10.sp) }
+                        icon = { Icon(Icons.Default.Business, contentDescription = "Empresas") },
+                        label = { Text("Empresas", fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 4,
@@ -95,7 +95,9 @@ fun AdminMainScreen(onLogout: () -> Unit = {}) {
                     2 -> AdminAprovacoesScreen(
                         onAbrirDetalheEmpresa = { id -> idEmpresaEmDetalhe = id }
                     )
-                    3 -> AdminPlaceholder("Orientadores", onLogout)
+                    3 -> AdminEmpresasScreen(
+                        onAbrirDetalheEmpresa = { id -> idEmpresaEmDetalhe = id }
+                    )
                     4 -> AdminPlaceholder("Perfil", onLogout)
                 }
             }
