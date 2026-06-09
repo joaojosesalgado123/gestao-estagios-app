@@ -54,12 +54,23 @@ fun AlunoOfertaDetalheScreen(
     var erro by remember { mutableStateOf<String?>(null) }
     var sucesso by remember { mutableStateOf(false) }
     var jaCandidatou by remember { mutableStateOf(false) }
+    var nomeEmpresa by remember(oferta.idEmpresa, oferta.nomeEmpresa) {
+        mutableStateOf(oferta.nomeEmpresa.orEmpty())
+    }
 
     // Verifica ao entrar no ecrã se já se candidatou
     LaunchedEffect(oferta.idOferta) {
         val idAluno = sessionManager.idUtilizador.first()
         if (idAluno != null) {
             jaCandidatou = alunoRepo.verificarCandidaturaExistente(idAluno, oferta.idOferta)
+        }
+    }
+
+    LaunchedEffect(oferta.idEmpresa) {
+        if (nomeEmpresa.isBlank() && oferta.idEmpresa.isNotBlank()) {
+            repository.getNomeEmpresa(oferta.idEmpresa).onSuccess { nome ->
+                nomeEmpresa = nome.orEmpty()
+            }
         }
     }
 
@@ -174,6 +185,16 @@ fun AlunoOfertaDetalheScreen(
                     oferta.localizacao?.let { DetalheRow(icon = Icons.Default.LocationOn, label = it); Spacer(modifier = Modifier.height(8.dp)) }
                     oferta.duracao?.let { DetalheRow(icon = Icons.Default.Schedule, label = "Duração: ${it}h"); Spacer(modifier = Modifier.height(8.dp)) }
                     DetalheRow(icon = Icons.Default.WorkOutline, label = "${oferta.numeroVagas} vaga${if (oferta.numeroVagas != 1) "s" else ""} disponível${if (oferta.numeroVagas != 1) "is" else ""}")
+                }
+            }
+
+            if (nomeEmpresa.isNotBlank()) {
+                Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Empresa", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
+                        Spacer(modifier = Modifier.height(12.dp))
+                        DetalheRow(icon = Icons.Default.Business, label = nomeEmpresa)
+                    }
                 }
             }
 

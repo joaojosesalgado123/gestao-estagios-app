@@ -323,6 +323,14 @@ fun OfertaCard(oferta: OfertaEstagio, onClick: () -> Unit) {
                     }
                 }
             }
+            oferta.nomeEmpresa?.takeIf { it.isNotBlank() }?.let { nomeEmpresa ->
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Business, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(14.dp))
+                    Spacer(modifier = Modifier.width(2.dp))
+                    Text(nomeEmpresa, fontSize = 12.sp, color = Color.Gray)
+                }
+            }
             Spacer(modifier = Modifier.height(12.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Text("${oferta.numeroVagas} vaga${if (oferta.numeroVagas != 1) "s" else ""}", fontSize = 12.sp, color = Color.Gray)

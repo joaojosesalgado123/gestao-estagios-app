@@ -25,7 +25,7 @@ class OfertasRepository {
         return try {
             val response = api.getTodasOfertas()
             if (response.isSuccessful) {
-                Result.success(response.body() ?: emptyList())
+                Result.success(response.body().orEmpty().comNomesEmpresa())
             } else {
                 Result.failure(Exception("Erro: ${response.code()}"))
             }
@@ -38,7 +38,23 @@ class OfertasRepository {
         return try {
             val response = api.getOfertaPorId(idOferta = "eq.$idOferta")
             if (response.isSuccessful) {
-                Result.success(response.body()?.firstOrNull())
+                Result.success(response.body().orEmpty().comNomesEmpresa().firstOrNull())
+            } else {
+                Result.failure(Exception("Erro: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Sem ligação à internet"))
+        }
+    }
+
+    suspend fun getNomeEmpresa(idEmpresa: String): Result<String?> {
+        return try {
+            val response = api.getUtilizadorById(
+                id = "eq.$idEmpresa",
+                select = "idutilizador,nome"
+            )
+            if (response.isSuccessful) {
+                Result.success(response.body()?.firstOrNull()?.nome)
             } else {
                 Result.failure(Exception("Erro: ${response.code()}"))
             }
@@ -108,6 +124,30 @@ class OfertasRepository {
         } catch (e: Exception) {
             Log.e("UPLOAD", "Exceção: ${e.message}", e)
             Result.failure(Exception("Erro no upload: ${e.message}"))
+        }
+    }
+
+    private suspend fun List<OfertaEstagio>.comNomesEmpresa(): List<OfertaEstagio> {
+        val idsEmpresa = mapNotNull { it.idEmpresa.takeIf(String::isNotBlank) }.distinct()
+        if (idsEmpresa.isEmpty()) return this
+
+        val response = api.getUtilizadoresByIds(
+            ids = "in.(${idsEmpresa.joinToString(",")})",
+            select = "idutilizador,nome"
+        )
+        if (!response.isSuccessful) return this
+
+        val nomesPorId = response.body()
+            .orEmpty()
+            .mapNotNull { utilizador ->
+                utilizador.idUtilizador?.takeIf { it.isNotBlank() }?.let { id ->
+                    id to utilizador.nome
+                }
+            }
+            .toMap()
+
+        return map { oferta ->
+            oferta.copy(nomeEmpresa = nomesPorId[oferta.idEmpresa])
         }
     }
 }
