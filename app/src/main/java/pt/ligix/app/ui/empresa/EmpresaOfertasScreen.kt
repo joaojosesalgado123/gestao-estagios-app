@@ -30,7 +30,8 @@ fun EmpresaOfertasScreen(
     modifier: Modifier = Modifier,
     onNovaOferta: () -> Unit = {},
     onVerCandidatos: (String, String) -> Unit = { _, _ -> },
-    onEditarOferta: (OfertaEstagio) -> Unit = {}
+    onEditarOferta: (OfertaEstagio) -> Unit = {},
+    onAtribuirOrientador: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
@@ -97,11 +98,18 @@ fun EmpresaOfertasScreen(
 
                 Spacer(Modifier.height(12.dp))
 
-                // Botão Nova Oferta
+                // Botões
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+                    OutlinedButton(
+                        onClick = onAtribuirOrientador,
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = DarkBlue)
+                    ) {
+                        Text("Atribuir Orientador", fontWeight = FontWeight.SemiBold)
+                    }
                     Button(
                         onClick = onNovaOferta,
                         colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
