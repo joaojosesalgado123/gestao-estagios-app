@@ -11,7 +11,8 @@ import pt.ligix.app.util.SessionManager
 
 class EmpresaEditarOfertaViewModel(
     private val repository: EmpresaRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val sessaoEmpresa: EmpresaSessaoViewModel? = null
 ) : ViewModel() {
 
     private val api = RetrofitClient.api
@@ -27,6 +28,14 @@ class EmpresaEditarOfertaViewModel(
 
     fun resetSucesso() { _sucesso.value = false }
 
+    private fun bloqueadoPorEmpresaInativa(): Boolean {
+        if (sessaoEmpresa?.isEmpresaAtiva?.value != true) {
+            _erro.value = "A tua empresa está rejeitada. Não é possível executar esta ação."
+            return true
+        }
+        return false
+    }
+
     fun guardarOferta(
         idOferta: String,
         titulo: String,
@@ -35,6 +44,8 @@ class EmpresaEditarOfertaViewModel(
         localizacao: String,
         descricao: String
     ) {
+        if (bloqueadoPorEmpresaInativa()) return
+
         if (titulo.isBlank()) {
             _erro.value = "O título é obrigatório."
             return

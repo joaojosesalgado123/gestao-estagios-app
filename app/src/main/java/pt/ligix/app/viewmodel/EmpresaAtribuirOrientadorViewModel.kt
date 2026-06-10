@@ -17,7 +17,8 @@ data class OrientadorItem(
 )
 
 class EmpresaAtribuirOrientadorViewModel(
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val sessaoEmpresa: EmpresaSessaoViewModel? = null
 ) : ViewModel() {
 
     private val _estagiosPendentes = MutableStateFlow<List<EstagioParaAtribuir>>(emptyList())
@@ -91,7 +92,17 @@ class EmpresaAtribuirOrientadorViewModel(
         }
     }
 
+    private fun bloqueadoPorEmpresaInativa(): Boolean {
+        if (sessaoEmpresa?.isEmpresaAtiva?.value != true) {
+            _erro.value = "A tua empresa está rejeitada. Não é possível executar esta ação."
+            return true
+        }
+        return false
+    }
+
     fun atribuirOrientador(idEstagio: String, idOrientador: String) {
+        if (bloqueadoPorEmpresaInativa()) return
+
         viewModelScope.launch {
             try {
                 val api = RetrofitClient.api
@@ -114,10 +125,11 @@ class EmpresaAtribuirOrientadorViewModel(
 }
 
 class EmpresaAtribuirOrientadorViewModelFactory(
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val sessaoEmpresa: EmpresaSessaoViewModel? = null
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return EmpresaAtribuirOrientadorViewModel(sessionManager) as T
+        return EmpresaAtribuirOrientadorViewModel(sessionManager, sessaoEmpresa) as T
     }
 }

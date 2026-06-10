@@ -32,9 +32,11 @@ fun EmpresaNovaOfertaScreen(
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
+    val sessaoEmpresa = LocalEmpresaSessao.current
     val viewModel: EmpresaNovaOfertaViewModel = viewModel(
-        factory = EmpresaNovaOfertaViewModelFactory(EmpresaRepository(), sessionManager)
+        factory = EmpresaNovaOfertaViewModelFactory(EmpresaRepository(), sessionManager, sessaoEmpresa)
     )
+    val ativa by sessaoEmpresa?.isEmpresaAtiva?.collectAsState() ?: remember { mutableStateOf(false) }
 
     val isLoading by viewModel.isLoading.collectAsState()
     val erro by viewModel.erro.collectAsState()
@@ -293,7 +295,7 @@ fun EmpresaNovaOfertaScreen(
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
                 shape = RoundedCornerShape(10.dp),
-                enabled = !isLoading
+                enabled = !isLoading && ativa
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(color = Color.White,

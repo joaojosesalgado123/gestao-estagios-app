@@ -16,8 +16,12 @@ import pt.ligix.app.util.SessionManager
 
 class EmpresaDetalhesCandidaturaViewModel(
     private val repository: EmpresaRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val sessaoEmpresa: EmpresaSessaoViewModel? = null
 ) : ViewModel() {
+
+    private val _erro = MutableStateFlow<String?>(null)
+    val erro: StateFlow<String?> = _erro
 
     private val _candidatura = MutableStateFlow<Candidatura?>(null)
     val candidatura: StateFlow<Candidatura?> = _candidatura
@@ -86,7 +90,17 @@ class EmpresaDetalhesCandidaturaViewModel(
         }
     }
 
+    private fun bloqueadoPorEmpresaInativa(): Boolean {
+        if (sessaoEmpresa?.isEmpresaAtiva?.value != true) {
+            _erro.value = "A tua empresa está rejeitada. Não é possível executar esta ação."
+            return true
+        }
+        return false
+    }
+
     fun aceitarCandidatura(idCandidatura: String) {
+        if (bloqueadoPorEmpresaInativa()) return
+
         viewModelScope.launch {
             try {
                 RetrofitClient.api.updateCandidaturaStatus(
@@ -101,6 +115,8 @@ class EmpresaDetalhesCandidaturaViewModel(
     }
 
     fun rejeitarCandidatura(idCandidatura: String) {
+        if (bloqueadoPorEmpresaInativa()) return
+
         viewModelScope.launch {
             try {
                 RetrofitClient.api.updateCandidaturaStatus(
@@ -115,6 +131,8 @@ class EmpresaDetalhesCandidaturaViewModel(
     }
 
     fun guardarNotas(idCandidatura: String, notas: String) {
+        if (bloqueadoPorEmpresaInativa()) return
+
         viewModelScope.launch {
             try {
                 val api = RetrofitClient.api
@@ -129,6 +147,8 @@ class EmpresaDetalhesCandidaturaViewModel(
     }
 
     fun resetNotasGuardadas() { _notasGuardadas.value = false }
+
+    fun limparErro() { _erro.value = null }
 
     fun abrirFicheiro(context: Context, caminho: String) {
         try {
@@ -146,10 +166,11 @@ class EmpresaDetalhesCandidaturaViewModel(
 
 class EmpresaDetalhesCandidaturaViewModelFactory(
     private val repository: EmpresaRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val sessaoEmpresa: EmpresaSessaoViewModel? = null
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return EmpresaDetalhesCandidaturaViewModel(repository, sessionManager) as T
+        return EmpresaDetalhesCandidaturaViewModel(repository, sessionManager, sessaoEmpresa) as T
     }
 }

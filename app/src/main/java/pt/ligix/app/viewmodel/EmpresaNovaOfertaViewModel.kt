@@ -1,6 +1,5 @@
 package pt.ligix.app.viewmodel
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +12,8 @@ import pt.ligix.app.util.SessionManager
 
 class EmpresaNovaOfertaViewModel(
     private val repository: EmpresaRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val sessaoEmpresa: EmpresaSessaoViewModel? = null
 ) : ViewModel() {
 
     private val api = RetrofitClient.api
@@ -31,6 +31,14 @@ class EmpresaNovaOfertaViewModel(
         _sucesso.value = false
     }
 
+    private fun bloqueadoPorEmpresaInativa(): Boolean {
+        if (sessaoEmpresa?.isEmpresaAtiva?.value != true) {
+            _erro.value = "A tua empresa está rejeitada. Não é possível executar esta ação."
+            return true
+        }
+        return false
+    }
+
     fun publicarOferta(
         titulo: String,
         area: String,
@@ -38,6 +46,8 @@ class EmpresaNovaOfertaViewModel(
         localizacao: String,
         descricao: String
     ) {
+        if (bloqueadoPorEmpresaInativa()) return
+
         if (titulo.isBlank() || area.isBlank() || localizacao.isBlank()) {
             _erro.value = "Preenche todos os campos obrigatórios."
             return

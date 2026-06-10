@@ -36,7 +36,9 @@ fun EmpresaPerfilScreen(
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    val viewModel: EmpresaPerfilViewModel = viewModel(factory = EmpresaPerfilViewModelFactory())
+    val sessaoEmpresa = LocalEmpresaSessao.current
+    val viewModel: EmpresaPerfilViewModel = viewModel(factory = EmpresaPerfilViewModelFactory(sessaoEmpresa))
+    val ativa by sessaoEmpresa?.isEmpresaAtiva?.collectAsState() ?: remember { mutableStateOf(false) }
 
     val utilizador by viewModel.utilizador.collectAsState()
     val empresa by viewModel.empresa.collectAsState()
@@ -124,6 +126,9 @@ fun EmpresaPerfilScreen(
                     "aprovada" -> Triple(
                         LigixGold, Icons.Default.Verified, "EMPRESA CERTIFICADA"
                     )
+                    "rejeitada" -> Triple(
+                        Color(0xFFE53935), Icons.Default.Block, "EMPRESA REJEITADA"
+                    )
                     else -> Triple(
                         Color(0xFFFF9800), Icons.Default.HourglassEmpty, "PENDENTE DE APROVAÇÃO"
                     )
@@ -182,7 +187,8 @@ fun EmpresaPerfilScreen(
                         onClick = { modoEdicao = true },
                         colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
                         shape = RoundedCornerShape(10.dp),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                        enabled = ativa
                     ) {
                         Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
@@ -203,7 +209,7 @@ fun EmpresaPerfilScreen(
         EmpresaPerfilSecao(titulo = "Informações Institucionais", icon = Icons.Default.Business) {
             if (modoEdicao) {
                 EmpresaPerfilCampoEditavel(label = "NOME COMPLETO", valor = editNome,
-                    onValorChange = { editNome = it })
+                    onValorChange = { editNome = it }, enabled = ativa)
             } else {
                 EmpresaPerfilCampo(label = "NOME COMPLETO", valor = utilizador?.nome ?: "—",
                     icon = Icons.Default.Badge)
@@ -216,13 +222,13 @@ fun EmpresaPerfilScreen(
         EmpresaPerfilSecao(titulo = "Dados da Empresa", icon = Icons.Default.Business) {
             if (modoEdicao) {
                 EmpresaPerfilCampoEditavel(label = "NIPC", valor = editNipc,
-                    onValorChange = { editNipc = it })
+                    onValorChange = { editNipc = it }, enabled = ativa)
                 Spacer(modifier = Modifier.height(8.dp))
                 EmpresaPerfilCampoEditavel(label = "MORADA", valor = editMorada,
-                    onValorChange = { editMorada = it })
+                    onValorChange = { editMorada = it }, enabled = ativa)
                 Spacer(modifier = Modifier.height(8.dp))
                 EmpresaPerfilCampoEditavel(label = "DESCRIÇÃO", valor = editDescricao,
-                    onValorChange = { editDescricao = it })
+                    onValorChange = { editDescricao = it }, enabled = ativa)
             } else {
                 EmpresaPerfilCampo(label = "NIPC", valor = empresa?.nipc ?: "—",
                     icon = Icons.Default.Numbers)
@@ -386,7 +392,8 @@ fun EmpresaPerfilCampo(label: String, valor: String, icon: ImageVector) {
 fun EmpresaPerfilCampoEditavel(
     label: String,
     valor: String,
-    onValorChange: (String) -> Unit
+    onValorChange: (String) -> Unit,
+    enabled: Boolean = true
 ) {
     Column {
         Text(label, fontSize = 10.sp, color = Color.Gray,
@@ -403,7 +410,9 @@ fun EmpresaPerfilCampoEditavel(
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color(0xFFF8F8F8)
             ),
-            singleLine = true
+            singleLine = true,
+            enabled = enabled,
+            readOnly = !enabled
         )
     }
 }

@@ -34,9 +34,11 @@ fun EmpresaDetalhesCandidaturaScreen(
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
+    val sessaoEmpresa = LocalEmpresaSessao.current
     val viewModel: EmpresaDetalhesCandidaturaViewModel = viewModel(
-        factory = EmpresaDetalhesCandidaturaViewModelFactory(EmpresaRepository(), sessionManager)
+        factory = EmpresaDetalhesCandidaturaViewModelFactory(EmpresaRepository(), sessionManager, sessaoEmpresa)
     )
+    val ativa by sessaoEmpresa?.isEmpresaAtiva?.collectAsState() ?: remember { mutableStateOf(false) }
 
     val candidatura by viewModel.candidatura.collectAsState()
     val nomeAluno by viewModel.nomeAluno.collectAsState()
@@ -46,10 +48,19 @@ fun EmpresaDetalhesCandidaturaScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val notasBD by viewModel.notas.collectAsState()
     val notasGuardadas by viewModel.notasGuardadas.collectAsState()
+    val erro by viewModel.erro.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
     var notas by remember { mutableStateOf("") }
 
     LaunchedEffect(idCandidatura) { viewModel.carregarDetalhes(idCandidatura) }
     LaunchedEffect(notasBD) { if (notas.isEmpty()) notas = notasBD }
+
+    LaunchedEffect(erro) {
+        erro?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.limparErro()
+        }
+    }
 
     val iniciais = nomeAluno.split(" ").mapNotNull { it.firstOrNull()?.toString() }.take(2).joinToString("")
 
@@ -60,9 +71,13 @@ fun EmpresaDetalhesCandidaturaScreen(
         else -> Color.Gray to (candidatura?.status?.uppercase() ?: "")
     }
 
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { innerPadding ->
     Column(
         modifier = modifier
             .fillMaxSize()
+            .padding(innerPadding)
             .background(Color(0xFFF5F5F7))
     ) {
         // Top Bar
@@ -252,7 +267,9 @@ fun EmpresaDetalhesCandidaturaScreen(
                         unfocusedBorderColor = Color(0xFFEEEEEE),
                         focusedContainerColor = Color.White,
                         unfocusedContainerColor = Color.White
-                    )
+                    ),
+                    enabled = ativa,
+                    readOnly = !ativa
                 )
                 Spacer(Modifier.height(8.dp))
                 Button(
@@ -260,7 +277,7 @@ fun EmpresaDetalhesCandidaturaScreen(
                     modifier = Modifier.fillMaxWidth().height(44.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
                     shape = RoundedCornerShape(10.dp),
-                    enabled = notas != notasBD
+                    enabled = notas != notasBD && ativa
                 ) {
                     Text(if (notasGuardadas) "Notas guardadas ✓" else "Guardar Notas",
                         fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
@@ -282,7 +299,8 @@ fun EmpresaDetalhesCandidaturaScreen(
                             modifier = Modifier.weight(1f).height(52.dp),
                             shape = RoundedCornerShape(12.dp),
                             border = androidx.compose.foundation.BorderStroke(1.dp, Color.Red),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
+                            enabled = ativa
                         ) {
                             Text("Rejeitar Candidatura", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                         }
@@ -293,7 +311,8 @@ fun EmpresaDetalhesCandidaturaScreen(
                             },
                             modifier = Modifier.weight(1f).height(52.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            enabled = ativa
                         ) {
                             Text("Aceitar Aluno", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                         }
@@ -303,6 +322,7 @@ fun EmpresaDetalhesCandidaturaScreen(
                 Spacer(Modifier.height(32.dp))
             }
         }
+    }
     }
 }
 

@@ -28,6 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
 import androidx.compose.runtime.CompositionLocalProvider
@@ -36,6 +39,8 @@ import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.viewmodel.EmpresaNotificacoesViewModel
 import pt.ligix.app.viewmodel.EmpresaNotificacoesViewModelFactory
+import pt.ligix.app.viewmodel.EmpresaSessaoViewModel
+import pt.ligix.app.viewmodel.EmpresaSessaoViewModelFactory
 import pt.ligix.app.viewmodel.MensagensViewModel
 import pt.ligix.app.viewmodel.MensagensViewModelFactory
 import pt.ligix.app.viewmodel.OrientadorDetalhe
@@ -61,11 +66,15 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
     val notificacoesViewModel: EmpresaNotificacoesViewModel = viewModel(
         factory = EmpresaNotificacoesViewModelFactory(SessionManager(context))
     )
+    val sessaoEmpresaViewModel: EmpresaSessaoViewModel = viewModel(
+        factory = EmpresaSessaoViewModelFactory(SessionManager(context))
+    )
     val novaNotificacao by mensagensViewModel.novaNotificacao.collectAsState()
     val historicoNotificacoes by mensagensViewModel.historicoNotificacoes.collectAsState()
     val mensagensNaoVistas by mensagensViewModel.mensagensNaoVistas.collectAsState()
     val novaNotificacaoCandidatura by notificacoesViewModel.novaNotificacao.collectAsState()
     val todasNotificacoesCandidaturas by notificacoesViewModel.notificacoes.collectAsState()
+    val empresaSessao by sessaoEmpresaViewModel.empresa.collectAsState()
 
     fun navegarParaAba(tab: Int) {
         selectedTab = tab
@@ -81,6 +90,18 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
     LaunchedEffect(Unit) {
         mensagensViewModel.carregarConversa(context)
         notificacoesViewModel.iniciar(context)
+        sessaoEmpresaViewModel.carregar()
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                sessaoEmpresaViewModel.refrescar()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
     LaunchedEffect(novaNotificacao) {
         if (novaNotificacao != null) {
@@ -163,7 +184,8 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
     Box(modifier = Modifier.fillMaxSize()) {
         CompositionLocalProvider(
             LocalEmpresaNotificacoesViewModel provides notificacoesViewModel,
-            LocalEmpresaPerfilClick provides { navegarParaAba(4) }
+            LocalEmpresaPerfilClick provides { navegarParaAba(4) },
+            LocalEmpresaSessao provides sessaoEmpresaViewModel
         ) {
         Scaffold(
             bottomBar = {
@@ -201,9 +223,29 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                 }
             }
         ) { innerPadding ->
+            Column(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
+            if (empresaSessao?.status == "rejeitada") {
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Block, contentDescription = null)
+                        Spacer(Modifier.width(12.dp))
+                        Text(
+                            "A tua empresa foi rejeitada. Estás em modo de leitura — não podes criar nem editar nada. Contacta o suporte para mais informações.",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
+            Box(modifier = Modifier.weight(1f)) {
             if (ofertaAEditar != null) {
                 EmpresaEditarOfertaScreen(
-                    modifier = Modifier.padding(innerPadding),
+                    modifier = Modifier,
                     oferta = ofertaAEditar!!,
                     onVoltar = { ofertaAEditar = null },
                     onGuardado = { ofertaAEditar = null }
@@ -211,20 +253,20 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
             } else if (mostrarNovaOferta) {
                 key(novaOfertaKey) {
                     EmpresaNovaOfertaScreen(
-                        modifier = Modifier.padding(innerPadding),
+                        modifier = Modifier,
                         onVoltar = { mostrarNovaOferta = false },
                         onPublicada = { mostrarNovaOferta = false; novaOfertaKey++ }
                     )
                 }
             } else if (idCandidaturaSelecionada != null) {
                 EmpresaDetalhesCandidaturaScreen(
-                    modifier = Modifier.padding(innerPadding),
+                    modifier = Modifier,
                     idCandidatura = idCandidaturaSelecionada!!,
                     onVoltar = { idCandidaturaSelecionada = null }
                 )
             } else if (mostrarCandidatos) {
                 EmpresaCandidatosScreen(
-                    modifier = Modifier.padding(innerPadding),
+                    modifier = Modifier,
                     idOferta = idOfertaSelecionada,
                     tituloOferta = tituloOfertaSelecionada,
                     onVoltar = { mostrarCandidatos = false },
@@ -232,32 +274,32 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                 )
             } else if (mostrarCriarOrientador) {
                 EmpresaCriarOrientadorScreen(
-                    modifier = Modifier.padding(innerPadding),
+                    modifier = Modifier,
                     onVoltar = { mostrarCriarOrientador = false },
                     onCriado = { mostrarCriarOrientador = false; orientadoresKey++ }
                 )
             } else if (orientadorAEditar != null) {
                 EmpresaEditarOrientadorScreen(
-                    modifier = Modifier.padding(innerPadding),
+                    modifier = Modifier,
                     orientador = orientadorAEditar!!,
                     onVoltar = { orientadorAEditar = null },
                     onGuardado = { orientadorAEditar = null; orientadoresKey++ }
                 )
             } else if (mostrarAtribuirOrientador) {
                 EmpresaAtribuirOrientadorScreen(
-                    modifier = Modifier.padding(innerPadding),
+                    modifier = Modifier,
                     onVoltar = { mostrarAtribuirOrientador = false }
                 )
             } else {
                 when (selectedTab) {
                     0 -> EmpresaDashboardScreen(
-                        modifier = Modifier.padding(innerPadding),
+                        modifier = Modifier,
                         onVerTodasCandidaturas = { selectedTab = 2 },
                         onPublicarVaga = { novaOfertaKey++; mostrarNovaOferta = true },
                         onVerCandidatura = { id -> idCandidaturaSelecionada = id }
                     )
                     1 -> EmpresaOfertasScreen(
-                        modifier = Modifier.padding(innerPadding),
+                        modifier = Modifier,
                         onNovaOferta = { novaOfertaKey++; mostrarNovaOferta = true },
                         onVerCandidatos = { idOferta, titulo ->
                             idOfertaSelecionada = idOferta
@@ -268,19 +310,21 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                         onAtribuirOrientador = { mostrarAtribuirOrientador = true }
                     )
                     2 -> EmpresaListaCandidatosScreen(
-                        modifier = Modifier.padding(innerPadding),
+                        modifier = Modifier,
                         onVerCandidatura = { id -> idCandidaturaSelecionada = id }
                     )
                     3 -> key(orientadoresKey) {
                         EmpresaOrientadoresScreen(
-                            modifier = Modifier.padding(innerPadding),
+                            modifier = Modifier,
                             onCriarOrientador = { mostrarCriarOrientador = true },
                             onEditarOrientador = { orientador -> orientadorAEditar = orientador }
                         )
                     }
-                    4 -> EmpresaPerfilScreen(modifier = Modifier.padding(innerPadding), onLogout = onLogout)
+                    4 -> EmpresaPerfilScreen(modifier = Modifier, onLogout = onLogout)
                 }
             }
+            } // Box(weight)
+            } // Column
         }
 
         } // CompositionLocalProvider

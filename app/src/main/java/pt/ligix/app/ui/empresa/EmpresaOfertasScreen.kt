@@ -35,26 +35,41 @@ fun EmpresaOfertasScreen(
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
+    val sessaoEmpresa = LocalEmpresaSessao.current
     val viewModel: EmpresaOfertasViewModel = viewModel(
-        factory = EmpresaOfertasViewModelFactory(EmpresaRepository(), sessionManager)
+        factory = EmpresaOfertasViewModelFactory(EmpresaRepository(), sessionManager, sessaoEmpresa)
     )
+    val ativa by sessaoEmpresa?.isEmpresaAtiva?.collectAsState() ?: remember { mutableStateOf(false) }
 
     val ofertas by viewModel.ofertas.collectAsState()
     val vagasAtivas by viewModel.vagasAtivas.collectAsState()
     val candidaturasPendentes by viewModel.candidaturasPendentes.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val candidatosPorOferta by viewModel.candidatosPorOferta.collectAsState()
+    val erro by viewModel.erro.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     var filtroSelecionado by remember { mutableStateOf("Todas as Ofertas") }
     val filtros = listOf("Todas as Ofertas", "Ativas", "Rascunhos")
 
     LaunchedEffect(Unit) { viewModel.carregarDados(context) }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color(0xFFF5F5F7))
-    ) {
+    LaunchedEffect(erro) {
+        erro?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.limparErro()
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { innerPadding ->
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .background(Color(0xFFF5F5F7))
+                .padding(innerPadding)
+        ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -106,14 +121,16 @@ fun EmpresaOfertasScreen(
                     OutlinedButton(
                         onClick = onAtribuirOrientador,
                         shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = DarkBlue)
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = DarkBlue),
+                        enabled = ativa
                     ) {
                         Text("Atribuir Orientador", fontWeight = FontWeight.SemiBold)
                     }
                     Button(
                         onClick = onNovaOferta,
                         colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(8.dp),
+                        enabled = ativa
                     ) {
                         Text("Novo Estágio", color = Color.White, fontWeight = FontWeight.SemiBold)
                     }
@@ -145,6 +162,7 @@ fun EmpresaOfertasScreen(
                         OfertaCard(
                             oferta = oferta,
                             numCandidatos = candidatosPorOferta[oferta.idOferta] ?: 0,
+                            ativa = ativa,
                             onVerCandidatos = { onVerCandidatos(oferta.idOferta, oferta.titulo) },
                             onEditar = { onEditarOferta(oferta) },
                             onEliminar = { viewModel.eliminarOferta(oferta.idOferta) }
@@ -156,6 +174,7 @@ fun EmpresaOfertasScreen(
                 Spacer(Modifier.height(32.dp))
             }
         }
+        }
     }
 }
 
@@ -163,6 +182,7 @@ fun EmpresaOfertasScreen(
 fun OfertaCard(
     oferta: OfertaEstagio,
     numCandidatos: Int = 0,
+    ativa: Boolean = true,
     onVerCandidatos: () -> Unit,
     onEditar: () -> Unit,
     onEliminar: () -> Unit
@@ -222,11 +242,11 @@ fun OfertaCard(
 
                 Spacer(Modifier.weight(1f))
 
-                IconButton(onClick = onEditar, modifier = Modifier.size(36.dp)) {
+                IconButton(onClick = onEditar, modifier = Modifier.size(36.dp), enabled = ativa) {
                     Icon(Icons.Default.Edit, contentDescription = "Editar",
                         tint = Color.Gray, modifier = Modifier.size(18.dp))
                 }
-                IconButton(onClick = onEliminar, modifier = Modifier.size(36.dp)) {
+                IconButton(onClick = onEliminar, modifier = Modifier.size(36.dp), enabled = ativa) {
                     Icon(Icons.Default.Delete, contentDescription = "Eliminar",
                         tint = Color.Gray, modifier = Modifier.size(18.dp))
                 }

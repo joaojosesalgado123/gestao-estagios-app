@@ -14,13 +14,17 @@ import pt.ligix.app.util.SessionManager
 
 class EmpresaOfertasViewModel(
     private val repository: EmpresaRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val sessaoEmpresa: EmpresaSessaoViewModel? = null
 ) : ViewModel() {
 
     private val api = RetrofitClient.api
 
     private val _ofertas = MutableStateFlow<List<OfertaEstagio>>(emptyList())
     val ofertas: StateFlow<List<OfertaEstagio>> = _ofertas
+
+    private val _erro = MutableStateFlow<String?>(null)
+    val erro: StateFlow<String?> = _erro
 
     private val _vagasAtivas = MutableStateFlow(0)
     val vagasAtivas: StateFlow<Int> = _vagasAtivas
@@ -54,7 +58,17 @@ class EmpresaOfertasViewModel(
         }
     }
 
+    private fun bloqueadoPorEmpresaInativa(): Boolean {
+        if (sessaoEmpresa?.isEmpresaAtiva?.value != true) {
+            _erro.value = "A tua empresa está rejeitada. Não é possível executar esta ação."
+            return true
+        }
+        return false
+    }
+
     fun eliminarOferta(idOferta: String) {
+        if (bloqueadoPorEmpresaInativa()) return
+
         viewModelScope.launch {
             try {
                 api.deleteOferta(id = "eq.$idOferta")
@@ -62,5 +76,7 @@ class EmpresaOfertasViewModel(
             } catch (_: Exception) {}
         }
     }
+
+    fun limparErro() { _erro.value = null }
 }
 // debug

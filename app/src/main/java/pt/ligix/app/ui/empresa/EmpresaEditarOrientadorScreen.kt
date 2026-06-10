@@ -3,7 +3,6 @@ package pt.ligix.app.ui.empresa
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -12,7 +11,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -31,9 +29,11 @@ fun EmpresaEditarOrientadorScreen(
     onVoltar: () -> Unit = {},
     onGuardado: () -> Unit = {}
 ) {
+    val sessaoEmpresa = LocalEmpresaSessao.current
     val viewModel: EmpresaEditarOrientadorViewModel = viewModel(
-        factory = EmpresaEditarOrientadorViewModelFactory()
+        factory = EmpresaEditarOrientadorViewModelFactory(sessaoEmpresa)
     )
+    val ativa by sessaoEmpresa?.isEmpresaAtiva?.collectAsState() ?: remember { mutableStateOf(false) }
 
     val isLoading by viewModel.isLoading.collectAsState()
     val erro by viewModel.erro.collectAsState()
@@ -240,7 +240,7 @@ fun EmpresaEditarOrientadorScreen(
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
                 shape = RoundedCornerShape(12.dp),
-                enabled = !isLoading
+                enabled = !isLoading && ativa
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))

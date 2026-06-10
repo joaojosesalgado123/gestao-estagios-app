@@ -2,7 +2,6 @@ package pt.ligix.app.ui.empresa
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -49,9 +48,11 @@ fun EmpresaDashboardScreen(
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
+    val sessaoEmpresa = LocalEmpresaSessao.current
     val viewModel: EmpresaDashboardViewModel = viewModel(
         factory = EmpresaDashboardViewModelFactory(EmpresaRepository(), sessionManager)
     )
+    val ativa by sessaoEmpresa?.isEmpresaAtiva?.collectAsState() ?: remember { mutableStateOf(false) }
 
     val nomeEmpresa by viewModel.nomeEmpresa.collectAsState()
     val vagasAtivas by viewModel.vagasAtivas.collectAsState()
@@ -159,7 +160,8 @@ fun EmpresaDashboardScreen(
                             containerColor = Color.Transparent,
                             contentColor = DarkBlue
                         ),
-                        border = BorderStroke(1.dp, Color(0xFFAAAAAA))
+                        border = BorderStroke(1.dp, Color(0xFFAAAAAA)),
+                        enabled = ativa
                     ) {
                         Icon(Icons.Default.Add, contentDescription = null, tint = DarkBlue)
                         Spacer(Modifier.width(6.dp))

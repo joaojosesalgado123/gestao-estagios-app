@@ -13,7 +13,9 @@ import pt.ligix.app.model.Utilizador
 import pt.ligix.app.util.PhoneNumberValidator
 import pt.ligix.app.util.SessionManager
 
-class EmpresaPerfilViewModel : ViewModel() {
+class EmpresaPerfilViewModel(
+    private val sessaoEmpresa: EmpresaSessaoViewModel? = null
+) : ViewModel() {
 
     private val api = RetrofitClient.api
 
@@ -59,7 +61,17 @@ class EmpresaPerfilViewModel : ViewModel() {
         }
     }
 
+    private fun bloqueadoPorEmpresaInativa(): Boolean {
+        if (sessaoEmpresa?.isEmpresaAtiva?.value != true) {
+            _erroGuardar.value = "A tua empresa está rejeitada. Não é possível executar esta ação."
+            return true
+        }
+        return false
+    }
+
     fun guardarPerfil(nome: String, nipc: String, morada: String, telemovel: String, descricao: String) {
+        if (bloqueadoPorEmpresaInativa()) return
+
         val telemovelValidado = PhoneNumberValidator.normalizeToE164(telemovel)
         if (!telemovelValidado.isValid) {
             _erroGuardar.value = telemovelValidado.errorMessage

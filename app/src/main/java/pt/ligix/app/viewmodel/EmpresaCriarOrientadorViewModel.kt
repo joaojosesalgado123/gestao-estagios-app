@@ -1,6 +1,5 @@
 package pt.ligix.app.viewmodel
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -17,7 +16,8 @@ import pt.ligix.app.util.SessionManager
 import java.util.UUID
 
 class EmpresaCriarOrientadorViewModel(
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val sessaoEmpresa: EmpresaSessaoViewModel? = null
 ) : ViewModel() {
 
     private val _isLoading = MutableStateFlow(false)
@@ -29,6 +29,14 @@ class EmpresaCriarOrientadorViewModel(
     private val _sucesso = MutableStateFlow(false)
     val sucesso: StateFlow<Boolean> = _sucesso
 
+    private fun bloqueadoPorEmpresaInativa(): Boolean {
+        if (sessaoEmpresa?.isEmpresaAtiva?.value != true) {
+            _erro.value = "A tua empresa está rejeitada. Não é possível executar esta ação."
+            return true
+        }
+        return false
+    }
+
     fun criarOrientador(
         nome: String,
         email: String,
@@ -36,6 +44,8 @@ class EmpresaCriarOrientadorViewModel(
         area: String = "",
         telemovel: String = ""
     ) {
+        if (bloqueadoPorEmpresaInativa()) return
+
         if (nome.isBlank() || email.isBlank() || palavraPasse.isBlank() || area.isBlank() || telemovel.isBlank()) {
             _erro.value = "Preencha o nome, email, telemóvel, área e palavra-passe."
             return
@@ -143,10 +153,11 @@ class EmpresaCriarOrientadorViewModel(
 }
 
 class EmpresaCriarOrientadorViewModelFactory(
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val sessaoEmpresa: EmpresaSessaoViewModel? = null
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return EmpresaCriarOrientadorViewModel(sessionManager) as T
+        return EmpresaCriarOrientadorViewModel(sessionManager, sessaoEmpresa) as T
     }
 }

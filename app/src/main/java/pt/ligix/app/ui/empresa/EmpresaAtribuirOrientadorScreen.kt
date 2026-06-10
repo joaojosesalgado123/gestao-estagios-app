@@ -30,9 +30,11 @@ import pt.ligix.app.viewmodel.OrientadorItem
 fun EmpresaAtribuirOrientadorScreen(modifier: Modifier = Modifier, onVoltar: () -> Unit = {}) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
+    val sessaoEmpresa = LocalEmpresaSessao.current
     val viewModel: EmpresaAtribuirOrientadorViewModel = viewModel(
-        factory = EmpresaAtribuirOrientadorViewModelFactory(sessionManager)
+        factory = EmpresaAtribuirOrientadorViewModelFactory(sessionManager, sessaoEmpresa)
     )
+    val ativa by sessaoEmpresa?.isEmpresaAtiva?.collectAsState() ?: remember { mutableStateOf(false) }
 
     val estagiosPendentes by viewModel.estagiosPendentes.collectAsState()
     val orientadores by viewModel.orientadores.collectAsState()
@@ -170,6 +172,7 @@ fun EmpresaAtribuirOrientadorScreen(modifier: Modifier = Modifier, onVoltar: () 
                         nomeAluno = estagio.nomeAluno,
                         tituloOferta = estagio.tituloOferta,
                         orientadores = orientadores,
+                        ativa = ativa,
                         onAtribuir = { idOrientador ->
                             viewModel.atribuirOrientador(estagio.idEstagio, idOrientador)
                         }
@@ -187,6 +190,7 @@ fun AtribuicaoOrientadorCard(
     nomeAluno: String,
     tituloOferta: String,
     orientadores: List<OrientadorItem>,
+    ativa: Boolean = true,
     onAtribuir: (String) -> Unit
 ) {
     var orientadorSelecionado by remember { mutableStateOf<OrientadorItem?>(null) }
@@ -243,6 +247,7 @@ fun AtribuicaoOrientadorCard(
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = { Text("Selecionar um orientador...", color = Color.Gray) },
                         readOnly = true,
+                        enabled = ativa,
                         trailingIcon = {
                             Icon(Icons.Default.KeyboardArrowDown, contentDescription = null,
                                 tint = Color.Gray)
@@ -267,7 +272,9 @@ fun AtribuicaoOrientadorCard(
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.matchParentSize().clickable { expandido = true })
+                    if (ativa) {
+                        Spacer(modifier = Modifier.matchParentSize().clickable { expandido = true })
+                    }
                 }
 
                 Spacer(Modifier.height(12.dp))
@@ -277,7 +284,7 @@ fun AtribuicaoOrientadorCard(
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
                     shape = RoundedCornerShape(8.dp),
-                    enabled = orientadorSelecionado != null
+                    enabled = orientadorSelecionado != null && ativa
                 ) {
                     Icon(Icons.Default.PersonAdd, contentDescription = null,
                         modifier = Modifier.size(18.dp))

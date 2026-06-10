@@ -35,9 +35,11 @@ fun EmpresaListaCandidatosScreen(
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
+    val sessaoEmpresa = LocalEmpresaSessao.current
     val viewModel: EmpresaTodosCandidatosViewModel = viewModel(
-        factory = EmpresaTodosCandidatosViewModelFactory(EmpresaRepository(), sessionManager)
+        factory = EmpresaTodosCandidatosViewModelFactory(EmpresaRepository(), sessionManager, sessaoEmpresa)
     )
+    val ativa by sessaoEmpresa?.isEmpresaAtiva?.collectAsState() ?: remember { mutableStateOf(false) }
 
     val pendentes by viewModel.pendentes.collectAsState()
     val aceites by viewModel.aceites.collectAsState()
@@ -45,8 +47,17 @@ fun EmpresaListaCandidatosScreen(
     val totalCandidatos by viewModel.totalCandidatos.collectAsState()
     val emRevisao by viewModel.emRevisao.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val erro by viewModel.erro.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) { viewModel.carregarDados(context) }
+
+    LaunchedEffect(erro) {
+        erro?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.limparErro()
+        }
+    }
 
     Box(
         modifier = modifier
@@ -125,6 +136,7 @@ fun EmpresaListaCandidatosScreen(
                         pendentes.forEach { c ->
                             ListaCandidatoCardNovo(
                                 detalhe = c,
+                                ativa = ativa,
                                 onAprovar = { viewModel.aprovarCandidatura(c.candidatura.idCandidatura) },
                                 onRejeitar = { viewModel.rejeitarCandidatura(c.candidatura.idCandidatura) },
                                 onVerCandidatura = { onVerCandidatura(c.candidatura.idCandidatura) }
@@ -165,6 +177,8 @@ fun EmpresaListaCandidatosScreen(
                 Spacer(Modifier.height(32.dp))
             }
         }
+
+        SnackbarHost(snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter))
     }
 }
 
@@ -199,6 +213,7 @@ fun ListaCandidatoIniciais(nomeAluno: String, size: Int = 56) {
 @Composable
 fun ListaCandidatoCardNovo(
     detalhe: CandidatoDetalhe,
+    ativa: Boolean = true,
     onAprovar: () -> Unit,
     onRejeitar: () -> Unit,
     onVerCandidatura: () -> Unit
@@ -237,7 +252,8 @@ fun ListaCandidatoCardNovo(
                     onClick = onAprovar, modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
                     shape = RoundedCornerShape(10.dp),
-                    contentPadding = PaddingValues(vertical = 10.dp)
+                    contentPadding = PaddingValues(vertical = 10.dp),
+                    enabled = ativa
                 ) {
                     Icon(Icons.Default.CheckCircle, contentDescription = null,
                         tint = Color.White, modifier = Modifier.size(15.dp))
@@ -249,7 +265,8 @@ fun ListaCandidatoCardNovo(
                     shape = RoundedCornerShape(10.dp),
                     contentPadding = PaddingValues(vertical = 10.dp),
                     border = BorderStroke(1.dp, Color.Red),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
+                    enabled = ativa
                 ) {
                     Icon(Icons.Default.Cancel, contentDescription = null,
                         tint = Color.Red, modifier = Modifier.size(15.dp))

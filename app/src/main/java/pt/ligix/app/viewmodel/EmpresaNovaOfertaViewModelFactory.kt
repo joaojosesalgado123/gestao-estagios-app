@@ -7,12 +7,13 @@ import pt.ligix.app.util.SessionManager
 
 class EmpresaNovaOfertaViewModelFactory(
     private val repository: EmpresaRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val sessaoEmpresa: EmpresaSessaoViewModel? = null
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(EmpresaNovaOfertaViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return EmpresaNovaOfertaViewModel(repository, sessionManager) as T
+            return EmpresaNovaOfertaViewModel(repository, sessionManager, sessaoEmpresa) as T
         }
         throw IllegalArgumentException("ViewModel desconhecido")
     }

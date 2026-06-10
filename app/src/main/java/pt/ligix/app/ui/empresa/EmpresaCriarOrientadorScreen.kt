@@ -11,8 +11,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -35,9 +33,11 @@ fun EmpresaCriarOrientadorScreen(
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
+    val sessaoEmpresa = LocalEmpresaSessao.current
     val viewModel: EmpresaCriarOrientadorViewModel = viewModel(
-        factory = EmpresaCriarOrientadorViewModelFactory(sessionManager)
+        factory = EmpresaCriarOrientadorViewModelFactory(sessionManager, sessaoEmpresa)
     )
+    val ativa by sessaoEmpresa?.isEmpresaAtiva?.collectAsState() ?: remember { mutableStateOf(false) }
 
     val isLoading by viewModel.isLoading.collectAsState()
     val erro by viewModel.erro.collectAsState()
@@ -277,7 +277,7 @@ fun EmpresaCriarOrientadorScreen(
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
                 shape = RoundedCornerShape(12.dp),
-                enabled = !isLoading
+                enabled = !isLoading && ativa
             ) {
                 if (isLoading) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))

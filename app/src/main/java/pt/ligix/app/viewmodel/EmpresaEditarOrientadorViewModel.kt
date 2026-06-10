@@ -9,7 +9,9 @@ import kotlinx.coroutines.launch
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.util.PhoneNumberValidator
 
-class EmpresaEditarOrientadorViewModel : ViewModel() {
+class EmpresaEditarOrientadorViewModel(
+    private val sessaoEmpresa: EmpresaSessaoViewModel? = null
+) : ViewModel() {
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -20,6 +22,14 @@ class EmpresaEditarOrientadorViewModel : ViewModel() {
     private val _sucesso = MutableStateFlow(false)
     val sucesso: StateFlow<Boolean> = _sucesso
 
+    private fun bloqueadoPorEmpresaInativa(): Boolean {
+        if (sessaoEmpresa?.isEmpresaAtiva?.value != true) {
+            _erro.value = "A tua empresa está rejeitada. Não é possível executar esta ação."
+            return true
+        }
+        return false
+    }
+
     fun guardarOrientador(
         id: String,
         nome: String,
@@ -27,6 +37,8 @@ class EmpresaEditarOrientadorViewModel : ViewModel() {
         telemovel: String,
         area: String = ""
     ) {
+        if (bloqueadoPorEmpresaInativa()) return
+
         if (nome.isBlank() || email.isBlank() || telemovel.isBlank() || area.isBlank()) {
             _erro.value = "Preencha o nome, email, telemóvel e área."
             return
@@ -104,9 +116,11 @@ class EmpresaEditarOrientadorViewModel : ViewModel() {
     }
 }
 
-class EmpresaEditarOrientadorViewModelFactory : ViewModelProvider.Factory {
+class EmpresaEditarOrientadorViewModelFactory(
+    private val sessaoEmpresa: EmpresaSessaoViewModel? = null
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return EmpresaEditarOrientadorViewModel() as T
+        return EmpresaEditarOrientadorViewModel(sessaoEmpresa) as T
     }
 }

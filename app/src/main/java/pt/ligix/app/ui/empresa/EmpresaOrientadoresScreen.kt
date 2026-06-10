@@ -4,7 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -36,18 +35,29 @@ fun EmpresaOrientadoresScreen(
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
+    val sessaoEmpresa = LocalEmpresaSessao.current
     val viewModel: EmpresaOrientadoresViewModel = viewModel(
-        factory = EmpresaOrientadoresViewModelFactory(EmpresaRepository(), sessionManager)
+        factory = EmpresaOrientadoresViewModelFactory(EmpresaRepository(), sessionManager, sessaoEmpresa)
     )
+    val ativa by sessaoEmpresa?.isEmpresaAtiva?.collectAsState() ?: remember { mutableStateOf(false) }
 
     val orientadores by viewModel.orientadores.collectAsState()
     val orientadoresFiltrados by viewModel.orientadoresFiltrados.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val erro by viewModel.erro.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
     var pesquisa by remember { mutableStateOf("") }
 
     var refreshKey by remember { mutableStateOf(0) }
     LaunchedEffect(refreshKey) { viewModel.carregarOrientadores(context) }
     LaunchedEffect(pesquisa) { viewModel.filtrar(pesquisa) }
+
+    LaunchedEffect(erro) {
+        erro?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.limparErro()
+        }
+    }
 
     Box(
         modifier = modifier
@@ -113,6 +123,7 @@ fun EmpresaOrientadoresScreen(
                     orientadoresFiltrados.forEach { orientador ->
                         OrientadorCard(
                             orientador = orientador,
+                            ativa = ativa,
                             onEditar = { onEditarOrientador(orientador) },
                             onEliminar = { viewModel.eliminarOrientador(orientador.id) }
                         )
@@ -125,24 +136,29 @@ fun EmpresaOrientadoresScreen(
         }
 
         // Botão flutuante +
-        FloatingActionButton(
-            onClick = { onCriarOrientador() },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(24.dp),
-            containerColor = DarkBlue,
-            contentColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Icon(Icons.Default.Add, contentDescription = "Adicionar Orientador",
-                modifier = Modifier.size(28.dp))
+        if (ativa) {
+            FloatingActionButton(
+                onClick = { onCriarOrientador() },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(24.dp),
+                containerColor = DarkBlue,
+                contentColor = Color.White,
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = "Adicionar Orientador",
+                    modifier = Modifier.size(28.dp))
+            }
         }
+
+        SnackbarHost(snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter))
     }
 }
 
 @Composable
 fun OrientadorCard(
     orientador: OrientadorDetalhe,
+    ativa: Boolean = true,
     onEditar: () -> Unit,
     onEliminar: () -> Unit
 ) {
@@ -208,7 +224,8 @@ fun OrientadorCard(
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
                     shape = RoundedCornerShape(10.dp),
-                    contentPadding = PaddingValues(vertical = 10.dp)
+                    contentPadding = PaddingValues(vertical = 10.dp),
+                    enabled = ativa
                 ) {
                     Icon(Icons.Default.Edit, contentDescription = null,
                         tint = Color.White, modifier = Modifier.size(15.dp))
@@ -222,7 +239,8 @@ fun OrientadorCard(
                     shape = RoundedCornerShape(10.dp),
                     contentPadding = PaddingValues(vertical = 10.dp),
                     border = BorderStroke(1.dp, Color.Red),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red),
+                    enabled = ativa
                 ) {
                     Icon(Icons.Default.Cancel, contentDescription = null,
                         tint = Color.Red, modifier = Modifier.size(15.dp))

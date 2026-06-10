@@ -22,7 +22,8 @@ data class OrientadorDetalhe(
 
 class EmpresaOrientadoresViewModel(
     private val repository: EmpresaRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val sessaoEmpresa: EmpresaSessaoViewModel? = null
 ) : ViewModel() {
 
     private val _orientadores = MutableStateFlow<List<OrientadorDetalhe>>(emptyList())
@@ -33,6 +34,9 @@ class EmpresaOrientadoresViewModel(
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
+
+    private val _erro = MutableStateFlow<String?>(null)
+    val erro: StateFlow<String?> = _erro
 
     fun carregarOrientadores(context: Context) {
         viewModelScope.launch {
@@ -83,7 +87,17 @@ class EmpresaOrientadoresViewModel(
         // implementar conforme navegação do projeto
     }
 
+    private fun bloqueadoPorEmpresaInativa(): Boolean {
+        if (sessaoEmpresa?.isEmpresaAtiva?.value != true) {
+            _erro.value = "A tua empresa está rejeitada. Não é possível executar esta ação."
+            return true
+        }
+        return false
+    }
+
     fun eliminarOrientador(id: String) {
+        if (bloqueadoPorEmpresaInativa()) return
+
         viewModelScope.launch {
             try {
                 val api = RetrofitClient.api
@@ -99,14 +113,17 @@ class EmpresaOrientadoresViewModel(
     fun adicionarOrientador() {
         // implementar conforme navegação do projeto
     }
+
+    fun limparErro() { _erro.value = null }
 }
 
 class EmpresaOrientadoresViewModelFactory(
     private val repository: EmpresaRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val sessaoEmpresa: EmpresaSessaoViewModel? = null
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return EmpresaOrientadoresViewModel(repository, sessionManager) as T
+        return EmpresaOrientadoresViewModel(repository, sessionManager, sessaoEmpresa) as T
     }
 }

@@ -19,7 +19,8 @@ data class CandidatoDetalhe(
 
 class EmpresaCandidatosViewModel(
     private val repository: EmpresaRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val sessaoEmpresa: EmpresaSessaoViewModel? = null
 ) : ViewModel() {
 
     private val api = RetrofitClient.api
@@ -70,7 +71,17 @@ class EmpresaCandidatosViewModel(
         }
     }
 
+    private fun bloqueadoPorEmpresaInativa(): Boolean {
+        if (sessaoEmpresa?.isEmpresaAtiva?.value != true) {
+            _feedbackMensagem.value = "A tua empresa está rejeitada. Não é possível executar esta ação."
+            return true
+        }
+        return false
+    }
+
     fun aprovarCandidatura(idCandidatura: String) {
+        if (bloqueadoPorEmpresaInativa()) return
+
         viewModelScope.launch {
             try {
                 val response = api.updateCandidaturaStatus(
@@ -94,6 +105,8 @@ class EmpresaCandidatosViewModel(
     }
 
     fun rejeitarCandidatura(idCandidatura: String) {
+        if (bloqueadoPorEmpresaInativa()) return
+
         viewModelScope.launch {
             try {
                 val response = api.updateCandidaturaStatus(

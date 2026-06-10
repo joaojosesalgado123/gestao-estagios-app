@@ -36,9 +36,11 @@ fun EmpresaCandidatosScreen(
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
+    val sessaoEmpresa = LocalEmpresaSessao.current
     val viewModel: EmpresaCandidatosViewModel = viewModel(
-        factory = EmpresaCandidatosViewModelFactory(EmpresaRepository(), sessionManager)
+        factory = EmpresaCandidatosViewModelFactory(EmpresaRepository(), sessionManager, sessaoEmpresa)
     )
+    val ativa by sessaoEmpresa?.isEmpresaAtiva?.collectAsState() ?: remember { mutableStateOf(false) }
 
     val candidatos by viewModel.candidatos.collectAsState()
     val totalCandidatos by viewModel.totalCandidatos.collectAsState()
@@ -175,6 +177,7 @@ fun EmpresaCandidatosScreen(
                         candidatos.forEach { detalhe ->
                             CandidatoDetalheCard(
                                 detalhe = detalhe,
+                                ativa = ativa,
                                 onAprovar = { viewModel.aprovarCandidatura(detalhe.candidatura.idCandidatura) },
                                 onRejeitar = { viewModel.rejeitarCandidatura(detalhe.candidatura.idCandidatura) },
                                 onVerCandidatura = { onVerCandidatura(detalhe.candidatura.idCandidatura) }
@@ -194,6 +197,7 @@ fun EmpresaCandidatosScreen(
 fun CandidatoDetalheCard(
     detalhe: CandidatoDetalhe,
     tituloOferta: String = "",
+    ativa: Boolean = true,
     onAprovar: () -> Unit,
     onRejeitar: () -> Unit,
     onVerCandidatura: () -> Unit = {}
@@ -269,7 +273,8 @@ fun CandidatoDetalheCard(
                         modifier = Modifier.weight(1f).height(44.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
                         shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(horizontal = 8.dp)
+                        contentPadding = PaddingValues(horizontal = 8.dp),
+                        enabled = ativa
                     ) {
                         Icon(Icons.Default.CheckCircle, contentDescription = null,
                             modifier = Modifier.size(14.dp))
@@ -282,7 +287,8 @@ fun CandidatoDetalheCard(
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFE53935)),
                         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE53935)),
                         shape = RoundedCornerShape(8.dp),
-                        contentPadding = PaddingValues(horizontal = 8.dp)
+                        contentPadding = PaddingValues(horizontal = 8.dp),
+                        enabled = ativa
                     ) {
                         Icon(Icons.Default.Cancel, contentDescription = null,
                             tint = Color(0xFFE53935), modifier = Modifier.size(14.dp))
