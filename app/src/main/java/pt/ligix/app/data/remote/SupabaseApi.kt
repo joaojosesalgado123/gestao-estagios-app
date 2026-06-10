@@ -124,6 +124,47 @@ interface SupabaseApi {
         @Query("select") select: String = "*"
     ): Response<List<Candidatura>>
 
+    @DELETE("utilizador")
+    suspend fun deleteUtilizador(
+        @Query("idutilizador") id: String
+    ): Response<Unit>
+
+    @GET("instituicao_ensino")
+    suspend fun getInstituicaoByIdUtilizador(
+        @Query("idutilizador") idUtilizador: String,
+        @Query("select") select: String = "*"
+    ): Response<List<InstituicaoEnsino>>
+
+    @PATCH("instituicao_ensino")
+    suspend fun updateInstituicao(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Query("idinstituicao") id: String,
+        @Body body: Map<String, String>
+    ): Response<List<InstituicaoEnsino>>
+
+    @GET("aluno")
+    suspend fun getAlunosByInstituicao(
+        @Query("idinstituicao") idInstituicao: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Aluno>>
+
+    @GET("utilizador")
+    suspend fun getAllUtilizadores(
+        @Query("select") select: String = "*"
+    ): Response<List<Utilizador>>
+
+    @PATCH("estagio")
+    suspend fun updateEstagio(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Query("idestagio") id: String,
+        @Body estagio: Map<String, String>
+    ): Response<List<Estagio>>
+
+    @GET("estagio")
+    suspend fun getAllEstagios(
+        @Query("select") select: String = "*"
+    ): Response<List<Estagio>>
+
     @GET("oferta_estagio")
     suspend fun getOfertasByEmpresa(
         @Query("idempresa") idEmpresa: String,
@@ -329,6 +370,17 @@ interface SupabaseApi {
     ): Response<List<Empresa>>
 
     // ==================== DOCENTE ====================
+    @GET("docente")
+    suspend fun getDocentesByInstituicao(
+        @Query("idinstituicao") idInstituicao: String,
+        @Query("select") select: String = "*"
+    ): Response<List<Docente>>
+
+    @GET("docente")
+    suspend fun getAllDocentes(
+        @Query("select") select: String = "*"
+    ): Response<List<Docente>>
+
     @GET("docente")
     suspend fun getDocenteById(
         @Query("idutilizador") idUtilizador: String,
