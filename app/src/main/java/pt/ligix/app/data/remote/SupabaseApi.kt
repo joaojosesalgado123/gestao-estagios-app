@@ -268,12 +268,6 @@ interface SupabaseApi {
         @Query("select") select: String = "*"
     ): Response<List<Utilizador>>
 
-    @PATCH("estagio")
-    suspend fun updateEstagio(
-        @Header("Prefer") prefer: String = "return=representation",
-        @Query("idestagio") id: String,
-        @Body estagio: Map<String, String>
-    ): Response<List<Estagio>>
 
     @GET("estagio")
     suspend fun getAllEstagios(
@@ -309,7 +303,7 @@ interface SupabaseApi {
     suspend fun updateEstagio(
         @Header("Prefer") prefer: String = "return=representation",
         @Query("idestagio") id: String,
-        @Body estagio: Map<String, Any?>
+        @Body estagio: Map<String, @JvmSuppressWildcards Any?>
     ): Response<List<Estagio>>
 
     @GET("estagio")
