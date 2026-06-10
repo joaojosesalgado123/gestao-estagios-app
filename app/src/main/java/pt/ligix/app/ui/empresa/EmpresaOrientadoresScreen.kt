@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pt.ligix.app.data.repository.EmpresaRepository
 import pt.ligix.app.ui.auth.DarkBlue
+import pt.ligix.app.util.PhoneNumberValidator
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.viewmodel.EmpresaOrientadoresViewModel
 import pt.ligix.app.viewmodel.EmpresaOrientadoresViewModelFactory
@@ -191,6 +192,10 @@ fun OrientadorCard(
                 fontSize = 18.sp, color = Color.Black)
             Text(orientador.email, fontSize = 13.sp,
                 color = Color.Gray, modifier = Modifier.padding(top = 2.dp))
+            if (orientador.telemovel.isNotBlank()) {
+                Text(PhoneNumberValidator.formatForDisplay(orientador.telemovel), fontSize = 13.sp,
+                    color = Color.Gray, modifier = Modifier.padding(top = 2.dp))
+            }
 
             Spacer(Modifier.height(16.dp))
 

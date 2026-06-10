@@ -11,13 +11,12 @@ import kotlinx.coroutines.launch
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.data.remote.SupabaseAuthClient
 import pt.ligix.app.data.remote.SupabaseSignUpRequest
-import pt.ligix.app.data.repository.EmpresaRepository
 import pt.ligix.app.model.OrientadorEmpresa
+import pt.ligix.app.util.PhoneNumberValidator
 import pt.ligix.app.util.SessionManager
 import java.util.UUID
 
 class EmpresaCriarOrientadorViewModel(
-    private val repository: EmpresaRepository,
     private val sessionManager: SessionManager
 ) : ViewModel() {
 
@@ -30,11 +29,31 @@ class EmpresaCriarOrientadorViewModel(
     private val _sucesso = MutableStateFlow(false)
     val sucesso: StateFlow<Boolean> = _sucesso
 
-    fun criarOrientador(nome: String, email: String, palavraPasse: String, area: String = "") {
-        if (nome.isBlank() || email.isBlank() || palavraPasse.isBlank()) {
-            _erro.value = "Preencha o nome, email e palavra-passe."
+    fun criarOrientador(
+        nome: String,
+        email: String,
+        palavraPasse: String,
+        area: String = "",
+        telemovel: String = ""
+    ) {
+        if (nome.isBlank() || email.isBlank() || palavraPasse.isBlank() || area.isBlank() || telemovel.isBlank()) {
+            _erro.value = "Preencha o nome, email, telemóvel, área e palavra-passe."
             return
         }
+        if (!email.contains("@") || !email.contains(".")) {
+            _erro.value = "Insira um email válido."
+            return
+        }
+        if (palavraPasse.length < 6) {
+            _erro.value = "A palavra-passe deve ter pelo menos 6 caracteres."
+            return
+        }
+        val telemovelValidado = PhoneNumberValidator.normalizeToE164(telemovel, required = true)
+        if (!telemovelValidado.isValid) {
+            _erro.value = telemovelValidado.errorMessage
+            return
+        }
+        val telemovelNormalizado = telemovelValidado.e164.orEmpty()
 
         viewModelScope.launch {
             _isLoading.value = true
@@ -55,18 +74,22 @@ class EmpresaCriarOrientadorViewModel(
                         data = mapOf(
                             "nome" to nome,
                             "role" to "orientador",
-                            "username" to usernameUnico
+                            "username" to usernameUnico,
+                            "telemovel" to telemovelNormalizado
                         )
                     )
                 )
 
                 if (!authResponse.isSuccessful) {
-                    _erro.value = "Erro ao criar conta: ${authResponse.errorBody()?.string()}"
+                    _erro.value = mensagemErroAuth(
+                        statusCode = authResponse.code(),
+                        errorBody = authResponse.errorBody()?.string().orEmpty()
+                    )
                     return@launch
                 }
 
                 val idNovoUtilizador = authResponse.body()?.user?.id ?: run {
-                    _erro.value = "Erro ao obter ID do utilizador criado."
+                    _erro.value = "Não foi possível concluir a criação da conta. Tente novamente."
                     return@launch
                 }
 
@@ -75,21 +98,42 @@ class EmpresaCriarOrientadorViewModel(
                     idUtilizador = idNovoUtilizador,
                     idEmpresa = idEmpresa,
                     area = area,
-                    status = "ativo"
+                    status = "ativo",
+                    telemovel = telemovelNormalizado
                 )
                 val orientadorResponse = api.createOrientadorEmpresa(orientadorEmpresa = orientadorEmpresa)
                 if (!orientadorResponse.isSuccessful) {
-                    _erro.value = "Erro ao associar orientador: ${orientadorResponse.errorBody()?.string()}"
+                    _erro.value = "A conta foi criada, mas não foi possível associar o orientador à empresa. Verifique as permissões no Supabase e tente novamente."
                     return@launch
                 }
 
                 _sucesso.value = true
 
             } catch (e: Exception) {
-                _erro.value = "Erro: ${e.message}"
+                _erro.value = "Não foi possível criar o orientador. Verifique a ligação e tente novamente."
             } finally {
                 _isLoading.value = false
             }
+        }
+    }
+
+    private fun mensagemErroAuth(statusCode: Int, errorBody: String): String {
+        return when {
+            errorBody.contains("weak_password", ignoreCase = true) ||
+                errorBody.contains("at least 6 characters", ignoreCase = true) ->
+                "A palavra-passe deve ter pelo menos 6 caracteres."
+            errorBody.contains("invalid_email", ignoreCase = true) ||
+                errorBody.contains("invalid email", ignoreCase = true) ->
+                "Insira um email válido."
+            errorBody.contains("already", ignoreCase = true) ||
+                errorBody.contains("registered", ignoreCase = true) ->
+                "Já existe uma conta com este email."
+            statusCode == 429 ->
+                "Demasiadas tentativas. Tente novamente dentro de alguns minutos."
+            statusCode in 500..599 ->
+                "O serviço de autenticação está temporariamente indisponível."
+            else ->
+                "Não foi possível criar a conta do orientador. Tente novamente."
         }
     }
 
@@ -99,11 +143,10 @@ class EmpresaCriarOrientadorViewModel(
 }
 
 class EmpresaCriarOrientadorViewModelFactory(
-    private val repository: EmpresaRepository,
     private val sessionManager: SessionManager
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return EmpresaCriarOrientadorViewModel(repository, sessionManager) as T
+        return EmpresaCriarOrientadorViewModel(sessionManager) as T
     }
 }

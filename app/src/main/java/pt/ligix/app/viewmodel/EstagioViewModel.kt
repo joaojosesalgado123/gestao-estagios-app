@@ -16,6 +16,7 @@ import pt.ligix.app.data.repository.AtividadesRepository
 import pt.ligix.app.data.repository.OfertasRepository
 import pt.ligix.app.model.Atividade
 import pt.ligix.app.model.Estagio
+import pt.ligix.app.model.ItemAvaliacao
 import pt.ligix.app.model.Presenca
 import pt.ligix.app.model.RelatorioFinal
 import pt.ligix.app.model.descricaoComCategoriaAtividade
@@ -206,7 +207,7 @@ class EstagioViewModel : ViewModel() {
     private suspend fun recarregarAvaliacaoFinal(estagioAtual: Estagio) {
         _notaEmpresa.value = null
         _notaDocente.value = null
-        _notaFinal.value = estagioAtual.classificacaoFinal
+        _notaFinal.value = null
 
         val api = RetrofitClient.api
         val response = api.getAvaliacaoByEstagio(
@@ -250,44 +251,57 @@ class EstagioViewModel : ViewModel() {
             if (itens.isNotEmpty()) {
                 val idOrientador = estagioAtual.idOrientador.orEmpty().lowercase()
                 val idDocente = estagioAtual.idDocente.orEmpty().lowercase()
-                val itensComNota = itens.filter { it.classificacao != null }
+                val itensComNotaFinal = itens
+                    .filter { it.classificacao != null && it.ehItemDeNotaFinal() }
+                    .sortedBy { it.dataAvaliacao.ifBlank { "" } }
 
-                notaEmpresa = itensComNota.firstOrNull {
-                    it.idAvaliador.lowercase() == idOrientador
-                }?.classificacao ?: itensComNota.firstOrNull {
-                    it.comentario?.contains("empresa", ignoreCase = true) == true
-                }?.classificacao
-
-                notaDocente = itensComNota.firstOrNull {
-                    it.idAvaliador.lowercase() == idDocente
-                }?.classificacao ?: itensComNota.firstOrNull {
-                    it.comentario?.contains("docente", ignoreCase = true) == true
-                }?.classificacao
-
-                if (notaEmpresa == null && itensComNota.size >= 2) {
-                    notaEmpresa = itensComNota.firstOrNull {
-                        it.idAvaliador.lowercase() != idDocente
-                    }?.classificacao ?: itensComNota.first().classificacao
+                var itemEmpresa = itensComNotaFinal.firstOrNull {
+                    idOrientador.isNotBlank() && it.idAvaliador.lowercase() == idOrientador
                 }
 
-                if (notaDocente == null && itensComNota.size >= 2) {
-                    notaDocente = itensComNota.firstOrNull {
-                        it.idAvaliador.lowercase() != idOrientador &&
-                            it.classificacao != notaEmpresa
-                    }?.classificacao ?: itensComNota.getOrNull(1)?.classificacao
+                var itemDocente = itensComNotaFinal.firstOrNull {
+                    idDocente.isNotBlank() && it.idAvaliador.lowercase() == idDocente
                 }
+
+                if (itemEmpresa == null) {
+                    itemEmpresa = itensComNotaFinal.firstOrNull {
+                        it !== itemDocente &&
+                            it.comentario?.contains("empresa", ignoreCase = true) == true
+                    }
+                }
+
+                if (itemDocente == null) {
+                    itemDocente = itensComNotaFinal.firstOrNull {
+                        it !== itemEmpresa &&
+                            it.comentario?.contains("docente", ignoreCase = true) == true
+                    }
+                }
+
+                if (itemEmpresa == null && itensComNotaFinal.size >= 2) {
+                    itemEmpresa = itensComNotaFinal.firstOrNull {
+                        it !== itemDocente &&
+                            (idDocente.isBlank() || it.idAvaliador.lowercase() != idDocente)
+                    } ?: itensComNotaFinal.firstOrNull { it !== itemDocente }
+                }
+
+                if (itemDocente == null && itensComNotaFinal.size >= 2) {
+                    itemDocente = itensComNotaFinal.firstOrNull {
+                        it !== itemEmpresa &&
+                            (idOrientador.isBlank() || it.idAvaliador.lowercase() != idOrientador)
+                    } ?: itensComNotaFinal.firstOrNull { it !== itemEmpresa }
+                }
+
+                notaEmpresa = itemEmpresa?.classificacao?.coerceIn(0.0, 20.0)
+                notaDocente = itemDocente?.classificacao?.coerceIn(0.0, 20.0)
             }
         }
 
-        // Se a avaliação tem classificação direta, usa-a como nota empresa
-        val notaEmpresaFinal = avaliacao.classificacao ?: notaEmpresa
-        _notaEmpresa.value = notaEmpresaFinal
+        _notaEmpresa.value = notaEmpresa
         _notaDocente.value = notaDocente
-        _notaFinal.value = when {
-            notaEmpresaFinal != null && notaDocente != null -> (notaEmpresaFinal + notaDocente) / 2.0
-            notaEmpresaFinal != null -> notaEmpresaFinal
-            avaliacao.classificacao != null -> avaliacao.classificacao
-            else -> estagioAtual.classificacaoFinal
+        _notaFinal.value = if (notaEmpresa != null && notaDocente != null) {
+            (notaEmpresa + notaDocente) / 2.0
+        } else {
+            null
         }
     }
 

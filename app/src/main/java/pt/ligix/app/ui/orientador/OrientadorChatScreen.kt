@@ -11,6 +11,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -122,7 +124,7 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                     singleLine = true
                 )
 
-                Divider(color = Color(0xFFEEEEEE))
+                HorizontalDivider(color = Color(0xFFEEEEEE))
 
                 mensagemErro?.let {
                     Text(it, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
@@ -209,7 +211,7 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                                 }
                             }
                         }
-                        Divider(color = Color(0xFFEEEEEE), modifier = Modifier.padding(start = 84.dp))
+                        HorizontalDivider(color = Color(0xFFEEEEEE), modifier = Modifier.padding(start = 84.dp))
                     }
                 }
             }
@@ -222,7 +224,7 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { viewModel.fecharChat() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Voltar", tint = DarkBlue)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar", tint = DarkBlue)
                     }
                     Box(
                         modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)).background(DarkBlue),
@@ -238,7 +240,7 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                     }
                 }
 
-                Divider(color = Color(0xFFEEEEEE))
+                HorizontalDivider(color = Color(0xFFEEEEEE))
 
                 LazyColumn(
                     state = listState,
@@ -258,7 +260,8 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                             BolhaMensagem(
                                 mensagem = mensagem,
                                 isMinha = mensagem.idRemetente == idUtilizador,
-                                nomeRemetente = nomesParticipantes[mensagem.idRemetente] ?: "Desconhecido"
+                                nomeRemetente = nomesParticipantes[mensagem.idRemetente] ?: "Desconhecido",
+                                onAbrirFicheiro = { viewModel.abrirFicheiroMensagem(context, it) }
                             )
                         }
                     }
@@ -307,7 +310,7 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                             .background(if (textoMensagem.isNotBlank()) DarkBlue else Color.LightGray)
                     ) {
                         if (isSending) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
-                        else Icon(Icons.Default.Send, contentDescription = "Enviar", tint = Color.White)
+                        else Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Enviar", tint = Color.White)
                     }
                 }
             }

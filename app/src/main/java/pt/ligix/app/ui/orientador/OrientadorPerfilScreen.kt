@@ -24,6 +24,8 @@ import pt.ligix.app.ui.aluno.PerfilCampo
 import pt.ligix.app.ui.aluno.PerfilCampoEditavel
 import pt.ligix.app.ui.aluno.PerfilSecao
 import pt.ligix.app.ui.auth.DarkBlue
+import pt.ligix.app.ui.common.PhoneNumberInput
+import pt.ligix.app.util.PhoneNumberValidator
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.viewmodel.OrientadorPerfilViewModel
 import pt.ligix.app.viewmodel.OrientadorPerfilViewModelFactory
@@ -45,18 +47,21 @@ fun OrientadorPerfilScreen(
     val erroGuardar by viewModel.erroGuardar.collectAsState()
     val guardadoComSucesso by viewModel.guardadoComSucesso.collectAsState()
     val areaBD by viewModel.area.collectAsState()
+    val telemovelBD by viewModel.telemovel.collectAsState()
 
     var modoEdicao by remember { mutableStateOf(false) }
     var idioma by remember { mutableStateOf("Português") }
     var expandedIdioma by remember { mutableStateOf(false) }
     var editNome by remember { mutableStateOf("") }
     var editArea by remember { mutableStateOf("") }
+    var editTelemovel by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) { viewModel.carregarPerfil(context) }
 
-    LaunchedEffect(utilizador, areaBD) {
+    LaunchedEffect(utilizador, areaBD, telemovelBD) {
         editNome = utilizador?.nome ?: ""
         editArea = areaBD
+        editTelemovel = telemovelBD
     }
 
     LaunchedEffect(guardadoComSucesso) {
@@ -142,7 +147,7 @@ fun OrientadorPerfilScreen(
                         Text("Cancelar", fontSize = 14.sp, color = Color.Gray)
                     }
                     Button(
-                        onClick = { viewModel.guardarPerfil(editNome, editArea) },
+                        onClick = { viewModel.guardarPerfil(editNome, editArea, editTelemovel) },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
                         shape = RoundedCornerShape(10.dp),
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
@@ -195,6 +200,21 @@ fun OrientadorPerfilScreen(
         PerfilSecao(titulo = "Informações de Contacto", icon = Icons.Default.ContactMail) {
             PerfilCampo(label = "EMAIL CORPORATIVO", valor = utilizador?.email ?: "—",
                 icon = Icons.Default.Email)
+            Spacer(Modifier.height(8.dp))
+            if (modoEdicao) {
+                PhoneNumberInput(
+                    label = "TELEMÓVEL",
+                    value = editTelemovel,
+                    onValueChange = { editTelemovel = it },
+                    containerColor = Color(0xFFF8F8F8)
+                )
+            } else {
+                PerfilCampo(
+                    label = "TELEMÓVEL",
+                    valor = PhoneNumberValidator.formatForDisplay(telemovelBD),
+                    icon = Icons.Default.Phone
+                )
+            }
             Spacer(Modifier.height(8.dp))
             if (modoEdicao) {
                 PerfilCampoEditavel(label = "ÁREA DE TRABALHO", valor = editArea,

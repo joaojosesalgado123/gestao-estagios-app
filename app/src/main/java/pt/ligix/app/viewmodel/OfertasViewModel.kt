@@ -101,6 +101,7 @@ class OfertasViewModel(
         if (query.isNotEmpty()) {
             lista = lista.filter {
                 it.titulo.lowercase().contains(query) ||
+                it.nomeEmpresa?.lowercase()?.contains(query) == true ||
                 it.area?.lowercase()?.contains(query) == true ||
                 it.localizacao?.lowercase()?.contains(query) == true ||
                 it.descricao?.lowercase()?.contains(query) == true

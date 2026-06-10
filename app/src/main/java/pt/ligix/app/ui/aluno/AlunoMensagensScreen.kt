@@ -4,6 +4,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,7 +25,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.ChatBubbleOutline
 import androidx.compose.material.icons.filled.Clear
@@ -32,10 +34,9 @@ import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SearchOff
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -56,6 +57,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -168,7 +170,7 @@ fun AlunoMensagensScreen(viewModel: MensagensViewModel, onSininho: () -> Unit = 
                     singleLine = true
                 )
 
-                Divider(color = Color(0xFFEEEEEE))
+                HorizontalDivider(color = Color(0xFFEEEEEE))
 
                 mensagemErro?.let {
                     Text(
@@ -234,7 +236,7 @@ fun AlunoMensagensScreen(viewModel: MensagensViewModel, onSininho: () -> Unit = 
                                 }
                             }
                         }
-                        Divider(color = Color(0xFFEEEEEE), modifier = Modifier.padding(start = 84.dp))
+                        HorizontalDivider(color = Color(0xFFEEEEEE), modifier = Modifier.padding(start = 84.dp))
                     }
                 }
             }
@@ -245,7 +247,7 @@ fun AlunoMensagensScreen(viewModel: MensagensViewModel, onSininho: () -> Unit = 
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { viewModel.fecharChat() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Voltar", tint = DarkBlue)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar", tint = DarkBlue)
                     }
                     Box(modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)).background(DarkBlue), contentAlignment = Alignment.Center) {
                         Icon(Icons.Default.Work, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
@@ -257,7 +259,7 @@ fun AlunoMensagensScreen(viewModel: MensagensViewModel, onSininho: () -> Unit = 
                     }
                 }
 
-                Divider(color = Color(0xFFEEEEEE))
+                HorizontalDivider(color = Color(0xFFEEEEEE))
 
                 LazyColumn(
                     state = listState,
@@ -273,7 +275,12 @@ fun AlunoMensagensScreen(viewModel: MensagensViewModel, onSininho: () -> Unit = 
                         }
                     } else {
                         items(mensagens) { mensagem ->
-                            BolhaMensagem(mensagem = mensagem, isMinha = mensagem.idRemetente == idUtilizador, nomeRemetente = nomesParticipantes[mensagem.idRemetente] ?: "Desconhecido")
+                            BolhaMensagem(
+                                mensagem = mensagem,
+                                isMinha = mensagem.idRemetente == idUtilizador,
+                                nomeRemetente = nomesParticipantes[mensagem.idRemetente] ?: "Desconhecido",
+                                onAbrirFicheiro = { viewModel.abrirFicheiroMensagem(context, it) }
+                            )
                         }
                     }
                 }
@@ -321,7 +328,7 @@ fun AlunoMensagensScreen(viewModel: MensagensViewModel, onSininho: () -> Unit = 
                         modifier = Modifier.size(48.dp).clip(CircleShape).background(if (textoMensagem.isNotBlank()) DarkBlue else Color.LightGray)
                     ) {
                         if (isSending) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
-                        else Icon(Icons.Default.Send, contentDescription = "Enviar", tint = Color.White)
+                        else Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Enviar", tint = Color.White)
                     }
                 }
             }
@@ -330,7 +337,12 @@ fun AlunoMensagensScreen(viewModel: MensagensViewModel, onSininho: () -> Unit = 
 }
 
 @Composable
-fun BolhaMensagem(mensagem: Mensagem, isMinha: Boolean, nomeRemetente: String) {
+fun BolhaMensagem(
+    mensagem: Mensagem,
+    isMinha: Boolean,
+    nomeRemetente: String,
+    onAbrirFicheiro: (Mensagem) -> Unit = {}
+) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = if (isMinha) Arrangement.End else Arrangement.Start) {
         if (!isMinha) {
             Box(modifier = Modifier.size(32.dp).clip(CircleShape).background(Color(0xFFE8EAF6)), contentAlignment = Alignment.Center) {
@@ -344,10 +356,25 @@ fun BolhaMensagem(mensagem: Mensagem, isMinha: Boolean, nomeRemetente: String) {
                 Text(nomeRemetente.split(" ").take(2).joinToString(" "), fontSize = 11.sp, color = Color.Gray, fontWeight = FontWeight.Medium, modifier = Modifier.padding(start = 4.dp, bottom = 2.dp))
             }
             if (mensagem.ficheiroNome != null) {
+                val bubbleShape = RoundedCornerShape(
+                    topStart = 16.dp,
+                    topEnd = 16.dp,
+                    bottomStart = if (isMinha) 16.dp else 4.dp,
+                    bottomEnd = if (isMinha) 4.dp else 16.dp
+                )
+                val ficheiroDisponivel = mensagem.ficheiroUrl?.isNotBlank() == true
                 Box(
                     modifier = Modifier
-                        .background(if (isMinha) DarkBlue else Color.White, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = if (isMinha) 16.dp else 4.dp, bottomEnd = if (isMinha) 4.dp else 16.dp))
-                        .padding(12.dp).widthIn(max = 260.dp)
+                        .widthIn(max = 260.dp)
+                        .clip(bubbleShape)
+                        .background(if (isMinha) DarkBlue else Color.White)
+                        .clickable(
+                            enabled = ficheiroDisponivel,
+                            onClickLabel = "Abrir PDF",
+                            role = Role.Button,
+                            onClick = { onAbrirFicheiro(mensagem) }
+                        )
+                        .padding(12.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(modifier = Modifier.size(36.dp).clip(RoundedCornerShape(8.dp)).background(if (isMinha) Color.White.copy(alpha = 0.2f) else Color(0xFFE8EAF6)), contentAlignment = Alignment.Center) {
@@ -356,7 +383,11 @@ fun BolhaMensagem(mensagem: Mensagem, isMinha: Boolean, nomeRemetente: String) {
                         Spacer(modifier = Modifier.width(8.dp))
                         Column {
                             Text(mensagem.ficheiroNome, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = if (isMinha) Color.White else Color.Black, maxLines = 1)
-                            Text("PDF", fontSize = 11.sp, color = if (isMinha) Color.White.copy(alpha = 0.7f) else Color.Gray)
+                            Text(
+                                if (ficheiroDisponivel) "PDF - tocar para abrir" else "PDF indisponível",
+                                fontSize = 11.sp,
+                                color = if (isMinha) Color.White.copy(alpha = 0.7f) else Color.Gray
+                            )
                         }
                     }
                 }

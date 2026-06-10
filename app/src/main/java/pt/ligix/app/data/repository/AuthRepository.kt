@@ -99,6 +99,7 @@ class AuthRepository {
         email: String,
         password: String,
         telemovel: String,
+        idInstituicao: String,
         curso: String,
         numeroAluno: String
     ): Result<Utilizador> {
@@ -112,6 +113,7 @@ class AuthRepository {
                     "username" to username,
                     "numero_aluno" to numeroAluno,
                     "curso" to curso,
+                    "idinstituicao" to idInstituicao,
                     "telemovel" to telemovel
                 )
             ).getOrElse { erro ->
@@ -140,7 +142,8 @@ class AuthRepository {
         email: String,
         password: String,
         telemovel: String,
-        area: String
+        area: String,
+        idInstituicao: String
     ): Result<Utilizador> {
         return try {
             val idGerado = criarContaAuth(
@@ -151,7 +154,8 @@ class AuthRepository {
                     "nome" to nome,
                     "username" to username,
                     "telemovel" to telemovel,
-                    "area" to area
+                    "area" to area,
+                    "idinstituicao" to idInstituicao
                 )
             ).getOrElse { erro ->
                 return Result.failure(erro)
@@ -178,6 +182,7 @@ class AuthRepository {
         nome: String,
         email: String,
         password: String,
+        telemovel: String,
         nipc: String,
         morada: String,
         descricao: String
@@ -190,6 +195,7 @@ class AuthRepository {
                     "role" to "empresa",
                     "nome" to nome,
                     "username" to username,
+                    "telemovel" to telemovel,
                     "nipc" to nipc,
                     "morada" to morada,
                     "descricao" to descricao,

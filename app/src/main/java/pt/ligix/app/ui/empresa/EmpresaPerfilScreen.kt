@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.auth.LigixGold
+import pt.ligix.app.ui.common.PhoneNumberInput
+import pt.ligix.app.util.PhoneNumberValidator
 import pt.ligix.app.viewmodel.EmpresaPerfilViewModel
 import pt.ligix.app.viewmodel.EmpresaPerfilViewModelFactory
 
@@ -237,10 +239,14 @@ fun EmpresaPerfilScreen(
                 icon = Icons.Default.Email)
             Spacer(modifier = Modifier.height(8.dp))
             if (modoEdicao) {
-                EmpresaPerfilCampoEditavel(label = "TELEFONE", valor = editTelefone,
-                    onValorChange = { editTelefone = it })
+                PhoneNumberInput(
+                    label = "TELEFONE",
+                    value = editTelefone,
+                    onValueChange = { editTelefone = it },
+                    containerColor = Color(0xFFF8F8F8)
+                )
             } else {
-                EmpresaPerfilCampo(label = "TELEFONE", valor = empresa?.telemovel ?: "—",
+                EmpresaPerfilCampo(label = "TELEFONE", valor = PhoneNumberValidator.formatForDisplay(empresa?.telemovel),
                     icon = Icons.Default.Phone)
             }
         }

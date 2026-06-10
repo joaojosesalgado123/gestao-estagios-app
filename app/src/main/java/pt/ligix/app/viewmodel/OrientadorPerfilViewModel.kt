@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.model.Utilizador
+import pt.ligix.app.util.PhoneNumberValidator
 import pt.ligix.app.util.SessionManager
 
 class OrientadorPerfilViewModel(
@@ -21,6 +22,9 @@ class OrientadorPerfilViewModel(
 
     private val _area = MutableStateFlow("")
     val area: StateFlow<String> = _area
+
+    private val _telemovel = MutableStateFlow("")
+    val telemovel: StateFlow<String> = _telemovel
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -50,7 +54,9 @@ class OrientadorPerfilViewModel(
                 // Carrega área da tabela orientador_empresa
                 val orientadorResp = api.getOrientadoresPorUtilizador(idUtilizador = "eq.$idUtilizador")
                 if (orientadorResp.isSuccessful) {
-                    _area.value = orientadorResp.body()?.firstOrNull()?.area ?: ""
+                    val orientador = orientadorResp.body()?.firstOrNull()
+                    _area.value = orientador?.area ?: ""
+                    _telemovel.value = orientador?.telemovel ?: ""
                 }
 
             } catch (e: Exception) {
@@ -61,7 +67,14 @@ class OrientadorPerfilViewModel(
         }
     }
 
-    fun guardarPerfil(nome: String, area: String) {
+    fun guardarPerfil(nome: String, area: String, telemovel: String) {
+        val telemovelValidado = PhoneNumberValidator.normalizeToE164(telemovel)
+        if (!telemovelValidado.isValid) {
+            _erroGuardar.value = telemovelValidado.errorMessage
+            return
+        }
+        val telemovelNormalizado = telemovelValidado.e164
+
         viewModelScope.launch {
             _isSaving.value = true
             _erroGuardar.value = null
@@ -78,11 +91,20 @@ class OrientadorPerfilViewModel(
                 }
 
                 // Atualiza área na orientador_empresa
-                if (area.isNotBlank()) {
-                    val areaMap = mapOf("area" to area)
-                    api.updateOrientadorEmpresaTelemovel(idUtilizador = "eq.$idUtilizador", body = areaMap)
-                    _area.value = area
+                val orientadorResp = api.updateOrientadorEmpresaTelemovel(
+                    idUtilizador = "eq.$idUtilizador",
+                    body = mapOf(
+                        "area" to area.trim().ifBlank { null },
+                        "telemovel" to telemovelNormalizado
+                    )
+                )
+                if (!orientadorResp.isSuccessful) {
+                    _erroGuardar.value = "Erro ao guardar dados do orientador: ${orientadorResp.code()}"
+                    return@launch
                 }
+                val orientadorAtualizado = orientadorResp.body()?.firstOrNull()
+                _area.value = orientadorAtualizado?.area ?: area.trim()
+                _telemovel.value = orientadorAtualizado?.telemovel ?: telemovelNormalizado.orEmpty()
 
                 _utilizador.value = _utilizador.value?.copy(nome = nome)
                 _guardadoComSucesso.value = true

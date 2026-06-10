@@ -120,6 +120,13 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
         }
     }
 
+    fun navegarParaPerfil() {
+        navController.navigate(AlunoTab.Perfil.route) {
+            popUpTo(AlunoTab.Inicio.route) { inclusive = false }
+            launchSingleTop = true
+        }
+    }
+
     val tabs = listOf(AlunoTab.Inicio, AlunoTab.Procurar, AlunoTab.Estagio, AlunoTab.Mensagens, AlunoTab.Perfil)
 
     if (mostrarSininho) {
@@ -205,6 +212,7 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
                         mensagensNaoVistas = mensagensNaoVistas,
                         historicoNotificacoes = historicoNotificacoes,
                         onSininho = { mostrarSininho = true },
+                        onPerfil = { navegarParaPerfil() },
                         onProcurarEstagios = { navController.navigate(AlunoTab.Procurar.route) { popUpTo(AlunoTab.Inicio.route) { inclusive = false }; launchSingleTop = true } },
                         onRegistarAtividade = {
                             abrirRegistoAtividade = true
@@ -220,6 +228,7 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
                     AlunoOfertasScreen(
                         historicoNotificacoes = historicoNotificacoes,
                         onSininho = { mostrarSininho = true },
+                        onPerfil = { navegarParaPerfil() },
                         onOfertaClick = { oferta ->
                             navController.currentBackStackEntry?.savedStateHandle?.set("oferta", oferta)
                             navController.navigate("aluno_oferta_detalhe")

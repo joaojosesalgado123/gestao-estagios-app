@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import pt.ligix.app.data.remote.RetrofitClient
-import pt.ligix.app.model.AtividadeSyncStatus
 import pt.ligix.app.data.repository.EmpresaRepository
 import pt.ligix.app.util.SessionManager
 
@@ -91,13 +90,8 @@ class OrientadorHomeViewModel(
                     val horasFeitas = (presencasResp.body() ?: emptyList())
                         .count { it.status.equals("presente", ignoreCase = true) } * 8
                     val horasTotal = 480 // valor default
-                    if (horasFeitas >= horasTotal) {
-                        val avalResponse = api.getAvaliacaoByEstagio(
-                            idEstagio = "eq.${estagio.idEstagio}"
-                        )
-                        if ((avalResponse.body() ?: emptyList()).isEmpty()) {
-                            avaliacoesFalta++
-                        }
+                    if (horasFeitas >= horasTotal && !orientadorJaAvaliou(estagio.idEstagio, idOrientador)) {
+                        avaliacoesFalta++
                     }
                 }
                 _avaliacoesEmFalta.value = avaliacoesFalta
@@ -125,6 +119,19 @@ class OrientadorHomeViewModel(
                 } else {
                     refreshEmCurso = false
                 }
+            }
+        }
+    }
+
+    private suspend fun orientadorJaAvaliou(idEstagio: String, idOrientador: String): Boolean {
+        val api = RetrofitClient.api
+        val avaliacoes = api.getAvaliacaoByEstagio(idEstagio = "eq.$idEstagio").body().orEmpty()
+        return avaliacoes.any { avaliacao ->
+            api.getItensAvaliacaoByAvaliacaoLower(
+                idAvaliacao = "eq.${avaliacao.idAvaliacao}"
+            ).body().orEmpty().any { item ->
+                item.idAvaliador.equals(idOrientador, ignoreCase = true) &&
+                    item.ehItemDeNotaFinal()
             }
         }
     }

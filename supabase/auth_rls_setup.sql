@@ -92,37 +92,44 @@ begin
             idutilizador,
             numero_aluno,
             curso,
-            telemovel
+            telemovel,
+            idinstituicao
         )
         values (
             new.id,
             coalesce(metadata->>'numero_aluno', ''),
             coalesce(metadata->>'curso', ''),
-            nullif(metadata->>'telemovel', '')
+            nullif(metadata->>'telemovel', ''),
+            nullif(metadata->>'idinstituicao', '')::uuid
         )
         on conflict (idutilizador) do update
         set numero_aluno = excluded.numero_aluno,
             curso = excluded.curso,
-            telemovel = excluded.telemovel;
+            telemovel = excluded.telemovel,
+            idinstituicao = excluded.idinstituicao;
     elsif profile_role = 'docente' then
         insert into public.docente (
             idutilizador,
             telemovel,
-            area
+            area,
+            idinstituicao
         )
         values (
             new.id,
             nullif(metadata->>'telemovel', ''),
-            nullif(metadata->>'area', '')
+            nullif(metadata->>'area', ''),
+            nullif(metadata->>'idinstituicao', '')::uuid
         )
         on conflict (idutilizador) do update
         set telemovel = excluded.telemovel,
-            area = excluded.area;
+            area = excluded.area,
+            idinstituicao = excluded.idinstituicao;
     elsif profile_role = 'empresa' then
         insert into public.empresa (
             idutilizador,
             nipc,
             morada,
+            telemovel,
             descricao,
             status
         )
@@ -130,12 +137,14 @@ begin
             new.id,
             nullif(metadata->>'nipc', ''),
             nullif(metadata->>'morada', ''),
+            nullif(metadata->>'telemovel', ''),
             nullif(metadata->>'descricao', ''),
             coalesce(nullif(metadata->>'status', ''), 'pendente')
         )
         on conflict (idutilizador) do update
         set nipc = excluded.nipc,
             morada = excluded.morada,
+            telemovel = excluded.telemovel,
             descricao = excluded.descricao,
             status = excluded.status;
     end if;
@@ -199,6 +208,8 @@ alter table public.utilizador enable row level security;
 alter table public.aluno enable row level security;
 alter table public.docente enable row level security;
 alter table public.empresa enable row level security;
+alter table public.orientador_empresa enable row level security;
+alter table public.instituicao_ensino enable row level security;
 alter table public.oferta_estagio enable row level security;
 alter table public.candidatura enable row level security;
 alter table public.estagio enable row level security;
@@ -209,6 +220,11 @@ alter table public.mensagem enable row level security;
 alter table public.avaliacao enable row level security;
 alter table public.item_avaliacao enable row level security;
 alter table public.relatorio_final enable row level security;
+
+grant select on public.instituicao_ensino to anon, authenticated;
+grant select, insert, update, delete on public.orientador_empresa to authenticated;
+grant select, insert on public.avaliacao to authenticated;
+grant select, insert on public.item_avaliacao to authenticated;
 
 drop policy if exists "utilizador_select_own_or_admin" on public.utilizador;
 create policy "utilizador_select_own_or_admin"
@@ -242,11 +258,67 @@ on public.docente for select
 to authenticated
 using (idutilizador = auth.uid() or public.is_admin());
 
+drop policy if exists "docente_update_own" on public.docente;
+create policy "docente_update_own"
+on public.docente for update
+to authenticated
+using (idutilizador = auth.uid())
+with check (idutilizador = auth.uid());
+
 drop policy if exists "empresa_select_own_or_admin" on public.empresa;
 create policy "empresa_select_own_or_admin"
 on public.empresa for select
 to authenticated
 using (idutilizador = auth.uid() or public.is_admin());
+
+drop policy if exists "instituicao_select_all" on public.instituicao_ensino;
+create policy "instituicao_select_all"
+on public.instituicao_ensino for select
+to anon, authenticated
+using (true);
+
+drop policy if exists "orientador_empresa_select_own_company_admin" on public.orientador_empresa;
+create policy "orientador_empresa_select_own_company_admin"
+on public.orientador_empresa for select
+to authenticated
+using (
+    idutilizador = auth.uid()
+    or idempresa = auth.uid()
+    or public.is_admin()
+);
+
+drop policy if exists "empresa_insert_own_orientador" on public.orientador_empresa;
+create policy "empresa_insert_own_orientador"
+on public.orientador_empresa for insert
+to authenticated
+with check (
+    idempresa = auth.uid()
+    or public.is_admin()
+);
+
+drop policy if exists "orientador_empresa_update_own_or_company" on public.orientador_empresa;
+create policy "orientador_empresa_update_own_or_company"
+on public.orientador_empresa for update
+to authenticated
+using (
+    idutilizador = auth.uid()
+    or idempresa = auth.uid()
+    or public.is_admin()
+)
+with check (
+    idutilizador = auth.uid()
+    or idempresa = auth.uid()
+    or public.is_admin()
+);
+
+drop policy if exists "empresa_delete_own_orientador" on public.orientador_empresa;
+create policy "empresa_delete_own_orientador"
+on public.orientador_empresa for delete
+to authenticated
+using (
+    idempresa = auth.uid()
+    or public.is_admin()
+);
 
 drop policy if exists "oferta_select_authenticated" on public.oferta_estagio;
 create policy "oferta_select_authenticated"
@@ -379,11 +451,63 @@ with check (
     )
 );
 
+-- Storage: mensagens
+-- A app guarda anexos de chat em:
+--   bucket mensagens, caminho mensagens/<idConversa>/<timestamp>_<nome>.pdf
+drop policy if exists "mensagens_storage_insert_participantes" on storage.objects;
+create policy "mensagens_storage_insert_participantes"
+on storage.objects for insert
+to authenticated
+with check (
+    bucket_id = 'mensagens'
+    and array_length(storage.foldername(name), 1) >= 2
+    and (storage.foldername(name))[1] = 'mensagens'
+    and exists (
+        select 1
+        from public.conversa c
+        where c.idconversa::text = (storage.foldername(name))[2]
+          and public.can_access_estagio(c.idestagio)
+    )
+);
+
+drop policy if exists "mensagens_storage_select_participantes" on storage.objects;
+create policy "mensagens_storage_select_participantes"
+on storage.objects for select
+to authenticated
+using (
+    bucket_id = 'mensagens'
+    and array_length(storage.foldername(name), 1) >= 2
+    and (storage.foldername(name))[1] = 'mensagens'
+    and exists (
+        select 1
+        from public.conversa c
+        where c.idconversa::text = (storage.foldername(name))[2]
+          and public.can_access_estagio(c.idestagio)
+    )
+);
+
 drop policy if exists "avaliacao_select_participantes" on public.avaliacao;
 create policy "avaliacao_select_participantes"
 on public.avaliacao for select
 to authenticated
 using (public.can_access_estagio(idestagio));
+
+drop policy if exists "avaliacao_insert_participantes" on public.avaliacao;
+create policy "avaliacao_insert_participantes"
+on public.avaliacao for insert
+to authenticated
+with check (
+    exists (
+        select 1
+        from public.estagio e
+        where e.idestagio = avaliacao.idestagio
+          and (
+              e.iddocente = auth.uid()
+              or e.idorientador = auth.uid()
+              or public.is_admin()
+          )
+    )
+);
 
 drop policy if exists "item_avaliacao_select_participantes" on public.item_avaliacao;
 create policy "item_avaliacao_select_participantes"
@@ -402,7 +526,20 @@ drop policy if exists "item_avaliacao_insert_self" on public.item_avaliacao;
 create policy "item_avaliacao_insert_self"
 on public.item_avaliacao for insert
 to authenticated
-with check (idavaliador = auth.uid());
+with check (
+    idavaliador = auth.uid()
+    and exists (
+        select 1
+        from public.avaliacao a
+        join public.estagio e on e.idestagio = a.idestagio
+        where a.idavaliacao = item_avaliacao.idavaliacao
+          and (
+              e.iddocente = auth.uid()
+              or e.idorientador = auth.uid()
+              or public.is_admin()
+          )
+    )
+);
 
 drop policy if exists "relatorio_select_participantes" on public.relatorio_final;
 create policy "relatorio_select_participantes"

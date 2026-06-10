@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import pt.ligix.app.data.repository.AuthRepository
 import pt.ligix.app.model.Utilizador
+import pt.ligix.app.util.PhoneNumberValidator
 import pt.ligix.app.util.SessionManager
 
 class AuthViewModel(
@@ -56,10 +57,10 @@ class AuthViewModel(
     // RF01 - Registar Aluno
     fun registarAluno(
         username: String, nome: String, email: String, password: String,
-        confirmarPassword: String, telemovel: String, curso: String, numeroAluno: String
+        confirmarPassword: String, telemovel: String, idInstituicao: String, curso: String, numeroAluno: String
     ) {
         if (username.isBlank() || nome.isBlank() || email.isBlank() ||
-            password.isBlank() || curso.isBlank()) {
+            password.isBlank() || idInstituicao.isBlank() || curso.isBlank()) {
             _registoState.value = RegistoState.Erro("Preencha todos os campos obrigatórios")
             return
         }
@@ -67,10 +68,15 @@ class AuthViewModel(
             _registoState.value = RegistoState.Erro("As passwords não coincidem")
             return
         }
+        val telemovelValidado = PhoneNumberValidator.normalizeToE164(telemovel)
+        if (!telemovelValidado.isValid) {
+            _registoState.value = RegistoState.Erro(telemovelValidado.errorMessage ?: "Telemóvel inválido")
+            return
+        }
         viewModelScope.launch {
             _registoState.value = RegistoState.Loading
             val result = repository.registarAluno(
-                username, nome, email, password, telemovel, curso, numeroAluno
+                username, nome, email, password, telemovelValidado.e164.orEmpty(), idInstituicao, curso, numeroAluno
             )
             result.fold(
                 onSuccess = {
@@ -90,9 +96,10 @@ class AuthViewModel(
     // RF01 - Registar Docente
     fun registarDocente(
         username: String, nome: String, email: String, password: String,
-        confirmarPassword: String, telemovel: String, area: String
+        confirmarPassword: String, telemovel: String, area: String, idInstituicao: String
     ) {
-        if (username.isBlank() || nome.isBlank() || email.isBlank() || password.isBlank()) {
+        if (username.isBlank() || nome.isBlank() || email.isBlank() ||
+            password.isBlank() || telemovel.isBlank() || area.isBlank() || idInstituicao.isBlank()) {
             _registoState.value = RegistoState.Erro("Preencha todos os campos obrigatórios")
             return
         }
@@ -100,10 +107,15 @@ class AuthViewModel(
             _registoState.value = RegistoState.Erro("As passwords não coincidem")
             return
         }
+        val telemovelValidado = PhoneNumberValidator.normalizeToE164(telemovel, required = true)
+        if (!telemovelValidado.isValid) {
+            _registoState.value = RegistoState.Erro(telemovelValidado.errorMessage ?: "Telemóvel inválido")
+            return
+        }
         viewModelScope.launch {
             _registoState.value = RegistoState.Loading
             val result = repository.registarDocente(
-                username, nome, email, password, telemovel, area
+                username, nome, email, password, telemovelValidado.e164.orEmpty(), area, idInstituicao
             )
             result.fold(
                 onSuccess = {
@@ -123,7 +135,7 @@ class AuthViewModel(
     // RF10 - Registar Empresa
     fun registarEmpresa(
         username: String, nome: String, email: String, password: String,
-        confirmarPassword: String, nipc: String, morada: String, descricao: String
+        confirmarPassword: String, telemovel: String, nipc: String, morada: String, descricao: String
     ) {
         if (username.isBlank() || nome.isBlank() || email.isBlank() ||
             password.isBlank() || nipc.isBlank()) {
@@ -134,10 +146,15 @@ class AuthViewModel(
             _registoState.value = RegistoState.Erro("As passwords não coincidem")
             return
         }
+        val telemovelValidado = PhoneNumberValidator.normalizeToE164(telemovel)
+        if (!telemovelValidado.isValid) {
+            _registoState.value = RegistoState.Erro(telemovelValidado.errorMessage ?: "Telemóvel inválido")
+            return
+        }
         viewModelScope.launch {
             _registoState.value = RegistoState.Loading
             val result = repository.registarEmpresa(
-                username, nome, email, password, nipc, morada, descricao
+                username, nome, email, password, telemovelValidado.e164.orEmpty(), nipc, morada, descricao
             )
             result.fold(
                 onSuccess = {

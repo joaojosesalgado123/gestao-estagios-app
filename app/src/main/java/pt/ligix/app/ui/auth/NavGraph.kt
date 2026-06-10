@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import pt.ligix.app.data.repository.AuthRepository
 import pt.ligix.app.ui.aluno.AlunoMainScreen
+import pt.ligix.app.ui.docente.DocenteMainScreen
 import pt.ligix.app.ui.empresa.EmpresaMainScreen
 import pt.ligix.app.ui.orientador.OrientadorMainScreen
 import pt.ligix.app.util.SessionManager
@@ -143,14 +144,14 @@ fun LigixNavGraph() {
             val loading = registoState is RegistoState.Loading
 
             RegisterScreen(
-                onRegistarAluno = { username, nome, email, password, confirmar, telemovel, curso, numero ->
-                    authViewModel.registarAluno(username, nome, email, password, confirmar, telemovel, curso, numero)
+                onRegistarAluno = { username, nome, email, password, confirmar, telemovel, idInstituicao, curso, numero ->
+                    authViewModel.registarAluno(username, nome, email, password, confirmar, telemovel, idInstituicao, curso, numero)
                 },
-                onRegistarDocente = { username, nome, email, password, confirmar, telemovel, area ->
-                    authViewModel.registarDocente(username, nome, email, password, confirmar, telemovel, area)
+                onRegistarDocente = { username, nome, email, password, confirmar, telemovel, area, idInstituicao ->
+                    authViewModel.registarDocente(username, nome, email, password, confirmar, telemovel, area, idInstituicao)
                 },
-                onRegistarEmpresa = { username, nome, email, password, confirmar, nipc, morada, descricao ->
-                    authViewModel.registarEmpresa(username, nome, email, password, confirmar, nipc, morada, descricao)
+                onRegistarEmpresa = { username, nome, email, password, confirmar, telemovel, nipc, morada, descricao ->
+                    authViewModel.registarEmpresa(username, nome, email, password, confirmar, telemovel, nipc, morada, descricao)
                 },
                 onEntrar = { navController.navigateUp() },
                 isLoading = loading,
@@ -228,12 +229,12 @@ fun LigixNavGraph() {
         }
 
         composable(Routes.DASHBOARD_DOCENTE) {
-            PlaceholderScreen("Dashboard Docente") {
+            DocenteMainScreen(onLogout = {
                 authViewModel.logout()
                 navController.navigate("login?email=") {
                     popUpTo(0) { inclusive = true }
                 }
-            }
+            })
         }
 
         composable(Routes.DASHBOARD_ADMIN) {

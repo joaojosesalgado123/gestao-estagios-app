@@ -21,8 +21,8 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import pt.ligix.app.data.repository.EmpresaRepository
 import pt.ligix.app.ui.auth.DarkBlue
+import pt.ligix.app.ui.common.PhoneNumberInput
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.viewmodel.EmpresaCriarOrientadorViewModel
 import pt.ligix.app.viewmodel.EmpresaCriarOrientadorViewModelFactory
@@ -36,7 +36,7 @@ fun EmpresaCriarOrientadorScreen(
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
     val viewModel: EmpresaCriarOrientadorViewModel = viewModel(
-        factory = EmpresaCriarOrientadorViewModelFactory(EmpresaRepository(), sessionManager)
+        factory = EmpresaCriarOrientadorViewModelFactory(sessionManager)
     )
 
     val isLoading by viewModel.isLoading.collectAsState()
@@ -48,6 +48,7 @@ fun EmpresaCriarOrientadorScreen(
     var palavraPasse by remember { mutableStateOf("") }
     var mostrarPasse by remember { mutableStateOf(false) }
     var area by remember { mutableStateOf("") }
+    var telemovel by remember { mutableStateOf("") }
 
     LaunchedEffect(sucesso) {
         if (sucesso) {
@@ -150,6 +151,15 @@ fun EmpresaCriarOrientadorScreen(
 
                     Spacer(Modifier.height(16.dp))
 
+                    PhoneNumberInput(
+                        label = "TELEMÓVEL",
+                        value = telemovel,
+                        onValueChange = { telemovel = it },
+                        containerColor = Color(0xFFF0F0F0)
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
                     // Área
                     Text("ÁREA DE TRABALHO", fontSize = 11.sp, color = Color.Gray,
                         letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
@@ -222,7 +232,7 @@ fun EmpresaCriarOrientadorScreen(
                         value = palavraPasse,
                         onValueChange = { palavraPasse = it },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Deixar em branco para manter a atual", color = Color.LightGray) },
+                        placeholder = { Text("Palavra-passe inicial", color = Color.LightGray) },
                         shape = RoundedCornerShape(10.dp),
                         visualTransformation = if (mostrarPasse) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
@@ -241,7 +251,7 @@ fun EmpresaCriarOrientadorScreen(
                         ),
                         singleLine = true
                     )
-                    Text("Preencha apenas se pretender redefinir a credencial de acesso.",
+                    Text("Mínimo de 6 caracteres.",
                         fontSize = 12.sp, color = Color.Gray,
                         modifier = Modifier.padding(top = 6.dp))
                 }
@@ -256,7 +266,13 @@ fun EmpresaCriarOrientadorScreen(
 
             Button(
                 onClick = {
-                    viewModel.criarOrientador(nome = nome, email = email, palavraPasse = palavraPasse, area = area)
+                    viewModel.criarOrientador(
+                        nome = nome,
+                        email = email,
+                        palavraPasse = palavraPasse,
+                        area = area,
+                        telemovel = telemovel
+                    )
                 },
                 modifier = Modifier.fillMaxWidth().height(52.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),

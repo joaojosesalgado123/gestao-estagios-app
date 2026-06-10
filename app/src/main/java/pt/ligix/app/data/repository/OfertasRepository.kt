@@ -23,9 +23,9 @@ class OfertasRepository {
 
     suspend fun getOfertas(): Result<List<OfertaEstagio>> {
         return try {
-            val response = api.getTodasOfertas()
+            val response = api.getOfertasDisponiveisAluno()
             if (response.isSuccessful) {
-                Result.success(response.body() ?: emptyList())
+                Result.success(response.body().orEmpty().comNomesEmpresa())
             } else {
                 Result.failure(Exception("Erro: ${response.code()}"))
             }
@@ -34,11 +34,29 @@ class OfertasRepository {
         }
     }
 
-    suspend fun getOfertaPorId(idOferta: String): Result<OfertaEstagio?> {
+    suspend fun ofertaTemVagas(idOferta: String): Result<Boolean> {
         return try {
-            val response = api.getOfertaPorId(idOferta = "eq.$idOferta")
+            val response = api.ofertaTemVagas(
+                params = mapOf("p_idoferta" to idOferta)
+            )
             if (response.isSuccessful) {
-                Result.success(response.body()?.firstOrNull())
+                Result.success(response.body() == true)
+            } else {
+                Result.failure(Exception("Não foi possível confirmar as vagas da oferta."))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Sem ligação à internet"))
+        }
+    }
+
+    suspend fun getNomeEmpresa(idEmpresa: String): Result<String?> {
+        return try {
+            val response = api.getUtilizadorById(
+                id = "eq.$idEmpresa",
+                select = "idutilizador,nome"
+            )
+            if (response.isSuccessful) {
+                Result.success(response.body()?.firstOrNull()?.nome)
             } else {
                 Result.failure(Exception("Erro: ${response.code()}"))
             }
@@ -48,25 +66,21 @@ class OfertasRepository {
     }
 
     suspend fun criarCandidatura(
-        idAluno: String,
         idOferta: String,
         cvFicheiro: String,
         cartaFicheiro: String
     ): Result<Unit> {
         return try {
             val body = mapOf(
-                "idaluno" to idAluno,
-                "idoferta" to idOferta,
-                "status" to "pendente",
-                "cv_ficheiro" to cvFicheiro,
-                "carta_motivacao_ficheiro" to cartaFicheiro,
-                "data" to java.time.LocalDate.now().toString()
+                "p_idoferta" to idOferta,
+                "p_cv_ficheiro" to cvFicheiro,
+                "p_carta_motivacao_ficheiro" to cartaFicheiro
             )
-            val response = api.createCandidaturaMap(body)
-            if (response.isSuccessful || response.code() == 201) {
+            val response = api.criarCandidaturaAluno(body)
+            if (response.isSuccessful && response.body() == true) {
                 Result.success(Unit)
             } else {
-                Result.failure(Exception("Erro ao criar candidatura: ${response.code()}"))
+                Result.failure(Exception("Esta oferta já não tem vagas disponíveis ou já tens uma candidatura ativa."))
             }
         } catch (e: Exception) {
             Result.failure(Exception("Sem ligação à internet"))
@@ -108,6 +122,30 @@ class OfertasRepository {
         } catch (e: Exception) {
             Log.e("UPLOAD", "Exceção: ${e.message}", e)
             Result.failure(Exception("Erro no upload: ${e.message}"))
+        }
+    }
+
+    private suspend fun List<OfertaEstagio>.comNomesEmpresa(): List<OfertaEstagio> {
+        val idsEmpresa = mapNotNull { it.idEmpresa.takeIf(String::isNotBlank) }.distinct()
+        if (idsEmpresa.isEmpty()) return this
+
+        val response = api.getUtilizadoresByIds(
+            ids = "in.(${idsEmpresa.joinToString(",")})",
+            select = "idutilizador,nome"
+        )
+        if (!response.isSuccessful) return this
+
+        val nomesPorId = response.body()
+            .orEmpty()
+            .mapNotNull { utilizador ->
+                utilizador.idUtilizador?.takeIf { it.isNotBlank() }?.let { id ->
+                    id to utilizador.nome
+                }
+            }
+            .toMap()
+
+        return map { oferta ->
+            oferta.copy(nomeEmpresa = nomesPorId[oferta.idEmpresa])
         }
     }
 }

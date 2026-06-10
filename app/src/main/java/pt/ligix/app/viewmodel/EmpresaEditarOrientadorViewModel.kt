@@ -1,6 +1,5 @@
 package pt.ligix.app.viewmodel
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -8,14 +7,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import pt.ligix.app.data.remote.RetrofitClient
-import pt.ligix.app.data.repository.EmpresaRepository
-import pt.ligix.app.model.Utilizador
-import pt.ligix.app.util.SessionManager
+import pt.ligix.app.util.PhoneNumberValidator
 
-class EmpresaEditarOrientadorViewModel(
-    private val repository: EmpresaRepository,
-    private val sessionManager: SessionManager
-) : ViewModel() {
+class EmpresaEditarOrientadorViewModel : ViewModel() {
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
@@ -26,11 +20,27 @@ class EmpresaEditarOrientadorViewModel(
     private val _sucesso = MutableStateFlow(false)
     val sucesso: StateFlow<Boolean> = _sucesso
 
-    fun guardarOrientador(id: String, nome: String, email: String, palavraPasse: String?, area: String = "") {
-        if (nome.isBlank() || email.isBlank()) {
-            _erro.value = "Preencha o nome e o email."
+    fun guardarOrientador(
+        id: String,
+        nome: String,
+        email: String,
+        telemovel: String,
+        area: String = ""
+    ) {
+        if (nome.isBlank() || email.isBlank() || telemovel.isBlank() || area.isBlank()) {
+            _erro.value = "Preencha o nome, email, telemóvel e área."
             return
         }
+        if (!email.contains("@") || !email.contains(".")) {
+            _erro.value = "Insira um email válido."
+            return
+        }
+        val telemovelValidado = PhoneNumberValidator.normalizeToE164(telemovel, required = true)
+        if (!telemovelValidado.isValid) {
+            _erro.value = telemovelValidado.errorMessage
+            return
+        }
+        val telemovelNormalizado = telemovelValidado.e164.orEmpty()
 
         viewModelScope.launch {
             _isLoading.value = true
@@ -49,22 +59,43 @@ class EmpresaEditarOrientadorViewModel(
                 )
 
                 if (!response.isSuccessful) {
-                    _erro.value = "Erro ao guardar: ${response.code()} - ${response.errorBody()?.string()}"
+                    _erro.value = mensagemErroGuardar(response.code(), response.errorBody()?.string().orEmpty())
                     return@launch
                 }
 
-                // Atualiza área na orientador_empresa
-                if (area.isNotBlank()) {
-                    val areaMap = mapOf("area" to area)
-                    api.updateOrientadorEmpresaTelemovel(idUtilizador = "eq.$id", body = areaMap)
+                val perfilResponse = api.updateOrientadorEmpresaTelemovel(
+                    idUtilizador = "eq.$id",
+                    body = mapOf(
+                        "area" to area,
+                        "telemovel" to telemovelNormalizado
+                    )
+                )
+                if (!perfilResponse.isSuccessful) {
+                    _erro.value = mensagemErroGuardar(
+                        perfilResponse.code(),
+                        perfilResponse.errorBody()?.string().orEmpty()
+                    )
+                    return@launch
                 }
                 _sucesso.value = true
 
             } catch (e: Exception) {
-                _erro.value = "Erro: ${e.message}"
+                _erro.value = "Não foi possível guardar o orientador. Verifique a ligação e tente novamente."
             } finally {
                 _isLoading.value = false
             }
+        }
+    }
+
+    private fun mensagemErroGuardar(statusCode: Int, errorBody: String): String {
+        return when {
+            statusCode == 401 || statusCode == 403 ||
+                errorBody.contains("row-level security", ignoreCase = true) ->
+                "Não tem permissões para alterar este orientador."
+            statusCode == 409 ->
+                "Já existe um registo com estes dados."
+            else ->
+                "Não foi possível guardar as alterações do orientador."
         }
     }
 
@@ -73,12 +104,9 @@ class EmpresaEditarOrientadorViewModel(
     }
 }
 
-class EmpresaEditarOrientadorViewModelFactory(
-    private val repository: EmpresaRepository,
-    private val sessionManager: SessionManager
-) : ViewModelProvider.Factory {
+class EmpresaEditarOrientadorViewModelFactory : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         @Suppress("UNCHECKED_CAST")
-        return EmpresaEditarOrientadorViewModel(repository, sessionManager) as T
+        return EmpresaEditarOrientadorViewModel() as T
     }
 }
