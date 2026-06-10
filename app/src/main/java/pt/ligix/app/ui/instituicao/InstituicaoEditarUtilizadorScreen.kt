@@ -98,13 +98,6 @@ fun InstituicaoEditarUtilizadorScreen(
         }
 
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
-            TextButton(onClick = onVoltar, contentPadding = PaddingValues(0.dp)) {
-                Icon(Icons.Default.ArrowBack, contentDescription = null,
-                    tint = DarkBlue, modifier = Modifier.size(16.dp))
-                Spacer(Modifier.width(4.dp))
-                Text("Voltar para Utilizadores", color = DarkBlue, fontSize = 13.sp)
-            }
-
             Spacer(Modifier.height(8.dp))
             Text("Editar Registo de Acesso", fontSize = 26.sp,
                 fontWeight = FontWeight.Bold, color = Color.Black)
