@@ -158,7 +158,8 @@ fun AdminEditarUtilizadorScreen(
                         onClick = { viewModel.guardar(nomeEdit.trim(), emailEdit.trim()) },
                         enabled = !isGuardando && nomeEdit.isNotBlank() && emailEdit.isNotBlank(),
                         colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
-                        modifier = Modifier.fillMaxWidth().height(50.dp)
+                        modifier = Modifier.fillMaxWidth().height(50.dp),
+                        shape = RoundedCornerShape(10.dp)
                     ) {
                         if (isGuardando) {
                             CircularProgressIndicator(
@@ -235,7 +236,7 @@ private fun CardErro(mensagem: String) {
         Text(
             mensagem,
             modifier = Modifier.padding(12.dp),
-            color = Color(0xFFC62828),
+            color = Color(0xFFE53935),
             fontSize = 13.sp
         )
     }

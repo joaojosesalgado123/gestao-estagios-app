@@ -102,7 +102,7 @@ fun AdminDetalheEmpresaScreen(
                         Text(
                             text = erro ?: "",
                             modifier = Modifier.padding(16.dp),
-                            color = Color(0xFFC62828),
+                            color = Color(0xFFE53935),
                             fontSize = 14.sp
                         )
                     }
@@ -159,7 +159,7 @@ private fun ConteudoDetalhe(
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
             CampoDetalhe("RAZÃO SOCIAL", empresa.nome)
-            CampoDetalhe("NIF", empresa.nipc)
+            CampoDetalhe("NIPC", empresa.nipc)
             CampoDetalhe("MORADA", empresa.morada)
             CampoDetalhe("TELEMÓVEL", empresa.telemovel)
             CampoDetalhe("DATA DE REGISTO", formatarDataLonga(empresa.createdAt))
@@ -193,8 +193,10 @@ private fun ConteudoDetalhe(
 
         Button(
             onClick = onAprovar,
+            modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
-            modifier = Modifier.fillMaxWidth()
+            shape = RoundedCornerShape(10.dp),
+            contentPadding = PaddingValues(vertical = 10.dp)
         ) {
             Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
@@ -205,15 +207,17 @@ private fun ConteudoDetalhe(
 
         OutlinedButton(
             onClick = onRejeitar,
-            border = BorderStroke(1.dp, Color(0xFFC62828)),
+            modifier = Modifier.fillMaxWidth(),
+            border = BorderStroke(1.dp, Color(0xFFE53935)),
             colors = ButtonDefaults.outlinedButtonColors(
                 containerColor = Color(0xFFFFEBEE)
             ),
-            modifier = Modifier.fillMaxWidth()
+            shape = RoundedCornerShape(10.dp),
+            contentPadding = PaddingValues(vertical = 10.dp)
         ) {
-            Icon(Icons.Default.Cancel, contentDescription = null, tint = Color(0xFFC62828), modifier = Modifier.size(18.dp))
+            Icon(Icons.Default.Cancel, contentDescription = null, tint = Color(0xFFE53935), modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Rejeitar Registo", color = Color(0xFFC62828), fontSize = 14.sp)
+            Text("Rejeitar Registo", color = Color(0xFFE53935), fontSize = 14.sp)
         }
     } else {
         // Já foi decidida — apenas mostra estado, sem botões
@@ -261,7 +265,7 @@ private fun BadgeStatus(status: String) {
     val (label, corFundo, corTexto) = when (status) {
         "pendente"  -> Triple("PENDENTE", LigixGold.copy(alpha = 0.2f), Color(0xFFB8860B))
         "aprovada"  -> Triple("APROVADA", Color(0xFFE8F5E9), Color(0xFF2E7D32))
-        "rejeitada" -> Triple("REJEITADA", Color(0xFFFFEBEE), Color(0xFFC62828))
+        "rejeitada" -> Triple("REJEITADA", Color(0xFFFFEBEE), Color(0xFFE53935))
         else        -> Triple(status.uppercase(), Color.LightGray, Color.DarkGray)
     }
     Box(

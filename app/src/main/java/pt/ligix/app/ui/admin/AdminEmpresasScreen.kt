@@ -138,7 +138,7 @@ fun AdminEmpresasScreen(
                         Text(
                             text = erro ?: "",
                             modifier = Modifier.padding(16.dp),
-                            color = Color(0xFFC62828),
+                            color = Color(0xFFE53935),
                             fontSize = 14.sp
                         )
                     }
@@ -292,7 +292,7 @@ private fun BadgeStatusEmpresa(status: String) {
     val (label, fundo, texto) = when (status) {
         "pendente"  -> Triple("PENDENTE",  LigixGold.copy(alpha = 0.2f), Color(0xFFB8860B))
         "aprovada"  -> Triple("APROVADA",  Color(0xFFE8F5E9),            Color(0xFF2E7D32))
-        "rejeitada" -> Triple("REJEITADA", Color(0xFFFFEBEE),            Color(0xFFC62828))
+        "rejeitada" -> Triple("REJEITADA", Color(0xFFFFEBEE),            Color(0xFFE53935))
         else        -> Triple(status.uppercase(), Color.LightGray,       Color.DarkGray)
     }
     Box(

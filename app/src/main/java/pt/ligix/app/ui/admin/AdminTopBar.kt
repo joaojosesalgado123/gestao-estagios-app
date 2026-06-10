@@ -108,7 +108,7 @@ fun AdminTopBar() {
             badge = {
                 if (pendentes > 0) {
                     Badge(
-                        containerColor = Color(0xFFC62828),
+                        containerColor = Color(0xFFE53935),
                         contentColor = Color.White
                     ) {
                         Text(pendentes.toString(), fontSize = 10.sp)

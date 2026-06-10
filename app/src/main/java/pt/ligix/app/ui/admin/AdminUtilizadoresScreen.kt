@@ -148,7 +148,7 @@ fun AdminUtilizadoresScreen(
                         Text(
                             text = erro ?: "",
                             modifier = Modifier.padding(16.dp),
-                            color = Color(0xFFC62828),
+                            color = Color(0xFFE53935),
                             fontSize = 14.sp
                         )
                     }
@@ -205,7 +205,7 @@ fun AdminUtilizadoresScreen(
                                 utilizadorARejeitar = null
                             }
                         ) {
-                            Text("Rejeitar", color = Color(0xFFC62828), fontWeight = FontWeight.Bold)
+                            Text("Rejeitar", color = Color(0xFFE53935), fontWeight = FontWeight.Bold)
                         }
                     },
                     dismissButton = {
@@ -327,8 +327,10 @@ private fun CardUtilizador(
             Row(modifier = Modifier.fillMaxWidth()) {
                 Button(
                     onClick = onEditar,
+                    modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
-                    modifier = Modifier.weight(1f)
+                    shape = RoundedCornerShape(10.dp),
+                    contentPadding = PaddingValues(vertical = 10.dp)
                 ) {
                     Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
@@ -337,12 +339,14 @@ private fun CardUtilizador(
                 Spacer(modifier = Modifier.width(8.dp))
                 OutlinedButton(
                     onClick = onRejeitar,
-                    border = BorderStroke(1.dp, Color(0xFFC62828)),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    border = BorderStroke(1.dp, Color(0xFFE53935)),
+                    shape = RoundedCornerShape(10.dp),
+                    contentPadding = PaddingValues(vertical = 10.dp)
                 ) {
-                    Icon(Icons.Default.Cancel, contentDescription = null, tint = Color(0xFFC62828), modifier = Modifier.size(16.dp))
+                    Icon(Icons.Default.Cancel, contentDescription = null, tint = Color(0xFFE53935), modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Rejeitar", color = Color(0xFFC62828), fontSize = 13.sp)
+                    Text("Rejeitar", color = Color(0xFFE53935), fontSize = 13.sp)
                 }
             }
         }

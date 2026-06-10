@@ -6,17 +6,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.People
-import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -76,22 +72,19 @@ fun AdminDashboardScreen(
             CardMetrica(
                 titulo = "TOTAL DE UTILIZADORES",
                 valor = estatisticas?.totalUtilizadores?.toString() ?: "—",
-                icone = Icons.Default.People,
                 corAcento = DarkBlue
             )
             Spacer(modifier = Modifier.height(12.dp))
             CardMetrica(
                 titulo = "ESTAGIÁRIOS ATIVOS",
                 valor = estatisticas?.estagiariosAtivos?.toString() ?: "—",
-                icone = Icons.Default.School,
                 corAcento = LigixGold
             )
             Spacer(modifier = Modifier.height(12.dp))
             CardMetrica(
                 titulo = "PENDENTES",
                 valor = estatisticas?.empresasPendentes?.toString() ?: "—",
-                icone = Icons.AutoMirrored.Filled.Assignment,
-                corAcento = DarkBlue
+                corAcento = Color(0xFFBDBDBD)
             )
 
             Spacer(modifier = Modifier.height(32.dp))
@@ -131,7 +124,7 @@ fun AdminDashboardScreen(
                         Text(
                             text = erro ?: "",
                             modifier = Modifier.padding(16.dp),
-                            color = Color(0xFFC62828),
+                            color = Color(0xFFE53935),
                             fontSize = 14.sp
                         )
                     }
@@ -172,46 +165,42 @@ fun AdminDashboardScreen(
 private fun CardMetrica(
     titulo: String,
     valor: String,
-    icone: ImageVector,
     corAcento: Color
 ) {
     Card(
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(20.dp),
+            modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Barra colorida do lado esquerdo
             Box(
                 modifier = Modifier
-                    .width(4.dp)
-                    .height(48.dp)
-                    .background(corAcento, RoundedCornerShape(2.dp))
+                    .width(6.dp)
+                    .fillMaxHeight()
+                    .background(
+                        corAcento,
+                        RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
+                    )
             )
-            Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
+            Spacer(Modifier.width(16.dp))
+            Column(modifier = Modifier.padding(vertical = 16.dp)) {
                 Text(
-                    text = titulo,
-                    fontSize = 12.sp,
+                    titulo,
+                    fontSize = 13.sp,
                     color = Color.Gray,
-                    fontWeight = FontWeight.Medium
+                    letterSpacing = 0.5.sp
                 )
-                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = valor,
-                    fontSize = 28.sp,
+                    valor,
+                    fontSize = 32.sp,
                     fontWeight = FontWeight.Bold,
                     color = DarkBlue
                 )
             }
-            Icon(
-                imageVector = icone,
-                contentDescription = null,
-                tint = Color.LightGray,
-                modifier = Modifier.size(28.dp)
-            )
         }
     }
 }
@@ -270,21 +259,25 @@ private fun CardEmpresaPendente(
             Row(modifier = Modifier.fillMaxWidth()) {
                 OutlinedButton(
                     onClick = onDetalhes,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(10.dp),
+                    contentPadding = PaddingValues(vertical = 10.dp)
                 ) {
                     Icon(Icons.Default.Visibility, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Detalhes", color = DarkBlue)
+                    Text("Detalhes", color = DarkBlue, fontSize = 13.sp)
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
                     onClick = onAprovar,
+                    modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
-                    modifier = Modifier.weight(1f)
+                    shape = RoundedCornerShape(10.dp),
+                    contentPadding = PaddingValues(vertical = 10.dp)
                 ) {
                     Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Aprovar", color = Color.White)
+                    Text("Aprovar", color = Color.White, fontSize = 13.sp)
                 }
             }
         }

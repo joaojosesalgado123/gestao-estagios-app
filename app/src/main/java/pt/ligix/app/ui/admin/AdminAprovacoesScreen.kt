@@ -89,7 +89,7 @@ fun AdminAprovacoesScreen(
                         Text(
                             text = erro ?: "",
                             modifier = Modifier.padding(16.dp),
-                            color = Color(0xFFC62828),
+                            color = Color(0xFFE53935),
                             fontSize = 14.sp
                         )
                     }
@@ -217,31 +217,37 @@ private fun CardAprovacaoEmpresa(
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Button(
                         onClick = onAprovar,
+                        modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
-                        modifier = Modifier.weight(1f)
+                        shape = RoundedCornerShape(10.dp),
+                        contentPadding = PaddingValues(vertical = 10.dp)
                     ) {
                         Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Aprovar", color = Color.White, fontSize = 12.sp)
+                        Text("Aprovar", color = Color.White, fontSize = 11.sp)
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     OutlinedButton(
                         onClick = onRejeitar,
-                        border = BorderStroke(1.dp, Color(0xFFC62828)),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        border = BorderStroke(1.dp, Color(0xFFE53935)),
+                        shape = RoundedCornerShape(10.dp),
+                        contentPadding = PaddingValues(vertical = 10.dp)
                     ) {
-                        Icon(Icons.Default.Cancel, contentDescription = null, tint = Color(0xFFC62828), modifier = Modifier.size(14.dp))
+                        Icon(Icons.Default.Cancel, contentDescription = null, tint = Color(0xFFE53935), modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Rejeitar", color = Color(0xFFC62828), fontSize = 12.sp)
+                        Text("Rejeitar", color = Color(0xFFE53935), fontSize = 11.sp)
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     OutlinedButton(
                         onClick = onDetalhes,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(10.dp),
+                        contentPadding = PaddingValues(vertical = 10.dp)
                     ) {
                         Icon(Icons.Default.Visibility, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Detalhes", color = DarkBlue, fontSize = 12.sp)
+                        Text("Detalhes", color = DarkBlue, fontSize = 11.sp)
                     }
                 }
             }
