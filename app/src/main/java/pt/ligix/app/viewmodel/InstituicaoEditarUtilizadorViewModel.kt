@@ -66,26 +66,43 @@ class InstituicaoEditarUtilizadorViewModel(
         curso: String,
         telemovel: String
     ) {
+        val telemovelValidado = PhoneNumberValidator.normalizeToE164(telemovel)
+        if (!telemovelValidado.isValid) {
+            _erro.value = telemovelValidado.errorMessage
+            return
+        }
+        val telemovelNormalizado = telemovelValidado.e164
+
         viewModelScope.launch {
             _isSaving.value = true
             _erro.value = null
+            _sucesso.value = false
             try {
-                android.util.Log.d("InstituicaoEditar", "Guardando aluno: id=$idUtilizador nome=$nome curso=$curso tel=$telemovel")
                 val api = RetrofitClient.api
-                val bodyUtil = mapOf<String, Any>("nome" to nome)
-                val respUtil = api.updateUtilizadorMap(id = "eq.$idUtilizador", utilizador = bodyUtil)
-                android.util.Log.d("InstituicaoEditar", "updateUtilizador: ${respUtil.code()} - ${respUtil.errorBody()?.string()}")
 
-                val bodyAluno = pt.ligix.app.model.Aluno(
-                    idUtilizador = idUtilizador,
-                    numeroAluno = numeroAluno,
-                    curso = curso,
-                    telemovel = telemovel.ifBlank { null }
+                val respUtil = api.updateUtilizadorMap(
+                    id = "eq.$idUtilizador",
+                    utilizador = mapOf("nome" to nome.trim())
                 )
-                val respAluno = api.updateAluno(id = "eq.$idUtilizador", aluno = bodyAluno)
-                android.util.Log.d("InstituicaoEditar", "updateAluno: ${respAluno.code()} - ${respAluno.errorBody()?.string()}")
-                // Recarrega dados do aluno
-                val alunoAtualizado = api.getAlunoById(idUtilizador = "eq.$idUtilizador").body()?.firstOrNull()
+                if (!respUtil.isSuccessful || respUtil.body().orEmpty().isEmpty()) {
+                    _erro.value = mensagemErroAtualizacao("o nome do utilizador", respUtil.code())
+                    return@launch
+                }
+
+                val respAluno = api.updateAlunoMap(
+                    id = "eq.$idUtilizador",
+                    aluno = mapOf(
+                        "numero_aluno" to numeroAluno.trim(),
+                        "curso" to curso.trim(),
+                        "telemovel" to telemovelNormalizado
+                    )
+                )
+                val alunoAtualizado = respAluno.body()?.firstOrNull()
+                if (!respAluno.isSuccessful || alunoAtualizado == null) {
+                    _erro.value = mensagemErroAtualizacao("os dados académicos", respAluno.code())
+                    return@launch
+                }
+
                 _aluno.value = alunoAtualizado
                 _sucesso.value = true
             } catch (e: Exception) {
@@ -103,23 +120,41 @@ class InstituicaoEditarUtilizadorViewModel(
         telemovel: String
     ) {
         val telemovelValidado = PhoneNumberValidator.normalizeToE164(telemovel)
-        if (telemovel.isNotBlank() && !telemovelValidado.isValid) {
+        if (!telemovelValidado.isValid) {
             _erro.value = telemovelValidado.errorMessage
             return
         }
+        val telemovelNormalizado = telemovelValidado.e164
+
         viewModelScope.launch {
             _isSaving.value = true
             _erro.value = null
+            _sucesso.value = false
             try {
                 val api = RetrofitClient.api
-                val utilizadorAtual = api.getUtilizadorById(id = "eq.$idUtilizador").body()?.firstOrNull()
-                if (utilizadorAtual != null) {
-                    api.updateUtilizador(id = "eq.$idUtilizador", utilizador = utilizadorAtual.copy(nome = nome))
+
+                val respUtil = api.updateUtilizadorMap(
+                    id = "eq.$idUtilizador",
+                    utilizador = mapOf("nome" to nome.trim())
+                )
+                if (!respUtil.isSuccessful || respUtil.body().orEmpty().isEmpty()) {
+                    _erro.value = mensagemErroAtualizacao("o nome do utilizador", respUtil.code())
+                    return@launch
                 }
-                val bodyDocente = mutableMapOf<String, Any?>("area" to area)
-                if (telemovel.isNotBlank()) bodyDocente["telemovel"] = telemovelValidado.e164
-                api.updateDocenteMap(idUtilizador = "eq.$idUtilizador", docente = bodyDocente)
-                val docenteAtualizado = api.getDocenteById(idUtilizador = "eq.$idUtilizador").body()?.firstOrNull()
+
+                val respDocente = api.updateDocenteMap(
+                    idUtilizador = "eq.$idUtilizador",
+                    docente = mapOf(
+                        "area" to area.trim().ifBlank { null },
+                        "telemovel" to telemovelNormalizado
+                    )
+                )
+                val docenteAtualizado = respDocente.body()?.firstOrNull()
+                if (!respDocente.isSuccessful || docenteAtualizado == null) {
+                    _erro.value = mensagemErroAtualizacao("os dados profissionais", respDocente.code())
+                    return@launch
+                }
+
                 _docente.value = docenteAtualizado
                 _sucesso.value = true
             } catch (e: Exception) {
@@ -131,6 +166,13 @@ class InstituicaoEditarUtilizadorViewModel(
     }
 
     fun resetSucesso() { _sucesso.value = false }
+
+    private fun mensagemErroAtualizacao(descricao: String, code: Int): String =
+        if (code in 200..299) {
+            "Não foi possível guardar $descricao. Confirme que este utilizador pertence à instituição."
+        } else {
+            "Erro ao guardar $descricao: $code"
+        }
 }
 
 class InstituicaoEditarUtilizadorViewModelFactory(

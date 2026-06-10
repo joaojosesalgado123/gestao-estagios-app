@@ -25,6 +25,7 @@ import pt.ligix.app.ui.aluno.PerfilCampoEditavel
 import pt.ligix.app.ui.aluno.PerfilSecao
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.common.PhoneNumberInput
+import pt.ligix.app.ui.common.dismissDropdownsOnOutsideTap
 import pt.ligix.app.ui.common.rememberDropdownDismissController
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.viewmodel.InstituicaoPerfilViewModel
@@ -72,6 +73,7 @@ fun InstituicaoPerfilScreen(
 
     Column(
         modifier = modifier.fillMaxSize().background(Color(0xFFF5F5F7))
+            .dismissDropdownsOnOutsideTap(dropdownDismissController)
             .verticalScroll(rememberScrollState())
     ) {
         InstituicaoTopBar()

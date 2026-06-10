@@ -495,6 +495,13 @@ interface SupabaseApi {
         @Body aluno: Aluno
     ): Response<List<Aluno>>
 
+    @PATCH("aluno")
+    suspend fun updateAlunoMap(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Query("idutilizador") id: String,
+        @Body aluno: Map<String, @JvmSuppressWildcards Any?>
+    ): Response<List<Aluno>>
+
     @GET("aluno")
     suspend fun getAlunoById(
         @Query("idutilizador") idUtilizador: String,

@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.common.PhoneNumberInput
+import pt.ligix.app.ui.common.dismissDropdownsOnOutsideTap
 import pt.ligix.app.ui.common.rememberDropdownDismissController
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.viewmodel.InstituicaoEditarUtilizadorViewModel
@@ -81,6 +82,7 @@ fun InstituicaoEditarUtilizadorScreen(
 
     Column(
         modifier = modifier.fillMaxSize().background(Color(0xFFF5F5F7))
+            .dismissDropdownsOnOutsideTap(dropdownDismissController)
             .verticalScroll(rememberScrollState())
     ) {
         Row(

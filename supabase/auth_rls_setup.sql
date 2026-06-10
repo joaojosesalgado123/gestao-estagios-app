@@ -181,6 +181,49 @@ as $$
     select coalesce(public.current_profile_role() = 'admin', false)
 $$;
 
+create or replace function public.current_instituicao_id()
+returns uuid
+language sql
+stable
+security definer
+set search_path = public
+as $$
+    select i.idinstituicao
+    from public.instituicao_ensino i
+    where i.idutilizador = auth.uid()
+    limit 1
+$$;
+
+create or replace function public.instituicao_owns_aluno(p_idutilizador uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+    select exists (
+        select 1
+        from public.aluno a
+        where a.idutilizador = p_idutilizador
+          and a.idinstituicao = public.current_instituicao_id()
+    )
+$$;
+
+create or replace function public.instituicao_owns_docente(p_idutilizador uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+    select exists (
+        select 1
+        from public.docente d
+        where d.idutilizador = p_idutilizador
+          and d.idinstituicao = public.current_instituicao_id()
+    )
+$$;
+
 create or replace function public.can_access_estagio(estagio_id uuid)
 returns boolean
 language sql
@@ -222,15 +265,30 @@ alter table public.item_avaliacao enable row level security;
 alter table public.relatorio_final enable row level security;
 
 grant select on public.instituicao_ensino to anon, authenticated;
+grant select, update on public.utilizador to authenticated;
+grant select, update on public.aluno to authenticated;
+grant select, update on public.docente to authenticated;
 grant select, insert, update, delete on public.orientador_empresa to authenticated;
 grant select, insert on public.avaliacao to authenticated;
 grant select, insert on public.item_avaliacao to authenticated;
+grant execute on function public.current_instituicao_id() to authenticated;
+grant execute on function public.instituicao_owns_aluno(uuid) to authenticated;
+grant execute on function public.instituicao_owns_docente(uuid) to authenticated;
 
 drop policy if exists "utilizador_select_own_or_admin" on public.utilizador;
 create policy "utilizador_select_own_or_admin"
 on public.utilizador for select
 to authenticated
 using (idutilizador = auth.uid() or public.is_admin());
+
+drop policy if exists "utilizador_select_same_instituicao" on public.utilizador;
+create policy "utilizador_select_same_instituicao"
+on public.utilizador for select
+to authenticated
+using (
+    public.instituicao_owns_aluno(idutilizador)
+    or public.instituicao_owns_docente(idutilizador)
+);
 
 drop policy if exists "utilizador_update_own" on public.utilizador;
 create policy "utilizador_update_own"
@@ -239,11 +297,30 @@ to authenticated
 using (idutilizador = auth.uid())
 with check (idutilizador = auth.uid());
 
+drop policy if exists "utilizador_update_same_instituicao" on public.utilizador;
+create policy "utilizador_update_same_instituicao"
+on public.utilizador for update
+to authenticated
+using (
+    public.instituicao_owns_aluno(idutilizador)
+    or public.instituicao_owns_docente(idutilizador)
+)
+with check (
+    public.instituicao_owns_aluno(idutilizador)
+    or public.instituicao_owns_docente(idutilizador)
+);
+
 drop policy if exists "aluno_select_own_or_admin" on public.aluno;
 create policy "aluno_select_own_or_admin"
 on public.aluno for select
 to authenticated
 using (idutilizador = auth.uid() or public.is_admin());
+
+drop policy if exists "aluno_select_same_instituicao" on public.aluno;
+create policy "aluno_select_same_instituicao"
+on public.aluno for select
+to authenticated
+using (public.instituicao_owns_aluno(idutilizador));
 
 drop policy if exists "aluno_update_own" on public.aluno;
 create policy "aluno_update_own"
@@ -252,11 +329,24 @@ to authenticated
 using (idutilizador = auth.uid())
 with check (idutilizador = auth.uid());
 
+drop policy if exists "aluno_update_same_instituicao" on public.aluno;
+create policy "aluno_update_same_instituicao"
+on public.aluno for update
+to authenticated
+using (public.instituicao_owns_aluno(idutilizador))
+with check (public.instituicao_owns_aluno(idutilizador));
+
 drop policy if exists "docente_select_own_or_admin" on public.docente;
 create policy "docente_select_own_or_admin"
 on public.docente for select
 to authenticated
 using (idutilizador = auth.uid() or public.is_admin());
+
+drop policy if exists "docente_select_same_instituicao" on public.docente;
+create policy "docente_select_same_instituicao"
+on public.docente for select
+to authenticated
+using (public.instituicao_owns_docente(idutilizador));
 
 drop policy if exists "docente_update_own" on public.docente;
 create policy "docente_update_own"
@@ -264,6 +354,13 @@ on public.docente for update
 to authenticated
 using (idutilizador = auth.uid())
 with check (idutilizador = auth.uid());
+
+drop policy if exists "docente_update_same_instituicao" on public.docente;
+create policy "docente_update_same_instituicao"
+on public.docente for update
+to authenticated
+using (public.instituicao_owns_docente(idutilizador))
+with check (public.instituicao_owns_docente(idutilizador));
 
 drop policy if exists "empresa_select_own_or_admin" on public.empresa;
 create policy "empresa_select_own_or_admin"

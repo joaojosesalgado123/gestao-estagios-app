@@ -24,6 +24,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.auth.LigixGold
 import pt.ligix.app.ui.common.PhoneNumberInput
+import pt.ligix.app.ui.common.dismissDropdownsOnOutsideTap
+import pt.ligix.app.ui.common.rememberDropdownDismissController
 import pt.ligix.app.util.PhoneNumberValidator
 import pt.ligix.app.viewmodel.EmpresaPerfilViewModel
 import pt.ligix.app.viewmodel.EmpresaPerfilViewModelFactory
@@ -52,6 +54,7 @@ fun EmpresaPerfilScreen(
     var editMorada by remember { mutableStateOf("") }
     var editTelefone by remember { mutableStateOf("") }
     var editDescricao by remember { mutableStateOf("") }
+    val dropdownDismissController = rememberDropdownDismissController()
 
     LaunchedEffect(Unit) { viewModel.carregarPerfil(context) }
 
@@ -71,6 +74,7 @@ fun EmpresaPerfilScreen(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F7))
+            .dismissDropdownsOnOutsideTap(dropdownDismissController)
             .verticalScroll(rememberScrollState())
     ) {
         // Top Bar
@@ -243,7 +247,9 @@ fun EmpresaPerfilScreen(
                     label = "TELEFONE",
                     value = editTelefone,
                     onValueChange = { editTelefone = it },
-                    containerColor = Color(0xFFF8F8F8)
+                    containerColor = Color(0xFFF8F8F8),
+                    dismissController = dropdownDismissController,
+                    dropdownId = "empresa_perfil_tel"
                 )
             } else {
                 EmpresaPerfilCampo(label = "TELEFONE", valor = PhoneNumberValidator.formatForDisplay(empresa?.telemovel),
