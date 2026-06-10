@@ -1,0 +1,103 @@
+package pt.ligix.app.ui.admin
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
+
+@Composable
+fun AdminMainScreen(onLogout: () -> Unit = {}) {
+    var selectedTab by remember { mutableStateOf(0) }
+    var idEmpresaEmDetalhe by remember { mutableStateOf<String?>(null) }
+    var utilizadorEmEdicao by remember { mutableStateOf<Pair<String, String>?>(null) }
+
+
+    Scaffold(
+        bottomBar = {
+            // Esconde a bottom bar quando estamos num sub-ecrã (detalhe)
+            if (idEmpresaEmDetalhe == null && utilizadorEmEdicao == null) {
+                NavigationBar(containerColor = Color.White) {
+                    NavigationBarItem(
+                        selected = selectedTab == 0,
+                        onClick = { selectedTab = 0 },
+                        icon = { Icon(Icons.Default.Home, contentDescription = "Início") },
+                        label = { Text("Início", fontSize = 10.sp) }
+                    )
+                    NavigationBarItem(
+                        selected = selectedTab == 1,
+                        onClick = { selectedTab = 1 },
+                        icon = { Icon(Icons.Default.People, contentDescription = "Utilizadores") },
+                        label = { Text("Utilizadores", fontSize = 10.sp) }
+                    )
+                    NavigationBarItem(
+                        selected = selectedTab == 2,
+                        onClick = { selectedTab = 2 },
+                        icon = { Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = "Aprovações") },
+                        label = { Text("Aprovações", fontSize = 10.sp) }
+                    )
+                    NavigationBarItem(
+                        selected = selectedTab == 3,
+                        onClick = { selectedTab = 3 },
+                        icon = { Icon(Icons.Default.Business, contentDescription = "Empresas") },
+                        label = { Text("Empresas", fontSize = 10.sp) }
+                    )
+                    NavigationBarItem(
+                        selected = selectedTab == 4,
+                        onClick = { selectedTab = 4 },
+                        icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+                        label = { Text("Perfil", fontSize = 10.sp) }
+                    )
+                }
+            }
+        }
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .background(Color(0xFFF5F5F7))
+        ) {
+            // Se há uma empresa em detalhe, mostra o sub-ecrã sobre tudo
+            val empresaId = idEmpresaEmDetalhe
+            val utilEdicao = utilizadorEmEdicao
+            if (empresaId != null) {
+                AdminDetalheEmpresaScreen(
+                    idEmpresa = empresaId,
+                    onVoltar = { idEmpresaEmDetalhe = null }
+                )
+            } else if (utilEdicao != null) {
+                AdminEditarUtilizadorScreen(
+                    idUtilizador = utilEdicao.first,
+                    role = utilEdicao.second,
+                    onVoltar = { utilizadorEmEdicao = null }
+                )
+            } else {
+                when (selectedTab) {
+                    0 -> AdminDashboardScreen(
+                        onAbrirDetalheEmpresa = { id -> idEmpresaEmDetalhe = id }
+                    )
+                    1 ->  AdminUtilizadoresScreen(
+                        onEditarUtilizador = { id, role -> utilizadorEmEdicao = id to role }
+                    )
+                    2 -> AdminAprovacoesScreen(
+                        onAbrirDetalheEmpresa = { id -> idEmpresaEmDetalhe = id }
+                    )
+                    3 -> AdminEmpresasScreen(
+                        onAbrirDetalheEmpresa = { id -> idEmpresaEmDetalhe = id }
+                    )
+                    4 -> AdminPerfilScreen(onLogout = onLogout)
+                }
+            }
+        }
+    }
+}
+

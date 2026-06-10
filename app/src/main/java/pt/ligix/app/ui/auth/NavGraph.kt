@@ -15,6 +15,7 @@ import pt.ligix.app.ui.aluno.AlunoMainScreen
 import pt.ligix.app.ui.docente.DocenteMainScreen
 import pt.ligix.app.ui.empresa.EmpresaMainScreen
 import pt.ligix.app.ui.orientador.OrientadorMainScreen
+import pt.ligix.app.ui.admin.AdminMainScreen
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.util.SessionTokenProvider
 import pt.ligix.app.viewmodel.AuthViewModel
@@ -238,12 +239,12 @@ fun LigixNavGraph() {
         }
 
         composable(Routes.DASHBOARD_ADMIN) {
-            PlaceholderScreen("Dashboard Admin") {
+            AdminMainScreen(onLogout = {
                 authViewModel.logout()
                 navController.navigate("login?email=") {
                     popUpTo(0) { inclusive = true }
                 }
-            }
+            })
         }
     }
 }
