@@ -305,14 +305,6 @@ class EstagioViewModel : ViewModel() {
         }
     }
 
-    private fun ItemAvaliacao.ehItemDeNotaFinal(): Boolean {
-        val criterioNormalizado = criterio.trim()
-        val comentarioNormalizado = comentario.orEmpty()
-        return criterioNormalizado.isBlank() ||
-            criterioNormalizado.contains("final", ignoreCase = true) ||
-            comentarioNormalizado.contains("Avaliador:", ignoreCase = true)
-    }
-
     fun abrirDialogPresenca(dia: LocalDate) {
         _presencaDialogDia.value = dia
     }

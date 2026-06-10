@@ -1,6 +1,7 @@
 package pt.ligix.app.ui.auth
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,6 +32,8 @@ import androidx.compose.material.icons.filled.School
 import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -51,15 +54,21 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import pt.ligix.app.R
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.model.InstituicaoEnsino
+import pt.ligix.app.ui.common.DropdownDismissController
 import pt.ligix.app.ui.common.PhoneNumberInput
+import pt.ligix.app.ui.common.dismissDropdownsOnOutsideTap
+import pt.ligix.app.ui.common.dropdownDismissBounds
+import pt.ligix.app.ui.common.rememberDropdownDismissController
 
 @Composable
 fun RegisterScreen(
@@ -68,13 +77,24 @@ fun RegisterScreen(
     onRegistarDocente: (username: String, nome: String, email: String, password: String,
                         confirmar: String, telemovel: String, area: String, idInstituicao: String) -> Unit,
     onRegistarEmpresa: (username: String, nome: String, email: String, password: String,
-                        confirmar: String, nipc: String, morada: String, descricao: String) -> Unit,
+                        confirmar: String, telemovel: String, nipc: String, morada: String, descricao: String) -> Unit,
     onEntrar: () -> Unit,
     isLoading: Boolean = false,
     erroMensagem: String? = null
 ) {
     var tabSelecionada by remember { mutableIntStateOf(0) }
     val tabs = listOf("Aluno", "Empresa", "Docente")
+    val dropdownDismissController = rememberDropdownDismissController()
+    val emailLabel = if (tabSelecionada == 1) {
+        "E-MAIL CORPORATIVO"
+    } else {
+        "E-MAIL INSTITUCIONAL"
+    }
+    val emailPlaceholder = when (tabSelecionada) {
+        0 -> "aluno@universidade.pt"
+        1 -> "empresa@empresa.pt"
+        else -> "docente@universidade.pt"
+    }
 
     var username by remember { mutableStateOf("") }
     var nome by remember { mutableStateOf("") }
@@ -94,6 +114,7 @@ fun RegisterScreen(
     var instituicoesCarregadas by remember { mutableStateOf(false) }
 
     var nipc by remember { mutableStateOf("") }
+    var telemovelEmpresa by remember { mutableStateOf("") }
     var morada by remember { mutableStateOf("") }
     var descricao by remember { mutableStateOf("") }
 
@@ -113,26 +134,56 @@ fun RegisterScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(BackgroundGrey)
+            .dismissDropdownsOnOutsideTap(dropdownDismissController)
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 24.dp),
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.logo_ligix),
+                    contentDescription = "Ligix",
+                    tint = Color.Unspecified,
+                    modifier = Modifier.height(32.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "LIGIX",
+                    color = DarkBlue,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 2.sp
+                )
+            }
 
-            Text(
-                text = "LIGIX",
-                color = DarkBlue,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp
-            )
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "Criar Conta",
@@ -204,10 +255,10 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             CampoTexto(
-                label = "E-MAIL INSTITUCIONAL",
+                label = emailLabel,
                 value = email,
                 onValueChange = { email = it },
-                placeholder = "nome@universidade.pt",
+                placeholder = emailPlaceholder,
                 icon = Icons.Default.Email,
                 keyboardType = KeyboardType.Email
             )
@@ -221,13 +272,17 @@ fun RegisterScreen(
                         value = telemovelAluno,
                         onValueChange = { telemovelAluno = it },
                         labelColor = Color.Black,
-                        containerColor = FieldGrey
+                        containerColor = FieldGrey,
+                        dismissController = dropdownDismissController,
+                        dropdownId = "registo_aluno_indicativo"
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     CampoInstituicao(
                         instituicoes = instituicoes,
                         idSelecionado = idInstituicaoAluno,
                         isLoading = !instituicoesCarregadas,
+                        dismissController = dropdownDismissController,
+                        dropdownId = "registo_aluno_instituicao",
                         onSelecionar = { idInstituicaoAluno = it }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -249,6 +304,16 @@ fun RegisterScreen(
                     )
                 }
                 1 -> {
+                    PhoneNumberInput(
+                        label = "TELEMÓVEL",
+                        value = telemovelEmpresa,
+                        onValueChange = { telemovelEmpresa = it },
+                        labelColor = Color.Black,
+                        containerColor = FieldGrey,
+                        dismissController = dropdownDismissController,
+                        dropdownId = "registo_empresa_indicativo"
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
                     CampoTexto(
                         label = "NIPC",
                         value = nipc,
@@ -280,7 +345,9 @@ fun RegisterScreen(
                         value = telemovelDocente,
                         onValueChange = { telemovelDocente = it },
                         labelColor = Color.Black,
-                        containerColor = FieldGrey
+                        containerColor = FieldGrey,
+                        dismissController = dropdownDismissController,
+                        dropdownId = "registo_docente_indicativo"
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     CampoTexto(
@@ -295,6 +362,8 @@ fun RegisterScreen(
                         instituicoes = instituicoes,
                         idSelecionado = idInstituicaoDocente,
                         isLoading = !instituicoesCarregadas,
+                        dismissController = dropdownDismissController,
+                        dropdownId = "registo_docente_instituicao",
                         onSelecionar = { idInstituicaoDocente = it }
                     )
                 }
@@ -337,7 +406,7 @@ fun RegisterScreen(
                         )
                         1 -> onRegistarEmpresa(
                             username, nome, email, password,
-                            confirmarPassword, nipc, morada, descricao
+                            confirmarPassword, telemovelEmpresa, nipc, morada, descricao
                         )
                         2 -> onRegistarDocente(
                             username, nome, email, password,
@@ -399,7 +468,11 @@ fun RegisterScreen(
                 lineHeight = 16.sp
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
@@ -409,10 +482,13 @@ private fun CampoInstituicao(
     instituicoes: List<InstituicaoEnsino>,
     idSelecionado: String,
     isLoading: Boolean,
+    dismissController: DropdownDismissController,
+    dropdownId: String,
     onSelecionar: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     var pesquisa by remember { mutableStateOf("") }
+    val activeDropdownId = dismissController.activeId
     val selecionada = instituicoes.firstOrNull { it.idInstituicao == idSelecionado }
     val texto = selecionada?.let { instituicao ->
         instituicao.textoApresentacao()
@@ -422,7 +498,16 @@ private fun CampoInstituicao(
     }
 
     LaunchedEffect(expanded) {
-        if (!expanded) pesquisa = ""
+        if (!expanded) {
+            pesquisa = ""
+            dismissController.hide(dropdownId)
+        }
+    }
+
+    LaunchedEffect(activeDropdownId) {
+        if (activeDropdownId != dropdownId) {
+            expanded = false
+        }
     }
 
     Text(
@@ -436,11 +521,20 @@ private fun CampoInstituicao(
     Spacer(modifier = Modifier.height(8.dp))
     Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedButton(
-            onClick = { expanded = true },
+            onClick = {
+                if (expanded) {
+                    expanded = false
+                    dismissController.hide(dropdownId)
+                } else {
+                    expanded = true
+                    dismissController.show(dropdownId)
+                }
+            },
             enabled = instituicoes.isNotEmpty(),
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp),
+                .height(56.dp)
+                .dropdownDismissBounds(dismissController, dropdownId, expanded, boundsId = "anchor"),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.outlinedButtonColors(containerColor = FieldGrey),
             border = null
@@ -467,6 +561,7 @@ private fun CampoInstituicao(
                 .padding(top = 8.dp)
                 .background(FieldGrey, RoundedCornerShape(8.dp))
                 .padding(vertical = 8.dp)
+                .dropdownDismissBounds(dismissController, dropdownId, expanded)
         ) {
             OutlinedTextField(
                 value = pesquisa,

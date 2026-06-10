@@ -182,6 +182,7 @@ class AuthRepository {
         nome: String,
         email: String,
         password: String,
+        telemovel: String,
         nipc: String,
         morada: String,
         descricao: String
@@ -194,6 +195,7 @@ class AuthRepository {
                     "role" to "empresa",
                     "nome" to nome,
                     "username" to username,
+                    "telemovel" to telemovel,
                     "nipc" to nipc,
                     "morada" to morada,
                     "descricao" to descricao,

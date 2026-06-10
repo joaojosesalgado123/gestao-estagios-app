@@ -129,6 +129,7 @@ begin
             idutilizador,
             nipc,
             morada,
+            telemovel,
             descricao,
             status
         )
@@ -136,12 +137,14 @@ begin
             new.id,
             nullif(metadata->>'nipc', ''),
             nullif(metadata->>'morada', ''),
+            nullif(metadata->>'telemovel', ''),
             nullif(metadata->>'descricao', ''),
             coalesce(nullif(metadata->>'status', ''), 'pendente')
         )
         on conflict (idutilizador) do update
         set nipc = excluded.nipc,
             morada = excluded.morada,
+            telemovel = excluded.telemovel,
             descricao = excluded.descricao,
             status = excluded.status;
     end if;

@@ -52,6 +52,7 @@ fun EmpresaTopBar(
         factory = MensagensViewModelFactory()
     )
     val localNotifVm = LocalEmpresaNotificacoesViewModel.current
+    val onPerfilClick = LocalEmpresaPerfilClick.current
     val notifVm = notificacoesViewModel ?: localNotifVm ?: viewModel(
         key = "empresa_notificacoes",
         factory = EmpresaNotificacoesViewModelFactory(sessionManager)
@@ -163,7 +164,11 @@ fun EmpresaTopBar(
             }
         }
         Box(
-            modifier = Modifier.size(36.dp).clip(CircleShape).background(DarkBlue),
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(DarkBlue)
+                .clickable(onClick = onPerfilClick),
             contentAlignment = Alignment.Center
         ) {
             Text(if (iniciais.isNotEmpty()) iniciais else "E",

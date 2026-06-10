@@ -120,7 +120,7 @@ interface SupabaseApi {
     suspend fun createOfertaMap(
         @Header("Prefer") prefer: String = "return=representation",
         @Body oferta: Map<String, @JvmSuppressWildcards Any>
-    ): Response<List<pt.ligix.app.model.OfertaEstagio>>
+    ): Response<List<OfertaEstagio>>
 
     @POST("oferta_estagio")
     suspend fun createOferta(
@@ -133,7 +133,7 @@ interface SupabaseApi {
         @Header("Prefer") prefer: String = "return=representation",
         @Query("idoferta") id: String,
         @Body oferta: Map<String, @JvmSuppressWildcards Any>
-    ): Response<List<pt.ligix.app.model.OfertaEstagio>>
+    ): Response<List<OfertaEstagio>>
 
     @PATCH("oferta_estagio")
     suspend fun updateOferta(
@@ -183,6 +183,16 @@ interface SupabaseApi {
         @Query("select") select: String = "*"
     ): Response<List<OfertaEstagio>>
 
+    @POST("rpc/ofertas_disponiveis_aluno")
+    suspend fun getOfertasDisponiveisAluno(
+        @Body params: Map<String, String> = emptyMap()
+    ): Response<List<OfertaEstagio>>
+
+    @POST("rpc/oferta_tem_vagas")
+    suspend fun ofertaTemVagas(
+        @Body params: Map<String, String>
+    ): Response<Boolean>
+
     // ==================== CANDIDATURAS ====================
     @POST("candidatura")
     suspend fun createCandidatura(
@@ -194,6 +204,11 @@ interface SupabaseApi {
     suspend fun createCandidaturaMap(
         @Body candidatura: Map<String, String>
     ): Response<Unit>
+
+    @POST("rpc/criar_candidatura_aluno")
+    suspend fun criarCandidaturaAluno(
+        @Body candidatura: Map<String, String>
+    ): Response<Boolean>
 
     @GET("candidatura")
     suspend fun getCandidaturasByAluno(
@@ -319,7 +334,6 @@ interface SupabaseApi {
     ): Response<List<Atividade>>
 
     // ==================== PRESENÇAS ====================
-    // RF48 - único método POST para presença — via Map para o Supabase gerar o UUID
     @POST("presenca")
     suspend fun createPresenca(
         @Header("Prefer") prefer: String = "return=representation",

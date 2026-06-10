@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.data.repository.EmpresaRepository
-import pt.ligix.app.model.ItemAvaliacao
 import pt.ligix.app.util.SessionManager
 
 class OrientadorHomeViewModel(
@@ -135,14 +134,6 @@ class OrientadorHomeViewModel(
                     item.ehItemDeNotaFinal()
             }
         }
-    }
-
-    private fun ItemAvaliacao.ehItemDeNotaFinal(): Boolean {
-        val criterioNormalizado = criterio.trim()
-        val comentarioNormalizado = comentario.orEmpty()
-        return criterioNormalizado.isBlank() ||
-            criterioNormalizado.contains("final", ignoreCase = true) ||
-            comentarioNormalizado.contains("Avaliador:", ignoreCase = true)
     }
 }
 

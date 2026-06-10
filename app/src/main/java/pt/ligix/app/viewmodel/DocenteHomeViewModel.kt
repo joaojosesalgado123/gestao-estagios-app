@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.data.repository.DocenteRepository
-import pt.ligix.app.model.ItemAvaliacao
 import pt.ligix.app.util.SessionManager
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -186,14 +185,6 @@ class DocenteHomeViewModel(
                     item.ehItemDeNotaFinal()
             }
         }
-    }
-
-    private fun ItemAvaliacao.ehItemDeNotaFinal(): Boolean {
-        val criterioNormalizado = criterio.trim()
-        val comentarioNormalizado = comentario.orEmpty()
-        return criterioNormalizado.isBlank() ||
-            criterioNormalizado.contains("final", ignoreCase = true) ||
-            comentarioNormalizado.contains("Avaliador:", ignoreCase = true)
     }
 
     private fun parseDate(valor: String): LocalDate? {

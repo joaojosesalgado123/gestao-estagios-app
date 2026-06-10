@@ -135,7 +135,7 @@ class AuthViewModel(
     // RF10 - Registar Empresa
     fun registarEmpresa(
         username: String, nome: String, email: String, password: String,
-        confirmarPassword: String, nipc: String, morada: String, descricao: String
+        confirmarPassword: String, telemovel: String, nipc: String, morada: String, descricao: String
     ) {
         if (username.isBlank() || nome.isBlank() || email.isBlank() ||
             password.isBlank() || nipc.isBlank()) {
@@ -146,10 +146,15 @@ class AuthViewModel(
             _registoState.value = RegistoState.Erro("As passwords não coincidem")
             return
         }
+        val telemovelValidado = PhoneNumberValidator.normalizeToE164(telemovel)
+        if (!telemovelValidado.isValid) {
+            _registoState.value = RegistoState.Erro(telemovelValidado.errorMessage ?: "Telemóvel inválido")
+            return
+        }
         viewModelScope.launch {
             _registoState.value = RegistoState.Loading
             val result = repository.registarEmpresa(
-                username, nome, email, password, nipc, morada, descricao
+                username, nome, email, password, telemovelValidado.e164.orEmpty(), nipc, morada, descricao
             )
             result.fold(
                 onSuccess = {
