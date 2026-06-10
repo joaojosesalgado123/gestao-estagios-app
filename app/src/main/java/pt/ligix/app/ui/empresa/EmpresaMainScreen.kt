@@ -48,6 +48,7 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
     var tituloOfertaSelecionada by remember { mutableStateOf("") }
     var mostrarCandidatos by remember { mutableStateOf(false) }
     var mostrarNovaOferta by remember { mutableStateOf(false) }
+    var mostrarAtribuirOrientador by remember { mutableStateOf(false) }
     var mostrarCriarOrientador by remember { mutableStateOf(false) }
     var orientadorAEditar by remember { mutableStateOf<OrientadorDetalhe?>(null) }
     var orientadoresKey by remember { mutableStateOf(0) }
@@ -71,6 +72,7 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
         mostrarCandidatos = false
         mostrarNovaOferta = false
         mostrarCriarOrientador = false
+        mostrarAtribuirOrientador = false
         orientadorAEditar = null
         ofertaAEditar = null
         idCandidaturaSelecionada = null
@@ -241,6 +243,11 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                     onVoltar = { orientadorAEditar = null },
                     onGuardado = { orientadorAEditar = null; orientadoresKey++ }
                 )
+            } else if (mostrarAtribuirOrientador) {
+                EmpresaAtribuirOrientadorScreen(
+                    modifier = Modifier.padding(innerPadding),
+                    onVoltar = { mostrarAtribuirOrientador = false }
+                )
             } else {
                 when (selectedTab) {
                     0 -> EmpresaDashboardScreen(
@@ -257,7 +264,8 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                             tituloOfertaSelecionada = titulo
                             mostrarCandidatos = true
                         },
-                        onEditarOferta = { oferta -> ofertaAEditar = oferta }
+                        onEditarOferta = { oferta -> ofertaAEditar = oferta },
+                        onAtribuirOrientador = { mostrarAtribuirOrientador = true }
                     )
                     2 -> EmpresaListaCandidatosScreen(
                         modifier = Modifier.padding(innerPadding),
