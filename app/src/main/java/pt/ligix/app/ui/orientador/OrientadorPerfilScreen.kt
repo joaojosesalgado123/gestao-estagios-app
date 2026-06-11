@@ -25,6 +25,8 @@ import pt.ligix.app.ui.aluno.PerfilCampoEditavel
 import pt.ligix.app.ui.aluno.PerfilSecao
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.common.PhoneNumberInput
+import pt.ligix.app.ui.common.dismissDropdownsOnOutsideTap
+import pt.ligix.app.ui.common.rememberDropdownDismissController
 import pt.ligix.app.util.PhoneNumberValidator
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.viewmodel.OrientadorPerfilViewModel
@@ -55,6 +57,7 @@ fun OrientadorPerfilScreen(
     var editNome by remember { mutableStateOf("") }
     var editArea by remember { mutableStateOf("") }
     var editTelemovel by remember { mutableStateOf("") }
+    val dropdownDismissController = rememberDropdownDismissController()
 
     LaunchedEffect(Unit) { viewModel.carregarPerfil(context) }
 
@@ -75,6 +78,7 @@ fun OrientadorPerfilScreen(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F7))
+            .dismissDropdownsOnOutsideTap(dropdownDismissController)
             .verticalScroll(rememberScrollState())
     ) {
         // Top Bar
@@ -206,7 +210,9 @@ fun OrientadorPerfilScreen(
                     label = "TELEMÓVEL",
                     value = editTelemovel,
                     onValueChange = { editTelemovel = it },
-                    containerColor = Color(0xFFF8F8F8)
+                    containerColor = Color(0xFFF8F8F8),
+                    dismissController = dropdownDismissController,
+                    dropdownId = "orientador_perfil_tel"
                 )
             } else {
                 PerfilCampo(

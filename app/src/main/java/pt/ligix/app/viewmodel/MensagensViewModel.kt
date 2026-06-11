@@ -23,6 +23,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.model.Conversa
+import pt.ligix.app.model.Estagio
 import pt.ligix.app.model.Mensagem
 import pt.ligix.app.util.Constants
 import pt.ligix.app.util.SessionManager
@@ -33,6 +34,17 @@ data class NotificacaoMsg(
     val conteudo: String,
     val idMensagem: String
 )
+
+data class ConversaResumo(
+    val conversa: Conversa,
+    val nomeEstagio: String,
+    val nomeAluno: String? = null,
+    val nomesParticipantes: Map<String, String>,
+    val ultimaMensagem: Mensagem? = null
+) {
+    val tituloConversa: String
+        get() = nomeAluno?.takeIf { it.isNotBlank() }?.let { "$nomeEstagio - $it" } ?: nomeEstagio
+}
 
 class MensagensViewModel : ViewModel() {
 
@@ -45,6 +57,9 @@ class MensagensViewModel : ViewModel() {
 
     private val _conversa = MutableStateFlow<Conversa?>(null)
     val conversa: StateFlow<Conversa?> = _conversa
+
+    private val _conversasResumo = MutableStateFlow<List<ConversaResumo>>(emptyList())
+    val conversasResumo: StateFlow<List<ConversaResumo>> = _conversasResumo
 
     private val _mensagens = MutableStateFlow<List<Mensagem>>(emptyList())
     val mensagens: StateFlow<List<Mensagem>> = _mensagens
@@ -85,10 +100,16 @@ class MensagensViewModel : ViewModel() {
     private val idsJaNotificados = mutableSetOf<String>()
     private var descobertaConversaJob: Job? = null
     private var mensagensPollingJob: Job? = null
+    private var mensagensPollingConversaId: String? = null
 
     fun abrirChat() {
         _mostrarChat.value = true
         marcarComoVisto()
+    }
+
+    fun abrirChat(resumo: ConversaResumo) {
+        selecionarConversa(resumo)
+        _mostrarChat.value = true
     }
 
     fun fecharChat() {
@@ -120,6 +141,36 @@ class MensagensViewModel : ViewModel() {
         _mensagens.value.forEach { idsJaNotificados.add(it.idMensagem) }
     }
 
+    private fun selecionarConversa(resumo: ConversaResumo) {
+        val idConversa = resumo.conversa.idConversa
+        if (_conversa.value?.idConversa == idConversa && mensagensPollingConversaId == idConversa) return
+
+        _conversa.value = resumo.conversa
+        _nomeEstagio.value = resumo.tituloConversa
+        _nomesParticipantes.value = resumo.nomesParticipantes
+        _mensagens.value = emptyList()
+        ultimoCountVisto = 0
+        mensagensPollingJob?.cancel()
+        mensagensPollingConversaId = null
+
+        viewModelScope.launch {
+            carregarMensagens(idConversa, primeiraVez = true)
+            iniciarPollingMensagens(idConversa)
+        }
+    }
+
+    private fun limparConversas() {
+        _conversasResumo.value = emptyList()
+        _conversa.value = null
+        _mensagens.value = emptyList()
+        _nomeEstagio.value = "Estágio"
+        _nomesParticipantes.value = emptyMap()
+        _mostrarChat.value = false
+        mensagensPollingJob?.cancel()
+        mensagensPollingJob = null
+        mensagensPollingConversaId = null
+    }
+
     fun carregarConversaOrientador(context: Context) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -132,40 +183,15 @@ class MensagensViewModel : ViewModel() {
             }
             _idUtilizador.value = idOrientador
             try {
-                // Busca estágios onde este utilizador é orientador
                 val estagiosResp = api.getEstagiosByOrientador(idOrientador = "eq.$idOrientador")
-                val estagio = estagiosResp.body()?.firstOrNull() ?: run {
-                    _erro.value = null
-                    _isLoading.value = false
-                    return@launch
+                val resumos = estagiosResp.body().orEmpty().mapNotNull { estagio ->
+                    criarResumoConversa(
+                        estagio = estagio,
+                        idUtilizadorAtual = idOrientador,
+                        nomeUtilizadorAtual = sessionManager.nome.first() ?: "Orientador"
+                    )
                 }
-
-                val conversaResp = api.getConversaByEstagio(idEstagio = "eq.${estagio.idEstagio}")
-                val conversa = conversaResp.body()?.firstOrNull() ?: run {
-                    _isLoading.value = false
-                    return@launch
-                }
-
-                // Nome do estágio
-                val candidaturaResp = api.getCandidaturaById(idCandidatura = "eq.${estagio.idCandidatura}")
-                val candidatura = candidaturaResp.body()?.firstOrNull()
-                candidatura?.idOferta?.let { idOferta ->
-                    api.getOfertaById(idOferta = "eq.$idOferta").body()?.firstOrNull()?.let {
-                        _nomeEstagio.value = it.titulo
-                    }
-                }
-
-                // Nomes dos participantes
-                val nomes = mutableMapOf<String, String>()
-                candidatura?.idAluno?.let { idAluno ->
-                    try { api.getUtilizadorById(id = "eq.$idAluno").body()?.firstOrNull()?.let { u -> nomes[idAluno] = u.nome } } catch (_: Exception) {}
-                }
-                estagio.idDocente?.let { try { api.getUtilizadorById(id = "eq.$it").body()?.firstOrNull()?.let { u -> nomes[it] = u.nome } } catch (_: Exception) {} }
-                nomes[idOrientador] = sessionManager.nome.first() ?: "Orientador"
-                _nomesParticipantes.value = nomes
-                _conversa.value = conversa
-                carregarMensagens(conversa.idConversa, primeiraVez = true)
-                iniciarPollingMensagens(conversa.idConversa)
+                aplicarConversasCarregadas(resumos)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -186,41 +212,107 @@ class MensagensViewModel : ViewModel() {
             _idUtilizador.value = idDocente
             try {
                 val estagiosResp = api.getEstagiosByDocente(idDocente = "eq.$idDocente")
-                val estagio = estagiosResp.body()?.firstOrNull() ?: run {
-                    _erro.value = null
-                    _isLoading.value = false
-                    return@launch
+                val resumos = estagiosResp.body().orEmpty().mapNotNull { estagio ->
+                    criarResumoConversa(
+                        estagio = estagio,
+                        idUtilizadorAtual = idDocente,
+                        nomeUtilizadorAtual = sessionManager.nome.first() ?: "Docente"
+                    )
                 }
-
-                val conversaResp = api.getConversaByEstagio(idEstagio = "eq.${estagio.idEstagio}")
-                val conversa = conversaResp.body()?.firstOrNull() ?: run {
-                    _isLoading.value = false
-                    return@launch
-                }
-
-                val candidaturaResp = api.getCandidaturaById(idCandidatura = "eq.${estagio.idCandidatura}")
-                val candidatura = candidaturaResp.body()?.firstOrNull()
-                candidatura?.idOferta?.let { idOferta ->
-                    api.getOfertaById(idOferta = "eq.$idOferta").body()?.firstOrNull()?.let {
-                        _nomeEstagio.value = it.titulo
-                    }
-                }
-
-                val nomes = mutableMapOf<String, String>()
-                candidatura?.idAluno?.let { idAluno ->
-                    try { api.getUtilizadorById(id = "eq.$idAluno").body()?.firstOrNull()?.let { u -> nomes[idAluno] = u.nome } } catch (_: Exception) {}
-                }
-                estagio.idOrientador?.let { try { api.getUtilizadorById(id = "eq.$it").body()?.firstOrNull()?.let { u -> nomes[it] = u.nome } } catch (_: Exception) {} }
-                nomes[idDocente] = sessionManager.nome.first() ?: "Docente"
-                _nomesParticipantes.value = nomes
-                _conversa.value = conversa
-                carregarMensagens(conversa.idConversa, primeiraVez = true)
-                iniciarPollingMensagens(conversa.idConversa)
+                aplicarConversasCarregadas(resumos)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
             _isLoading.value = false
         }
+    }
+
+    private suspend fun criarResumoConversa(
+        estagio: Estagio,
+        idUtilizadorAtual: String,
+        nomeUtilizadorAtual: String
+    ): ConversaResumo? {
+        val conversa = try {
+            val conversaResp = api.getConversaByEstagio(idEstagio = "eq.${estagio.idEstagio}")
+            conversaResp.body()?.firstOrNull()
+        } catch (_: Exception) {
+            null
+        } ?: return null
+
+        val candidatura = try {
+            api.getCandidaturaById(idCandidatura = "eq.${estagio.idCandidatura}")
+                .body()
+                ?.firstOrNull()
+        } catch (_: Exception) {
+            null
+        }
+
+        val nomeEstagio = candidatura?.idOferta?.let { idOferta ->
+            try {
+                api.getOfertaById(idOferta = "eq.$idOferta")
+                    .body()
+                    ?.firstOrNull()
+                    ?.titulo
+            } catch (_: Exception) {
+                null
+            }
+        }?.takeIf { it.isNotBlank() } ?: "Estágio"
+
+        val nomes = mutableMapOf<String, String>()
+        val nomeAluno = candidatura?.idAluno?.takeIf { it.isNotBlank() }?.let { idAluno ->
+            obterNomeUtilizador(idAluno)?.also { nomes[idAluno] = it }
+        }
+        estagio.idDocente?.takeIf { it.isNotBlank() }?.let { idDocente ->
+            obterNomeUtilizador(idDocente)?.let { nomes[idDocente] = it }
+        }
+        estagio.idOrientador?.takeIf { it.isNotBlank() }?.let { idOrientador ->
+            obterNomeUtilizador(idOrientador)?.let { nomes[idOrientador] = it }
+        }
+        nomes[idUtilizadorAtual] = nomeUtilizadorAtual
+
+        val ultimaMensagem = try {
+            api.getMensagensByConversa(
+                idConversa = "eq.${conversa.idConversa}",
+                order = "data_envio.desc"
+            ).body()?.firstOrNull()
+        } catch (_: Exception) {
+            null
+        }
+
+        return ConversaResumo(
+            conversa = conversa,
+            nomeEstagio = nomeEstagio,
+            nomeAluno = nomeAluno,
+            nomesParticipantes = nomes,
+            ultimaMensagem = ultimaMensagem
+        )
+    }
+
+    private suspend fun obterNomeUtilizador(idUtilizador: String): String? {
+        return try {
+            api.getUtilizadorById(id = "eq.$idUtilizador")
+                .body()
+                ?.firstOrNull()
+                ?.nome
+                ?.takeIf { it.isNotBlank() }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun aplicarConversasCarregadas(resumos: List<ConversaResumo>) {
+        _erro.value = null
+        _conversasResumo.value = resumos
+
+        if (resumos.isEmpty()) {
+            limparConversas()
+            return
+        }
+
+        val conversaAtual = _conversa.value?.idConversa
+        val selecionada = resumos.firstOrNull { it.conversa.idConversa == conversaAtual }
+            ?: resumos.first()
+        selecionarConversa(selecionada)
     }
 
     fun carregarConversa(context: Context) {
@@ -310,6 +402,7 @@ class MensagensViewModel : ViewModel() {
             if (resp.isSuccessful) {
                 _erro.value = null
                 val novasMensagens = resp.body() ?: emptyList()
+                atualizarUltimaMensagemResumo(idConversa, novasMensagens.lastOrNull())
 
                 if (primeiraVez) {
                     _mensagens.value = novasMensagens
@@ -348,12 +441,25 @@ class MensagensViewModel : ViewModel() {
     }
 
     private fun iniciarPollingMensagens(idConversa: String) {
-        if (mensagensPollingJob?.isActive == true) return
+        if (mensagensPollingJob?.isActive == true && mensagensPollingConversaId == idConversa) return
+
+        mensagensPollingJob?.cancel()
+        mensagensPollingConversaId = idConversa
 
         mensagensPollingJob = viewModelScope.launch {
             while (isActive) {
                 delay(5000)
                 carregarMensagens(idConversa)
+            }
+        }
+    }
+
+    private fun atualizarUltimaMensagemResumo(idConversa: String, ultimaMensagem: Mensagem?) {
+        _conversasResumo.value = _conversasResumo.value.map { resumo ->
+            if (resumo.conversa.idConversa == idConversa) {
+                resumo.copy(ultimaMensagem = ultimaMensagem)
+            } else {
+                resumo
             }
         }
     }

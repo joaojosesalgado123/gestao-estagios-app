@@ -36,6 +36,8 @@ import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.viewmodel.EmpresaNotificacoesViewModel
 import pt.ligix.app.viewmodel.EmpresaNotificacoesViewModelFactory
+import pt.ligix.app.viewmodel.EmpresaSessaoViewModel
+import pt.ligix.app.viewmodel.EmpresaSessaoViewModelFactory
 import pt.ligix.app.viewmodel.MensagensViewModel
 import pt.ligix.app.viewmodel.MensagensViewModelFactory
 import pt.ligix.app.viewmodel.OrientadorDetalhe
@@ -48,6 +50,7 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
     var tituloOfertaSelecionada by remember { mutableStateOf("") }
     var mostrarCandidatos by remember { mutableStateOf(false) }
     var mostrarNovaOferta by remember { mutableStateOf(false) }
+    var mostrarAtribuirOrientador by remember { mutableStateOf(false) }
     var mostrarCriarOrientador by remember { mutableStateOf(false) }
     var orientadorAEditar by remember { mutableStateOf<OrientadorDetalhe?>(null) }
     var orientadoresKey by remember { mutableStateOf(0) }
@@ -60,17 +63,24 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
     val notificacoesViewModel: EmpresaNotificacoesViewModel = viewModel(
         factory = EmpresaNotificacoesViewModelFactory(SessionManager(context))
     )
+    val sessaoEmpresaViewModel: EmpresaSessaoViewModel = viewModel(
+        factory = EmpresaSessaoViewModelFactory(SessionManager(context))
+    )
     val novaNotificacao by mensagensViewModel.novaNotificacao.collectAsState()
     val historicoNotificacoes by mensagensViewModel.historicoNotificacoes.collectAsState()
     val mensagensNaoVistas by mensagensViewModel.mensagensNaoVistas.collectAsState()
     val novaNotificacaoCandidatura by notificacoesViewModel.novaNotificacao.collectAsState()
     val todasNotificacoesCandidaturas by notificacoesViewModel.notificacoes.collectAsState()
+    val empresaSessao by sessaoEmpresaViewModel.empresa.collectAsState()
+    val empresaRejeitada = empresaSessao?.status == "rejeitada"
 
     fun navegarParaAba(tab: Int) {
+        if (empresaRejeitada && tab != 4) return
         selectedTab = tab
         mostrarCandidatos = false
         mostrarNovaOferta = false
         mostrarCriarOrientador = false
+        mostrarAtribuirOrientador = false
         orientadorAEditar = null
         ofertaAEditar = null
         idCandidaturaSelecionada = null
@@ -79,6 +89,12 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
     LaunchedEffect(Unit) {
         mensagensViewModel.carregarConversa(context)
         notificacoesViewModel.iniciar(context)
+        sessaoEmpresaViewModel.carregar()
+    }
+    LaunchedEffect(empresaRejeitada) {
+        if (empresaRejeitada) {
+            navegarParaAba(4)
+        }
     }
     LaunchedEffect(novaNotificacao) {
         if (novaNotificacao != null) {
@@ -94,7 +110,7 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
         }
     }
 
-    if (mostrarSininho) {
+    if (mostrarSininho && !empresaRejeitada) {
         Dialog(onDismissRequest = { mostrarSininho = false }) {
             Card(shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -161,7 +177,8 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
     Box(modifier = Modifier.fillMaxSize()) {
         CompositionLocalProvider(
             LocalEmpresaNotificacoesViewModel provides notificacoesViewModel,
-            LocalEmpresaPerfilClick provides { navegarParaAba(4) }
+            LocalEmpresaPerfilClick provides { navegarParaAba(4) },
+            LocalEmpresaSessao provides sessaoEmpresaViewModel
         ) {
         Scaffold(
             bottomBar = {
@@ -169,24 +186,28 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                     NavigationBarItem(
                         selected = selectedTab == 0,
                         onClick = { navegarParaAba(0) },
+                        enabled = !empresaRejeitada,
                         icon = { Icon(Icons.Default.Home, contentDescription = "Início") },
                         label = { Text("Início", fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 1,
                         onClick = { navegarParaAba(1) },
+                        enabled = !empresaRejeitada,
                         icon = { Icon(Icons.Default.Work, contentDescription = "Estágios") },
                         label = { Text("Estágios", fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 2,
                         onClick = { navegarParaAba(2) },
+                        enabled = !empresaRejeitada,
                         icon = { Icon(Icons.Default.People, contentDescription = "Candidatos") },
                         label = { Text("Candidatos", fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 3,
                         onClick = { navegarParaAba(3) },
+                        enabled = !empresaRejeitada,
                         icon = { Icon(Icons.Default.School, contentDescription = "Orientadores") },
                         label = { Text("Orientadores", fontSize = 10.sp) }
                     )
@@ -199,7 +220,9 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                 }
             }
         ) { innerPadding ->
-            if (ofertaAEditar != null) {
+            if (empresaRejeitada) {
+                EmpresaPerfilScreen(modifier = Modifier.padding(innerPadding), onLogout = onLogout)
+            } else if (ofertaAEditar != null) {
                 EmpresaEditarOfertaScreen(
                     modifier = Modifier.padding(innerPadding),
                     oferta = ofertaAEditar!!,
@@ -241,6 +264,11 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                     onVoltar = { orientadorAEditar = null },
                     onGuardado = { orientadorAEditar = null; orientadoresKey++ }
                 )
+            } else if (mostrarAtribuirOrientador) {
+                EmpresaAtribuirOrientadorScreen(
+                    modifier = Modifier.padding(innerPadding),
+                    onVoltar = { mostrarAtribuirOrientador = false }
+                )
             } else {
                 when (selectedTab) {
                     0 -> EmpresaDashboardScreen(
@@ -257,7 +285,8 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                             tituloOfertaSelecionada = titulo
                             mostrarCandidatos = true
                         },
-                        onEditarOferta = { oferta -> ofertaAEditar = oferta }
+                        onEditarOferta = { oferta -> ofertaAEditar = oferta },
+                        onAtribuirOrientador = { mostrarAtribuirOrientador = true }
                     )
                     2 -> EmpresaListaCandidatosScreen(
                         modifier = Modifier.padding(innerPadding),
@@ -278,7 +307,7 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
         } // CompositionLocalProvider
 
         // Banner notificação candidatura
-        if (novaNotificacaoCandidatura != null) {
+        if (!empresaRejeitada && novaNotificacaoCandidatura != null) {
             val notif = novaNotificacaoCandidatura!!
             Box(modifier = Modifier.align(Alignment.TopCenter).zIndex(11f)
                 .padding(top = 8.dp, start = 12.dp, end = 12.dp)) {
@@ -313,7 +342,7 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
 
         // Banner notificação mensagem
         AnimatedVisibility(
-            visible = novaNotificacao != null,
+            visible = !empresaRejeitada && novaNotificacao != null,
             enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
             exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut(),
             modifier = Modifier.align(Alignment.TopCenter).zIndex(10f)

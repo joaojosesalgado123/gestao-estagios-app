@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.data.repository.EmpresaRepository
 import pt.ligix.app.model.OfertaEstagio
 import pt.ligix.app.util.SessionManager
@@ -16,8 +15,6 @@ class EmpresaOfertasViewModel(
     private val repository: EmpresaRepository,
     private val sessionManager: SessionManager
 ) : ViewModel() {
-
-    private val api = RetrofitClient.api
 
     private val _ofertas = MutableStateFlow<List<OfertaEstagio>>(emptyList())
     val ofertas: StateFlow<List<OfertaEstagio>> = _ofertas
@@ -34,9 +31,16 @@ class EmpresaOfertasViewModel(
     private val _candidatosPorOferta = MutableStateFlow<Map<String, Int>>(emptyMap())
     val candidatosPorOferta: StateFlow<Map<String, Int>> = _candidatosPorOferta
 
+    private val _erro = MutableStateFlow<String?>(null)
+    val erro: StateFlow<String?> = _erro
+
+    private val _feedback = MutableStateFlow<String?>(null)
+    val feedback: StateFlow<String?> = _feedback
+
     fun carregarDados(context: Context) {
         viewModelScope.launch {
             _isLoading.value = true
+            _erro.value = null
             val idEmpresa = sessionManager.idUtilizador.first() ?: run {
                 _isLoading.value = false
                 return@launch
@@ -56,11 +60,25 @@ class EmpresaOfertasViewModel(
 
     fun eliminarOferta(idOferta: String) {
         viewModelScope.launch {
-            try {
-                api.deleteOferta(id = "eq.$idOferta")
-                _ofertas.value = _ofertas.value.filter { it.idOferta != idOferta }
-            } catch (_: Exception) {}
+            _erro.value = null
+            _feedback.value = null
+
+            repository.eliminarOferta(idOferta).fold(
+                onSuccess = {
+                    _ofertas.value = _ofertas.value.filter { it.idOferta != idOferta }
+                    _vagasAtivas.value = _ofertas.value.size
+                    _candidatosPorOferta.value = _candidatosPorOferta.value - idOferta
+                    _feedback.value = "Oferta eliminada com sucesso."
+                },
+                onFailure = {
+                    _erro.value = it.message ?: "Não foi possível eliminar a oferta."
+                }
+            )
         }
     }
+
+    fun limparMensagens() {
+        _erro.value = null
+        _feedback.value = null
+    }
 }
-// debug

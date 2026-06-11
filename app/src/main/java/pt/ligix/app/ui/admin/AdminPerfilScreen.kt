@@ -1,4 +1,4 @@
-package pt.ligix.app.ui.empresa
+package pt.ligix.app.ui.admin
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -7,7 +7,18 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,69 +34,48 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.auth.LigixGold
-import pt.ligix.app.ui.common.PhoneNumberInput
-import pt.ligix.app.ui.common.dismissDropdownsOnOutsideTap
-import pt.ligix.app.ui.common.rememberDropdownDismissController
-import pt.ligix.app.util.PhoneNumberValidator
-import pt.ligix.app.viewmodel.EmpresaPerfilViewModel
-import pt.ligix.app.viewmodel.EmpresaPerfilViewModelFactory
+import pt.ligix.app.viewmodel.AdminPerfilViewModel
+import pt.ligix.app.viewmodel.AdminPerfilViewModelFactory
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 @Composable
-fun EmpresaPerfilScreen(
+fun AdminPerfilScreen(
     modifier: Modifier = Modifier,
     onLogout: () -> Unit = {}
 ) {
     val context = LocalContext.current
-    val viewModel: EmpresaPerfilViewModel = viewModel(factory = EmpresaPerfilViewModelFactory())
+    val viewModel: AdminPerfilViewModel = viewModel(factory = AdminPerfilViewModelFactory())
 
     val utilizador by viewModel.utilizador.collectAsState()
-    val empresa by viewModel.empresa.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
     val isSaving by viewModel.isSaving.collectAsState()
     val erroGuardar by viewModel.erroGuardar.collectAsState()
     val guardadoComSucesso by viewModel.guardadoComSucesso.collectAsState()
-    val empresaRejeitada = empresa?.status == "rejeitada"
 
     var modoEdicao by remember { mutableStateOf(false) }
     var idioma by remember { mutableStateOf("Português") }
     var expandedIdioma by remember { mutableStateOf(false) }
-
     var editNome by remember { mutableStateOf("") }
-    var editNipc by remember { mutableStateOf("") }
-    var editMorada by remember { mutableStateOf("") }
-    var editTelefone by remember { mutableStateOf("") }
-    var editDescricao by remember { mutableStateOf("") }
-    val dropdownDismissController = rememberDropdownDismissController()
 
     LaunchedEffect(Unit) { viewModel.carregarPerfil(context) }
 
-    LaunchedEffect(utilizador, empresa) {
+    LaunchedEffect(utilizador) {
         editNome = utilizador?.nome ?: ""
-        editNipc = empresa?.nipc ?: ""
-        editMorada = empresa?.morada ?: ""
-        editTelefone = empresa?.telemovel ?: ""
-        editDescricao = empresa?.descricao ?: ""
     }
 
     LaunchedEffect(guardadoComSucesso) {
         if (guardadoComSucesso) modoEdicao = false
     }
 
-    LaunchedEffect(empresaRejeitada) {
-        if (empresaRejeitada) modoEdicao = false
-    }
-
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F7))
-            .dismissDropdownsOnOutsideTap(dropdownDismissController)
             .verticalScroll(rememberScrollState())
     ) {
-        // Top Bar
-        EmpresaTopBar()
+        AdminTopBar()
 
-        // Header
+        // Header card com avatar + nome + badge
         Card(
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             shape = RoundedCornerShape(20.dp),
@@ -101,7 +91,7 @@ fun EmpresaPerfilScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        utilizador?.nome?.firstOrNull()?.toString() ?: "E",
+                        utilizador?.nome?.firstOrNull()?.toString()?.uppercase() ?: "A",
                         color = Color.White,
                         fontSize = 36.sp,
                         fontWeight = FontWeight.Bold
@@ -109,7 +99,7 @@ fun EmpresaPerfilScreen(
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    "NOME DA EMPRESA",
+                    "ADMINISTRADOR",
                     fontSize = 10.sp,
                     color = Color.Gray,
                     letterSpacing = 1.sp,
@@ -124,33 +114,26 @@ fun EmpresaPerfilScreen(
                     textAlign = TextAlign.Center
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-
-                val (badgeColor, badgeIcon, badgeText) = when (empresa?.status) {
-                    "aprovada" -> Triple(
-                        LigixGold, Icons.Default.Verified, "EMPRESA CERTIFICADA"
-                    )
-                    "rejeitada" -> Triple(
-                        Color(0xFFE53935), Icons.Default.Cancel, "EMPRESA REJEITADA"
-                    )
-                    "pendente" -> Triple(
-                        Color(0xFFFF9800), Icons.Default.HourglassEmpty, "PENDENTE DE APROVAÇÃO"
-                    )
-                    else -> Triple(
-                        Color.Gray, Icons.Default.Info, empresa?.status?.uppercase() ?: "ESTADO DESCONHECIDO"
-                    )
-                }
                 Box(
                     modifier = Modifier
-                        .background(badgeColor.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
+                        .background(LigixGold.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
                         .padding(horizontal = 14.dp, vertical = 6.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(badgeIcon, contentDescription = null,
-                            tint = badgeColor, modifier = Modifier.size(14.dp))
+                        Icon(
+                            Icons.Default.VerifiedUser,
+                            contentDescription = null,
+                            tint = LigixGold,
+                            modifier = Modifier.size(14.dp)
+                        )
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(badgeText, fontSize = 11.sp,
-                            color = badgeColor, fontWeight = FontWeight.Bold,
-                            letterSpacing = 0.5.sp)
+                        Text(
+                            "ACESSO PRIVILEGIADO",
+                            fontSize = 11.sp,
+                            color = LigixGold,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
+                        )
                     }
                 }
             }
@@ -162,8 +145,13 @@ fun EmpresaPerfilScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Informações\nUtilizador", fontSize = 20.sp,
-                fontWeight = FontWeight.Bold, color = Color.Black, lineHeight = 26.sp)
+            Text(
+                "Informações\nUtilizador",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                lineHeight = 26.sp
+            )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (modoEdicao) {
                     OutlinedButton(
@@ -174,21 +162,25 @@ fun EmpresaPerfilScreen(
                         Text("Cancelar", fontSize = 14.sp, color = Color.Gray)
                     }
                     Button(
-                        onClick = { viewModel.guardarPerfil(editNome, editNipc, editMorada, editTelefone, editDescricao) },
+                        onClick = { viewModel.guardarPerfil(editNome.trim()) },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
                         shape = RoundedCornerShape(10.dp),
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                        enabled = !isSaving
+                        enabled = !isSaving && editNome.isNotBlank()
                     ) {
                         if (isSaving) {
-                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(16.dp))
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                modifier = Modifier.size(16.dp),
+                                strokeWidth = 2.dp
+                            )
                         } else {
                             Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
                             Text("Guardar", fontSize = 14.sp)
                         }
                     }
-                } else if (!empresaRejeitada) {
+                } else {
                     Button(
                         onClick = { modoEdicao = true },
                         colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
@@ -204,68 +196,54 @@ fun EmpresaPerfilScreen(
         }
 
         erroGuardar?.let {
-            Text(it, color = Color.Red, fontSize = 13.sp,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
+            Text(
+                it,
+                color = Color.Red,
+                fontSize = 13.sp,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+            )
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Informações Institucionais
-        EmpresaPerfilSecao(titulo = "Informações Institucionais", icon = Icons.Default.Business) {
+        // Informação Pessoal
+        AdminPerfilSecao(titulo = "Informação Pessoal", icon = Icons.Default.AdminPanelSettings) {
             if (modoEdicao) {
-                EmpresaPerfilCampoEditavel(label = "NOME COMPLETO", valor = editNome,
-                    onValorChange = { editNome = it })
-            } else {
-                EmpresaPerfilCampo(label = "NOME COMPLETO", valor = utilizador?.nome ?: "—",
-                    icon = Icons.Default.Badge)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Dados da Empresa
-        EmpresaPerfilSecao(titulo = "Dados da Empresa", icon = Icons.Default.Business) {
-            if (modoEdicao) {
-                EmpresaPerfilCampoEditavel(label = "NIPC", valor = editNipc,
-                    onValorChange = { editNipc = it })
-                Spacer(modifier = Modifier.height(8.dp))
-                EmpresaPerfilCampoEditavel(label = "MORADA", valor = editMorada,
-                    onValorChange = { editMorada = it })
-                Spacer(modifier = Modifier.height(8.dp))
-                EmpresaPerfilCampoEditavel(label = "DESCRIÇÃO", valor = editDescricao,
-                    onValorChange = { editDescricao = it })
-            } else {
-                EmpresaPerfilCampo(label = "NIPC", valor = empresa?.nipc ?: "—",
-                    icon = Icons.Default.Numbers)
-                Spacer(modifier = Modifier.height(8.dp))
-                EmpresaPerfilCampo(label = "MORADA", valor = empresa?.morada ?: "—",
-                    icon = Icons.Default.LocationOn)
-                Spacer(modifier = Modifier.height(8.dp))
-                EmpresaPerfilCampo(label = "DESCRIÇÃO", valor = empresa?.descricao ?: "—",
-                    icon = Icons.Default.Info)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Informações de Contacto
-        EmpresaPerfilSecao(titulo = "Informações de Contacto", icon = Icons.Default.ContactMail) {
-            EmpresaPerfilCampo(label = "E-MAIL", valor = utilizador?.email ?: "—",
-                icon = Icons.Default.Email)
-            Spacer(modifier = Modifier.height(8.dp))
-            if (modoEdicao) {
-                PhoneNumberInput(
-                    label = "TELEFONE",
-                    value = editTelefone,
-                    onValueChange = { editTelefone = it },
-                    containerColor = Color(0xFFF8F8F8),
-                    dismissController = dropdownDismissController,
-                    dropdownId = "empresa_perfil_tel"
+                AdminPerfilCampoEditavel(
+                    label = "NOME COMPLETO",
+                    valor = editNome,
+                    onValorChange = { editNome = it }
                 )
             } else {
-                EmpresaPerfilCampo(label = "TELEFONE", valor = PhoneNumberValidator.formatForDisplay(empresa?.telemovel),
-                    icon = Icons.Default.Phone)
+                AdminPerfilCampo(
+                    label = "NOME COMPLETO",
+                    valor = utilizador?.nome ?: "—",
+                    icon = Icons.Default.Badge
+                )
             }
+            Spacer(modifier = Modifier.height(8.dp))
+            AdminPerfilCampo(
+                label = "UTILIZADOR",
+                valor = utilizador?.username ?: "—",
+                icon = Icons.Default.Person
+            )
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Conta
+        AdminPerfilSecao(titulo = "Conta", icon = Icons.Default.VerifiedUser) {
+            AdminPerfilCampo(
+                label = "E-MAIL",
+                valor = utilizador?.email ?: "—",
+                icon = Icons.Default.Email
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            AdminPerfilCampo(
+                label = "MEMBRO DESDE",
+                valor = formatarDataMembro(utilizador?.createdAt),
+                icon = Icons.Default.Event
+            )
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -279,11 +257,14 @@ fun EmpresaPerfilScreen(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Tune, contentDescription = null,
-                        tint = DarkBlue, modifier = Modifier.size(20.dp))
+                    Icon(
+                        Icons.Default.Tune,
+                        contentDescription = null,
+                        tint = DarkBlue,
+                        modifier = Modifier.size(20.dp)
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Configurações", fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold, color = Color.Black)
+                    Text("Configurações", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(
@@ -292,8 +273,12 @@ fun EmpresaPerfilScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Language, contentDescription = null,
-                            tint = Color.Gray, modifier = Modifier.size(20.dp))
+                        Icon(
+                            Icons.Default.Language,
+                            contentDescription = null,
+                            tint = Color.Gray,
+                            modifier = Modifier.size(20.dp)
+                        )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Idioma", fontSize = 14.sp, color = Color.DarkGray)
                     }
@@ -305,8 +290,12 @@ fun EmpresaPerfilScreen(
                         ) {
                             Text(idioma, fontSize = 13.sp, color = DarkBlue)
                             Spacer(modifier = Modifier.width(4.dp))
-                            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null,
-                                tint = DarkBlue, modifier = Modifier.size(16.dp))
+                            Icon(
+                                Icons.Default.KeyboardArrowDown,
+                                contentDescription = null,
+                                tint = DarkBlue,
+                                modifier = Modifier.size(16.dp)
+                            )
                         }
                         DropdownMenu(
                             expanded = expandedIdioma,
@@ -332,21 +321,29 @@ fun EmpresaPerfilScreen(
             onClick = onLogout,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
         ) {
-            Icon(Icons.Default.Logout, contentDescription = null, tint = Color.Red)
+            Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = Color.Red)
             Spacer(modifier = Modifier.width(8.dp))
-            Text("TERMINAR SESSÃO", color = Color.Red,
-                fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
+            Text(
+                "TERMINAR SESSÃO",
+                color = Color.Red,
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp,
+                letterSpacing = 1.sp
+            )
         }
 
-        Text("Ligix v1.0.0",
+        Text(
+            "Ligix v1.0.0",
             modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
-            color = Color.LightGray, fontSize = 12.sp,
-            textAlign = TextAlign.Center)
+            color = Color.LightGray,
+            fontSize = 12.sp,
+            textAlign = TextAlign.Center
+        )
     }
 }
 
 @Composable
-fun EmpresaPerfilSecao(
+private fun AdminPerfilSecao(
     titulo: String,
     icon: ImageVector,
     content: @Composable ColumnScope.() -> Unit
@@ -359,11 +356,9 @@ fun EmpresaPerfilSecao(
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(icon, contentDescription = null,
-                    tint = DarkBlue, modifier = Modifier.size(20.dp))
+                Icon(icon, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(titulo, fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold, color = Color.Black)
+                Text(titulo, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
             }
             Spacer(modifier = Modifier.height(12.dp))
             content()
@@ -372,7 +367,7 @@ fun EmpresaPerfilSecao(
 }
 
 @Composable
-fun EmpresaPerfilCampo(label: String, valor: String, icon: ImageVector) {
+private fun AdminPerfilCampo(label: String, valor: String, icon: ImageVector) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -380,29 +375,37 @@ fun EmpresaPerfilCampo(label: String, valor: String, icon: ImageVector) {
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(icon, contentDescription = null,
-            tint = Color.Gray, modifier = Modifier.size(18.dp))
+        Icon(icon, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(18.dp))
         Spacer(modifier = Modifier.width(12.dp))
         Column {
-            Text(label, fontSize = 10.sp, color = Color.Gray,
-                letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
+            Text(
+                label,
+                fontSize = 10.sp,
+                color = Color.Gray,
+                letterSpacing = 0.5.sp,
+                fontWeight = FontWeight.Medium
+            )
             Spacer(modifier = Modifier.height(2.dp))
-            Text(valor, fontSize = 14.sp,
-                color = Color.Black, fontWeight = FontWeight.Medium)
+            Text(valor, fontSize = 14.sp, color = Color.Black, fontWeight = FontWeight.Medium)
         }
     }
 }
 
 @Composable
-fun EmpresaPerfilCampoEditavel(
+private fun AdminPerfilCampoEditavel(
     label: String,
     valor: String,
     onValorChange: (String) -> Unit
 ) {
     Column {
-        Text(label, fontSize = 10.sp, color = Color.Gray,
-            letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(start = 4.dp, bottom = 4.dp))
+        Text(
+            label,
+            fontSize = 10.sp,
+            color = Color.Gray,
+            letterSpacing = 0.5.sp,
+            fontWeight = FontWeight.Medium,
+            modifier = Modifier.padding(start = 4.dp, bottom = 4.dp)
+        )
         OutlinedTextField(
             value = valor,
             onValueChange = onValorChange,
@@ -416,5 +419,18 @@ fun EmpresaPerfilCampoEditavel(
             ),
             singleLine = true
         )
+    }
+}
+
+private fun formatarDataMembro(createdAt: String?): String {
+    if (createdAt.isNullOrBlank()) return "—"
+    return try {
+        val dataParte = createdAt.substringBefore("T")
+        val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val outputFormat = SimpleDateFormat("MMMM 'de' yyyy", Locale("pt", "PT"))
+        val date = inputFormat.parse(dataParte)
+        if (date != null) outputFormat.format(date).replaceFirstChar { it.uppercase() } else "—"
+    } catch (e: Exception) {
+        "—"
     }
 }

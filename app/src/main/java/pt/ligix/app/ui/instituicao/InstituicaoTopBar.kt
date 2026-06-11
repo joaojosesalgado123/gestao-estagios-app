@@ -1,4 +1,4 @@
-package pt.ligix.app.ui.empresa
+package pt.ligix.app.ui.instituicao
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,69 +25,35 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.flow.first
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.util.SessionManager
-import pt.ligix.app.viewmodel.EmpresaNotificacoesViewModel
-import pt.ligix.app.viewmodel.EmpresaNotificacoesViewModelFactory
+import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.viewmodel.MensagensViewModel
 import pt.ligix.app.viewmodel.MensagensViewModelFactory
 
-data class NotificacaoUnificada(
-    val id: String,
-    val titulo: String,
-    val mensagem: String
-)
-
 @Composable
-fun EmpresaTopBar(
-    mensagensViewModel: MensagensViewModel? = null,
-    notificacoesViewModel: EmpresaNotificacoesViewModel? = null,
-    notificacoesExtras: List<Pair<String, String>> = emptyList()
-) {
+fun InstituicaoTopBar() {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
-    var nomeEmpresa by remember { mutableStateOf("") }
     var mostrarSininho by remember { mutableStateOf(false) }
+    var sigla by remember { mutableStateOf("") }
 
-    val mensVm = mensagensViewModel ?: viewModel(
-        key = "empresa_mensagens",
+    val mensVm: MensagensViewModel = viewModel(
+        key = "instituicao_mensagens",
         factory = MensagensViewModelFactory()
     )
-    val localNotifVm = LocalEmpresaNotificacoesViewModel.current
-    val onPerfilClick = LocalEmpresaPerfilClick.current
-    val sessaoEmpresa = LocalEmpresaSessao.current
-    val notifVm = notificacoesViewModel ?: localNotifVm ?: viewModel(
-        key = "empresa_notificacoes",
-        factory = EmpresaNotificacoesViewModelFactory(sessionManager)
-    )
-
-    val historicoMensagens by mensVm.historicoNotificacoes.collectAsState()
-    val notificacoesCandidaturas by notifVm.notificacoes.collectAsState()
-    val empresaSessao by sessaoEmpresa?.empresa?.collectAsState()
-        ?: remember { mutableStateOf(null) }
-    val empresaRejeitada = empresaSessao?.status == "rejeitada"
-
-    val todasNotificacoes = remember(notificacoesCandidaturas, historicoMensagens, notificacoesExtras) {
-        val lista = mutableListOf<NotificacaoUnificada>()
-        notificacoesExtras.forEach { (titulo, mensagem) ->
-            lista.add(NotificacaoUnificada(titulo, titulo, mensagem))
-        }
-        notificacoesCandidaturas.forEach {
-            lista.add(NotificacaoUnificada(it.id, it.titulo, it.mensagem))
-        }
-        historicoMensagens.forEach {
-            lista.add(NotificacaoUnificada(it.idMensagem, it.nomeRemetente, it.conteudo))
-        }
-        lista
-    }
+    val historicoNotificacoes by mensVm.historicoNotificacoes.collectAsState()
 
     LaunchedEffect(Unit) {
-        nomeEmpresa = sessionManager.nome.first() ?: ""
+        val idUtilizador = sessionManager.idUtilizador.first() ?: return@LaunchedEffect
+        try {
+            val api = pt.ligix.app.data.remote.RetrofitClient.api
+            val inst = api.getInstituicaoByIdUtilizador(idUtilizador = "eq.$idUtilizador").body()?.firstOrNull()
+            sigla = inst?.sigla ?: inst?.nome?.split(" ")?.mapNotNull { it.firstOrNull()?.toString() }?.take(2)?.joinToString("") ?: "I"
+        } catch (e: Exception) { sigla = "I" }
     }
 
-    val iniciais = nomeEmpresa.split(" ")
-        .mapNotNull { it.firstOrNull()?.toString() }
-        .take(2).joinToString("").uppercase()
+    val iniciais = sigla.take(2).uppercase()
 
-    if (mostrarSininho && !empresaRejeitada) {
+    if (mostrarSininho) {
         Dialog(onDismissRequest = { mostrarSininho = false }) {
             Card(shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -98,17 +64,14 @@ fun EmpresaTopBar(
                         verticalAlignment = Alignment.CenterVertically) {
                         Text("Notificações", fontSize = 18.sp,
                             fontWeight = FontWeight.Bold, color = DarkBlue)
-                        if (todasNotificacoes.isNotEmpty()) {
-                            TextButton(onClick = {
-                                mensVm.limparHistoricoNotificacoes()
-                                notifVm.limparNotificacoes()
-                            }) {
+                        if (historicoNotificacoes.isNotEmpty()) {
+                            TextButton(onClick = { mensVm.limparHistoricoNotificacoes() }) {
                                 Text("Limpar", fontSize = 13.sp, color = Color.Gray)
                             }
                         }
                     }
                     Spacer(modifier = Modifier.height(12.dp))
-                    if (todasNotificacoes.isEmpty()) {
+                    if (historicoNotificacoes.isEmpty()) {
                         Column(modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
                             horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Default.NotificationsNone, contentDescription = null,
@@ -118,7 +81,7 @@ fun EmpresaTopBar(
                         }
                     } else {
                         LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
-                            items(todasNotificacoes.reversed()) { notif ->
+                            items(historicoNotificacoes.reversed()) { notif ->
                                 Row(
                                     modifier = Modifier.fillMaxWidth()
                                         .clickable { mostrarSininho = false }
@@ -128,15 +91,15 @@ fun EmpresaTopBar(
                                     Box(modifier = Modifier.size(36.dp).clip(CircleShape)
                                         .background(Color(0xFFE8EAF6)),
                                         contentAlignment = Alignment.Center) {
-                                        Icon(Icons.Default.Notifications, contentDescription = null,
-                                            tint = DarkBlue, modifier = Modifier.size(18.dp))
+                                        Text(notif.nomeRemetente.firstOrNull()?.toString() ?: "?",
+                                            color = DarkBlue, fontWeight = FontWeight.Bold)
                                     }
                                     Spacer(modifier = Modifier.width(12.dp))
                                     Column(modifier = Modifier.weight(1f)) {
-                                        Text(notif.titulo, fontSize = 14.sp,
+                                        Text(notif.nomeRemetente, fontSize = 14.sp,
                                             fontWeight = FontWeight.SemiBold, color = Color.Black)
-                                        Text(notif.mensagem, fontSize = 13.sp, color = Color.Gray,
-                                            maxLines = 2, overflow = TextOverflow.Ellipsis)
+                                        Text(notif.conteudo, fontSize = 13.sp, color = Color.Gray,
+                                            maxLines = 1, overflow = TextOverflow.Ellipsis)
                                     }
                                 }
                                 Divider(color = Color(0xFFEEEEEE))
@@ -149,35 +112,27 @@ fun EmpresaTopBar(
     }
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
+        modifier = Modifier.fillMaxWidth().background(Color.White)
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text("LIGIX", color = DarkBlue, fontSize = 18.sp,
             fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
         Spacer(modifier = Modifier.weight(1f))
-        if (!empresaRejeitada) {
-            Box(contentAlignment = Alignment.TopEnd) {
-                IconButton(onClick = { mostrarSininho = true }) {
-                    Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = DarkBlue)
-                }
-                if (todasNotificacoes.isNotEmpty()) {
-                    Box(modifier = Modifier.size(8.dp).background(Color.Red, CircleShape)
-                        .align(Alignment.TopEnd))
-                }
+        Box(contentAlignment = Alignment.TopEnd) {
+            IconButton(onClick = { mostrarSininho = true }) {
+                Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = DarkBlue)
+            }
+            if (historicoNotificacoes.isNotEmpty()) {
+                Box(modifier = Modifier.size(8.dp).background(Color.Red, CircleShape)
+                    .align(Alignment.TopEnd))
             }
         }
         Box(
-            modifier = Modifier
-                .size(36.dp)
-                .clip(CircleShape)
-                .background(DarkBlue)
-                .clickable(onClick = onPerfilClick),
+            modifier = Modifier.size(36.dp).clip(CircleShape).background(DarkBlue),
             contentAlignment = Alignment.Center
         ) {
-            Text(if (iniciais.isNotEmpty()) iniciais else "E",
+            Text(if (iniciais.isNotEmpty()) iniciais else "I",
                 color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
         }
     }

@@ -12,9 +12,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import pt.ligix.app.data.repository.AuthRepository
 import pt.ligix.app.ui.aluno.AlunoMainScreen
+import pt.ligix.app.ui.instituicao.InstituicaoMainScreen
 import pt.ligix.app.ui.docente.DocenteMainScreen
 import pt.ligix.app.ui.empresa.EmpresaMainScreen
 import pt.ligix.app.ui.orientador.OrientadorMainScreen
+import pt.ligix.app.ui.admin.AdminMainScreen
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.util.SessionTokenProvider
 import pt.ligix.app.viewmodel.AuthViewModel
@@ -30,6 +32,7 @@ object Routes {
     const val DASHBOARD_EMPRESA = "dashboard_empresa"
     const val DASHBOARD_DOCENTE = "dashboard_docente"
     const val DASHBOARD_ADMIN = "dashboard_admin"
+    const val DASHBOARD_INSTITUICAO = "dashboard_instituicao"
     const val DASHBOARD_ORIENTADOR = "dashboard_orientador"
 }
 
@@ -57,6 +60,7 @@ fun LigixNavGraph() {
             val utilizador = (loginState as AuthState.Sucesso).utilizador
             val destino = when (utilizador.role) {
                 "admin" -> Routes.DASHBOARD_ADMIN
+                "instituicao" -> Routes.DASHBOARD_INSTITUICAO
                 "aluno" -> Routes.DASHBOARD_ALUNO
                 "empresa" -> Routes.DASHBOARD_EMPRESA
                 "docente" -> Routes.DASHBOARD_DOCENTE
@@ -91,6 +95,7 @@ fun LigixNavGraph() {
                     val destino = if (sessionManager.estaLogado.first()) {
                         when (sessionManager.role.first()) {
                             "admin" -> Routes.DASHBOARD_ADMIN
+                            "instituicao" -> Routes.DASHBOARD_INSTITUICAO
                             "aluno" -> Routes.DASHBOARD_ALUNO
                             "empresa" -> Routes.DASHBOARD_EMPRESA
                             "docente" -> Routes.DASHBOARD_DOCENTE
@@ -238,12 +243,20 @@ fun LigixNavGraph() {
         }
 
         composable(Routes.DASHBOARD_ADMIN) {
-            PlaceholderScreen("Dashboard Admin") {
+            AdminMainScreen(onLogout = {
                 authViewModel.logout()
                 navController.navigate("login?email=") {
                     popUpTo(0) { inclusive = true }
                 }
-            }
+            })
+        }
+        composable(Routes.DASHBOARD_INSTITUICAO) {
+            InstituicaoMainScreen(onLogout = {
+                authViewModel.logout()
+                navController.navigate("login?email=") {
+                    popUpTo(0) { inclusive = true }
+                }
+            })
         }
     }
 }
