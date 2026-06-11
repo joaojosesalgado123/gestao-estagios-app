@@ -53,6 +53,64 @@ class EmpresaRepository {
         }
     }
 
+    suspend fun eliminarOferta(idOferta: String): Result<Unit> {
+        return try {
+            val rpcResponse = api.eliminarOfertaEmpresa(
+                params = mapOf("p_idoferta" to idOferta)
+            )
+            val rpcDetalhe = detalheErro(rpcResponse)
+            if (rpcResponse.isSuccessful) {
+                return if (rpcResponse.body() == true) {
+                    Result.success(Unit)
+                } else {
+                    Result.failure(Exception("Não foi possível eliminar a oferta na base de dados. Confirma que esta oferta pertence à tua empresa."))
+                }
+            } else if (!funcaoEliminarOfertaIndisponivel(rpcResponse.code(), rpcDetalhe)) {
+                return Result.failure(Exception(mensagemErroEliminarOferta(rpcResponse.code(), rpcDetalhe)))
+            }
+
+            val response = api.deleteOferta(id = "eq.$idOferta")
+            if (response.isSuccessful && response.body().orEmpty().isNotEmpty()) {
+                Result.success(Unit)
+            } else if (response.isSuccessful) {
+                Result.failure(Exception("Não foi possível eliminar a oferta na base de dados. Confirma que esta oferta pertence à tua empresa."))
+            } else {
+                Result.failure(Exception(mensagemErroEliminarOferta(response.code(), detalheErro(response))))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception(e.message ?: "Sem ligação à internet"))
+        }
+    }
+
+    private fun detalheErro(response: retrofit2.Response<*>): String {
+        return try {
+            response.errorBody()?.string()
+        } catch (_: Exception) {
+            null
+        }.orEmpty()
+    }
+
+    private fun funcaoEliminarOfertaIndisponivel(code: Int, detalhe: String): Boolean {
+        return code == 404 ||
+            detalhe.contains("eliminar_oferta_empresa", ignoreCase = true) &&
+            (
+                detalhe.contains("not find", ignoreCase = true) ||
+                detalhe.contains("not found", ignoreCase = true) ||
+                detalhe.contains("PGRST202", ignoreCase = true)
+            )
+    }
+
+    private fun mensagemErroEliminarOferta(code: Int, detalhe: String): String {
+        return when {
+            detalhe.contains("estagio associado", ignoreCase = true) ||
+                detalhe.contains("estágio associado", ignoreCase = true) ->
+                "Não é possível eliminar esta oferta porque já existe um estágio associado."
+            code == 409 || detalhe.contains("foreign key", ignoreCase = true) ->
+                "Não foi possível eliminar esta oferta porque já tem candidaturas ou estágios associados."
+            else -> "Erro ao eliminar oferta ($code)."
+        }
+    }
+
     suspend fun getEstagiosAtivos(idEmpresa: String): Result<List<Estagio>> {
         return try {
             val candidaturas = getCandidaturasDaEmpresa(idEmpresa).getOrNull() ?: return Result.success(emptyList())
