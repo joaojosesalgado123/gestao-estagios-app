@@ -16,7 +16,15 @@ fun InstituicaoMainScreen(onLogout: () -> Unit = {}) {
     var utilizadorAEditar by remember { mutableStateOf<pt.ligix.app.viewmodel.UtilizadorItem?>(null) }
     var utilizadoresKey by remember { mutableStateOf(0) }
 
-    Scaffold(
+    fun navegarParaPerfil() {
+        selectedTab = 3
+        utilizadorAEditar = null
+    }
+
+    CompositionLocalProvider(
+        LocalInstituicaoPerfilClick provides { navegarParaPerfil() }
+    ) {
+        Scaffold(
         bottomBar = {
             NavigationBar(containerColor = Color.White) {
                 NavigationBarItem(
@@ -39,7 +47,7 @@ fun InstituicaoMainScreen(onLogout: () -> Unit = {}) {
                 )
                 NavigationBarItem(
                     selected = selectedTab == 3,
-                    onClick = { selectedTab = 3 },
+                    onClick = { navegarParaPerfil() },
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil", fontSize = 10.sp) }
                 )
@@ -56,6 +64,7 @@ fun InstituicaoMainScreen(onLogout: () -> Unit = {}) {
             selectedTab == 1 -> key(utilizadoresKey) { InstituicaoUtilizadoresScreen(modifier = Modifier.padding(innerPadding), onEditar = { utilizadorAEditar = it }) }
             selectedTab == 2 -> InstituicaoOrientadoresScreen(modifier = Modifier.padding(innerPadding))
             selectedTab == 3 -> InstituicaoPerfilScreen(modifier = Modifier.padding(innerPadding), onLogout = onLogout)
+        }
         }
     }
 }

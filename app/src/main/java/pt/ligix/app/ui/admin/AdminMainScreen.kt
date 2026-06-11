@@ -20,8 +20,16 @@ fun AdminMainScreen(onLogout: () -> Unit = {}) {
     var idEmpresaEmDetalhe by remember { mutableStateOf<String?>(null) }
     var utilizadorEmEdicao by remember { mutableStateOf<Pair<String, String>?>(null) }
 
+    fun navegarParaPerfil() {
+        selectedTab = 4
+        idEmpresaEmDetalhe = null
+        utilizadorEmEdicao = null
+    }
 
-    Scaffold(
+    CompositionLocalProvider(
+        LocalAdminPerfilClick provides { navegarParaPerfil() }
+    ) {
+        Scaffold(
         bottomBar = {
             // Esconde a bottom bar quando estamos num sub-ecrã (detalhe)
             if (idEmpresaEmDetalhe == null && utilizadorEmEdicao == null) {
@@ -52,7 +60,7 @@ fun AdminMainScreen(onLogout: () -> Unit = {}) {
                     )
                     NavigationBarItem(
                         selected = selectedTab == 4,
-                        onClick = { selectedTab = 4 },
+                        onClick = { navegarParaPerfil() },
                         icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                         label = { Text("Perfil", fontSize = 10.sp) }
                     )
@@ -98,6 +106,6 @@ fun AdminMainScreen(onLogout: () -> Unit = {}) {
                 }
             }
         }
+        }
     }
 }
-

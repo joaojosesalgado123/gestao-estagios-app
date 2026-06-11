@@ -33,6 +33,7 @@ import pt.ligix.app.viewmodel.MensagensViewModelFactory
 fun InstituicaoTopBar() {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
+    val onPerfilClick = LocalInstituicaoPerfilClick.current
     var mostrarSininho by remember { mutableStateOf(false) }
     var sigla by remember { mutableStateOf("") }
 
@@ -129,7 +130,11 @@ fun InstituicaoTopBar() {
             }
         }
         Box(
-            modifier = Modifier.size(36.dp).clip(CircleShape).background(DarkBlue),
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(DarkBlue)
+                .clickable(onClick = onPerfilClick),
             contentAlignment = Alignment.Center
         ) {
             Text(if (iniciais.isNotEmpty()) iniciais else "I",
