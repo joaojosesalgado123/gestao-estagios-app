@@ -37,9 +37,11 @@ import pt.ligix.app.viewmodel.MensagensViewModelFactory
 @Composable
 fun OrientadorChatScreen(modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val viewModel: MensagensViewModel = viewModel(factory = MensagensViewModelFactory())
+    val localViewModel = LocalOrientadorMensagensViewModel.current
+    val viewModel: MensagensViewModel = localViewModel ?: viewModel(factory = MensagensViewModelFactory())
 
     val conversa by viewModel.conversa.collectAsState()
+    val conversasResumo by viewModel.conversasResumo.collectAsState()
     val mensagens by viewModel.mensagens.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val isSending by viewModel.isSending.collectAsState()
@@ -135,7 +137,7 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator(color = DarkBlue)
                     }
-                } else if (conversa == null) {
+                } else if (conversasResumo.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Default.ChatBubbleOutline, contentDescription = null,
@@ -150,9 +152,13 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                         }
                     }
                 } else {
-                    val conversaVisivel = pesquisa.isBlank() ||
-                        nomeEstagio.lowercase().contains(pesquisa.lowercase())
-                    if (!conversaVisivel) {
+                    val termoPesquisa = pesquisa.trim().lowercase()
+                    val conversasFiltradas = conversasResumo.filter { resumo ->
+                        termoPesquisa.isBlank() ||
+                            resumo.tituloConversa.lowercase().contains(termoPesquisa) ||
+                            resumo.nomesParticipantes.values.any { it.lowercase().contains(termoPesquisa) }
+                    }
+                    if (conversasFiltradas.isEmpty()) {
                         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(Icons.Default.SearchOff, contentDescription = null,
@@ -162,56 +168,62 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                             }
                         }
                     } else {
-                        Surface(
-                            onClick = { viewModel.abrirChat() },
-                            color = Color.White,
-                            modifier = Modifier.fillMaxWidth()
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize()
                         ) {
-                            Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)).background(DarkBlue),
-                                    contentAlignment = Alignment.Center
+                            items(conversasFiltradas, key = { it.conversa.idConversa }) { resumo ->
+                                val ultimaMensagem = resumo.ultimaMensagem
+                                Surface(
+                                    onClick = { viewModel.abrirChat(resumo) },
+                                    color = Color.White,
+                                    modifier = Modifier.fillMaxWidth()
                                 ) {
-                                    Icon(Icons.Default.Work, contentDescription = null,
-                                        tint = Color.White, modifier = Modifier.size(28.dp))
-                                }
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(nomeEstagio, fontSize = 16.sp,
-                                        fontWeight = FontWeight.Bold, color = Color.Black)
-                                    val ultimaMensagem = mensagens.lastOrNull()
-                                    val nomeRemetente = ultimaMensagem?.let {
-                                        nomesParticipantes[it.idRemetente]?.split(" ")?.firstOrNull() ?: ""
-                                    }
-                                    Text(
-                                        text = if (ultimaMensagem != null) {
-                                            if (ultimaMensagem.ficheiroNome != null)
-                                                "$nomeRemetente: 📎 ${ultimaMensagem.ficheiroNome}"
-                                            else "$nomeRemetente: ${ultimaMensagem.conteudo.take(40)}"
-                                        } else "Sem mensagens ainda",
-                                        fontSize = 13.sp, color = Color.Gray, maxLines = 1
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Column(horizontalAlignment = Alignment.End) {
-                                    val hora = mensagens.lastOrNull()?.dataEnvio?.take(16)?.takeLast(5) ?: ""
-                                    if (hora.isNotEmpty()) Text(hora, fontSize = 12.sp,
-                                        color = DarkBlue, fontWeight = FontWeight.Medium)
-                                    if (mensagensNaoVistas > 0) {
-                                        Spacer(modifier = Modifier.height(4.dp))
+                                    Row(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                                        verticalAlignment = Alignment.CenterVertically) {
                                         Box(
-                                            modifier = Modifier.size(22.dp).clip(CircleShape).background(Color(0xFFF5A623)),
+                                            modifier = Modifier.size(56.dp).clip(RoundedCornerShape(12.dp)).background(DarkBlue),
                                             contentAlignment = Alignment.Center
                                         ) {
-                                            Text(mensagensNaoVistas.coerceAtMost(99).toString(),
-                                                color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                            Icon(Icons.Default.Work, contentDescription = null,
+                                                tint = Color.White, modifier = Modifier.size(28.dp))
+                                        }
+                                        Spacer(modifier = Modifier.width(12.dp))
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(resumo.tituloConversa, fontSize = 16.sp,
+                                                fontWeight = FontWeight.Bold, color = Color.Black)
+                                            val nomeRemetente = ultimaMensagem?.let {
+                                                resumo.nomesParticipantes[it.idRemetente]?.split(" ")?.firstOrNull() ?: ""
+                                            }
+                                            Text(
+                                                text = if (ultimaMensagem != null) {
+                                                    if (ultimaMensagem.ficheiroNome != null)
+                                                        "$nomeRemetente: 📎 ${ultimaMensagem.ficheiroNome}"
+                                                    else "$nomeRemetente: ${ultimaMensagem.conteudo.take(40)}"
+                                                } else "Sem mensagens ainda",
+                                                fontSize = 13.sp, color = Color.Gray, maxLines = 1
+                                            )
+                                        }
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Column(horizontalAlignment = Alignment.End) {
+                                            val hora = ultimaMensagem?.dataEnvio?.take(16)?.takeLast(5) ?: ""
+                                            if (hora.isNotEmpty()) Text(hora, fontSize = 12.sp,
+                                                color = DarkBlue, fontWeight = FontWeight.Medium)
+                                            if (resumo.conversa.idConversa == conversa?.idConversa && mensagensNaoVistas > 0) {
+                                                Spacer(modifier = Modifier.height(4.dp))
+                                                Box(
+                                                    modifier = Modifier.size(22.dp).clip(CircleShape).background(Color(0xFFF5A623)),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Text(mensagensNaoVistas.coerceAtMost(99).toString(),
+                                                        color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                                }
+                                            }
                                         }
                                     }
                                 }
+                                HorizontalDivider(color = Color(0xFFEEEEEE), modifier = Modifier.padding(start = 84.dp))
                             }
                         }
-                        HorizontalDivider(color = Color(0xFFEEEEEE), modifier = Modifier.padding(start = 84.dp))
                     }
                 }
             }

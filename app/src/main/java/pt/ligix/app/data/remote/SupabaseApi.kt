@@ -144,8 +144,9 @@ interface SupabaseApi {
 
     @DELETE("oferta_estagio")
     suspend fun deleteOferta(
+        @Header("Prefer") prefer: String = "return=representation",
         @Query("idoferta") id: String
-    ): Response<Unit>
+    ): Response<List<OfertaEstagio>>
 
     @GET("oferta_estagio")
     suspend fun getOfertas(
@@ -190,6 +191,11 @@ interface SupabaseApi {
 
     @POST("rpc/oferta_tem_vagas")
     suspend fun ofertaTemVagas(
+        @Body params: Map<String, String>
+    ): Response<Boolean>
+
+    @POST("rpc/eliminar_oferta_empresa")
+    suspend fun eliminarOfertaEmpresa(
         @Body params: Map<String, String>
     ): Response<Boolean>
 

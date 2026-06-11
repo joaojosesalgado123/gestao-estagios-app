@@ -169,6 +169,7 @@ fun AlunoEstagioScreen(
     estagio_viewModel: EstagioViewModel = viewModel(factory = EstagioViewModelFactory())
 ) {
     val context = LocalContext.current
+    val estagio by estagio_viewModel.estagio.collectAsState()
     val presencas by estagio_viewModel.presencas.collectAsState()
     val atividades by estagio_viewModel.atividades.collectAsState()
     val presencaDialogDia by estagio_viewModel.presencaDialogDia.collectAsState()
@@ -194,6 +195,8 @@ fun AlunoEstagioScreen(
     val horasFeitas = remember(presencas) {
         presencas.count { it.status.equals("presente", ignoreCase = true) } * 8
     }
+    val totalHorasTexto = if (horasTotal > 0) horasTotal.toString() else "—"
+    val temEstagioAtivo = estagio?.idEstagio?.isNotBlank() == true
     val relatorioSubmetido = relatorioFinal != null
 
     LaunchedEffect(Unit) {
@@ -403,7 +406,7 @@ fun AlunoEstagioScreen(
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            "$horasFeitas / $horasTotal",
+                            "$horasFeitas / $totalHorasTexto",
                             color = Color.White,
                             fontSize = 36.sp,
                             fontWeight = FontWeight.Bold
@@ -576,7 +579,9 @@ fun AlunoEstagioScreen(
                                                         Modifier.border(2.dp, DarkBlue, CircleShape)
                                                     else Modifier
                                                 )
-                                                .clickable { estagio_viewModel.abrirDialogPresenca(data) },
+                                                .clickable(enabled = temEstagioAtivo) {
+                                                    estagio_viewModel.abrirDialogPresenca(data)
+                                                },
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Text(
@@ -609,7 +614,12 @@ fun AlunoEstagioScreen(
                         Spacer(modifier = Modifier.height(12.dp))
 
                         Button(
-                            onClick = { estagio_viewModel.abrirDialogPresenca(hoje) },
+                            onClick = {
+                                estagio_viewModel.abrirDialogPresenca(
+                                    hoje,
+                                    mostrarErroSemEstagio = true
+                                )
+                            },
                             modifier = Modifier.fillMaxWidth().height(48.dp),
                             shape = RoundedCornerShape(12.dp),
                             colors = ButtonDefaults.buttonColors(
