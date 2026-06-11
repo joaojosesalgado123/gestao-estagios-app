@@ -6,9 +6,9 @@ import pt.ligix.app.model.Avaliacao
 import pt.ligix.app.model.Candidatura
 import pt.ligix.app.model.Conversa
 import pt.ligix.app.model.Docente
-import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.model.Empresa
 import pt.ligix.app.model.Estagio
+import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.model.ItemAvaliacao
 import pt.ligix.app.model.Mensagem
 import pt.ligix.app.model.OfertaEstagio
@@ -98,6 +98,11 @@ interface SupabaseApi {
         @Body status: Map<String, String>
     ): Response<List<Empresa>>
 
+    @POST("rpc/rejeitar_empresa_admin")
+    suspend fun rejeitarEmpresaAdmin(
+        @Body params: Map<String, String>
+    ): Response<Boolean>
+
     @GET("empresa")
     suspend fun getEmpresasPendentes(
         @Query("status") status: String = "eq.pendente",
@@ -144,8 +149,9 @@ interface SupabaseApi {
 
     @DELETE("oferta_estagio")
     suspend fun deleteOferta(
+        @Header("Prefer") prefer: String = "return=representation",
         @Query("idoferta") id: String
-    ): Response<Unit>
+    ): Response<List<OfertaEstagio>>
 
     @GET("oferta_estagio")
     suspend fun getOfertas(
@@ -190,6 +196,11 @@ interface SupabaseApi {
 
     @POST("rpc/oferta_tem_vagas")
     suspend fun ofertaTemVagas(
+        @Body params: Map<String, String>
+    ): Response<Boolean>
+
+    @POST("rpc/eliminar_oferta_empresa")
+    suspend fun eliminarOfertaEmpresa(
         @Body params: Map<String, String>
     ): Response<Boolean>
 
@@ -238,6 +249,11 @@ interface SupabaseApi {
         @Query("idcandidatura") idCandidatura: String,
         @Query("select") select: String = "*"
     ): Response<List<Candidatura>>
+
+    @POST("rpc/eliminar_utilizador")
+    suspend fun eliminarUtilizador(
+        @Body body: Map<String, @JvmSuppressWildcards Any>
+    ): Response<Unit>
 
     @DELETE("utilizador")
     suspend fun deleteUtilizador(
@@ -593,6 +609,11 @@ interface SupabaseApi {
     @DELETE("orientador_empresa")
     suspend fun deleteOrientadorEmpresa(
         @Query("idutilizador") idOrientador: String
+    ): Response<Unit>
+
+    @DELETE("orientador_empresa")
+    suspend fun deleteOrientadoresByEmpresa(
+        @Query("idempresa") idEmpresa: String
     ): Response<Unit>
 
     @PATCH("orientador_empresa")

@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -44,6 +47,8 @@ fun EmpresaOfertasScreen(
     val candidaturasPendentes by viewModel.candidaturasPendentes.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val candidatosPorOferta by viewModel.candidatosPorOferta.collectAsState()
+    val erro by viewModel.erro.collectAsState()
+    val feedback by viewModel.feedback.collectAsState()
 
     var filtroSelecionado by remember { mutableStateOf("Todas as Ofertas") }
     val filtros = listOf("Todas as Ofertas", "Ativas", "Rascunhos")
@@ -120,6 +125,50 @@ fun EmpresaOfertasScreen(
                 }
 
                 Spacer(Modifier.height(16.dp))
+
+                AnimatedVisibility(
+                    visible = erro != null || feedback != null,
+                    enter = fadeIn(),
+                    exit = fadeOut()
+                ) {
+                    val isErro = erro != null
+                    Surface(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        color = if (isErro) Color(0xFFFFEBEE) else Color(0xFFE8F5E9)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                if (isErro) Icons.Default.ErrorOutline else Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = if (isErro) Color(0xFFC62828) else Color(0xFF2E7D32),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                erro ?: feedback.orEmpty(),
+                                modifier = Modifier.weight(1f),
+                                color = if (isErro) Color(0xFFC62828) else Color(0xFF2E7D32),
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            IconButton(
+                                onClick = { viewModel.limparMensagens() },
+                                modifier = Modifier.size(28.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.Close,
+                                    contentDescription = "Fechar mensagem",
+                                    tint = Color.Gray,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    }
+                }
 
                 // Lista de ofertas
                 if (isLoading) {
