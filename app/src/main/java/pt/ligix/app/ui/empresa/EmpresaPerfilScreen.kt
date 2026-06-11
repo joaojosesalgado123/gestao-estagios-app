@@ -44,6 +44,7 @@ fun EmpresaPerfilScreen(
     val isSaving by viewModel.isSaving.collectAsState()
     val erroGuardar by viewModel.erroGuardar.collectAsState()
     val guardadoComSucesso by viewModel.guardadoComSucesso.collectAsState()
+    val empresaRejeitada = empresa?.status == "rejeitada"
 
     var modoEdicao by remember { mutableStateOf(false) }
     var idioma by remember { mutableStateOf("Português") }
@@ -68,6 +69,10 @@ fun EmpresaPerfilScreen(
 
     LaunchedEffect(guardadoComSucesso) {
         if (guardadoComSucesso) modoEdicao = false
+    }
+
+    LaunchedEffect(empresaRejeitada) {
+        if (empresaRejeitada) modoEdicao = false
     }
 
     Column(
@@ -124,8 +129,14 @@ fun EmpresaPerfilScreen(
                     "aprovada" -> Triple(
                         LigixGold, Icons.Default.Verified, "EMPRESA CERTIFICADA"
                     )
-                    else -> Triple(
+                    "rejeitada" -> Triple(
+                        Color(0xFFE53935), Icons.Default.Cancel, "EMPRESA REJEITADA"
+                    )
+                    "pendente" -> Triple(
                         Color(0xFFFF9800), Icons.Default.HourglassEmpty, "PENDENTE DE APROVAÇÃO"
+                    )
+                    else -> Triple(
+                        Color.Gray, Icons.Default.Info, empresa?.status?.uppercase() ?: "ESTADO DESCONHECIDO"
                     )
                 }
                 Box(
@@ -177,7 +188,7 @@ fun EmpresaPerfilScreen(
                             Text("Guardar", fontSize = 14.sp)
                         }
                     }
-                } else {
+                } else if (!empresaRejeitada) {
                     Button(
                         onClick = { modoEdicao = true },
                         colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),

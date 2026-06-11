@@ -58,7 +58,31 @@ class AdminRepository {
     }
 
     suspend fun rejeitarEmpresa(idEmpresa: String): Result<Empresa> {
-        return atualizarStatusEmpresa(idEmpresa, "rejeitada")
+        return try {
+            val rpcResponse = api.rejeitarEmpresaAdmin(
+                params = mapOf("p_idempresa" to idEmpresa)
+            )
+            val detalhe = detalheErro(rpcResponse)
+
+            if (rpcResponse.isSuccessful) {
+                if (rpcResponse.body() == true) {
+                    obterEmpresa(idEmpresa)
+                } else {
+                    Result.failure(Exception("Empresa não encontrada"))
+                }
+            } else if (funcaoRejeitarEmpresaIndisponivel(rpcResponse.code(), detalhe)) {
+                val limpeza = limparDadosEmpresaRejeitada(idEmpresa)
+                if (limpeza.isFailure) {
+                    Result.failure(limpeza.exceptionOrNull() ?: Exception("Erro ao limpar dados da empresa"))
+                } else {
+                    atualizarStatusEmpresa(idEmpresa, "rejeitada")
+                }
+            } else {
+                Result.failure(Exception(mensagemErroRejeitarEmpresa(rpcResponse.code(), detalhe)))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Sem ligação à internet"))
+        }
     }
 
     suspend fun getResumoAtividadeEmpresas(): Result<ResumoAtividadeEmpresas> {
@@ -373,6 +397,135 @@ class AdminRepository {
             }
         } catch (e: Exception) {
             Result.failure(Exception("Sem ligação à internet"))
+        }
+    }
+
+    private suspend fun obterEmpresa(idEmpresa: String): Result<Empresa> {
+        return try {
+            val response = api.getEmpresaById(idUtilizador = "eq.$idEmpresa")
+            if (response.isSuccessful) {
+                response.body()?.firstOrNull()?.let { Result.success(it) }
+                    ?: Result.failure(Exception("Empresa não encontrada"))
+            } else {
+                Result.failure(Exception("Erro: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Sem ligação à internet"))
+        }
+    }
+
+    private suspend fun limparDadosEmpresaRejeitada(idEmpresa: String): Result<Unit> {
+        return try {
+            val ofertasResp = api.getOfertasByEmpresa(idEmpresa = "eq.$idEmpresa")
+            if (!ofertasResp.isSuccessful) {
+                return Result.failure(Exception("Erro ao carregar ofertas da empresa: ${ofertasResp.code()}"))
+            }
+
+            ofertasResp.body().orEmpty().forEach { oferta ->
+                eliminarOfertaComFallback(oferta.idOferta).getOrElse { erro ->
+                    return Result.failure(erro)
+                }
+            }
+
+            val orientadoresResp = api.getOrientadoresByEmpresa(idEmpresa = "eq.$idEmpresa")
+            if (!orientadoresResp.isSuccessful) {
+                return Result.failure(Exception("Erro ao carregar orientadores da empresa: ${orientadoresResp.code()}"))
+            }
+
+            orientadoresResp.body().orEmpty().forEach { orientador ->
+                val deleteUserResp = api.eliminarUtilizador(
+                    body = mapOf("p_idutilizador" to orientador.idUtilizador)
+                )
+                if (!deleteUserResp.isSuccessful) {
+                    val deleteLinkResp = api.deleteOrientadorEmpresa(
+                        idOrientador = "eq.${orientador.idUtilizador}"
+                    )
+                    if (!deleteLinkResp.isSuccessful) {
+                        return Result.failure(
+                            Exception("Erro ao remover orientador da empresa: ${deleteLinkResp.code()}")
+                        )
+                    }
+                }
+            }
+
+            val deleteLinksResp = api.deleteOrientadoresByEmpresa(idEmpresa = "eq.$idEmpresa")
+            if (!deleteLinksResp.isSuccessful) {
+                return Result.failure(Exception("Erro ao limpar orientadores da empresa: ${deleteLinksResp.code()}"))
+            }
+
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(Exception(e.message ?: "Sem ligação à internet"))
+        }
+    }
+
+    private suspend fun eliminarOfertaComFallback(idOferta: String): Result<Unit> {
+        val rpcResponse = api.eliminarOfertaEmpresa(
+            params = mapOf("p_idoferta" to idOferta)
+        )
+        val rpcDetalhe = detalheErro(rpcResponse)
+        if (rpcResponse.isSuccessful) {
+            return if (rpcResponse.body() == true) {
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("Não foi possível eliminar a oferta $idOferta."))
+            }
+        } else if (!funcaoEliminarOfertaIndisponivel(rpcResponse.code(), rpcDetalhe)) {
+            return Result.failure(Exception(mensagemErroEliminarOferta(rpcResponse.code(), rpcDetalhe)))
+        }
+
+        val response = api.deleteOferta(id = "eq.$idOferta")
+        return if (response.isSuccessful) {
+            Result.success(Unit)
+        } else {
+            Result.failure(Exception(mensagemErroEliminarOferta(response.code(), detalheErro(response))))
+        }
+    }
+
+    private fun detalheErro(response: retrofit2.Response<*>): String {
+        return try {
+            response.errorBody()?.string()
+        } catch (_: Exception) {
+            null
+        }.orEmpty()
+    }
+
+    private fun funcaoRejeitarEmpresaIndisponivel(code: Int, detalhe: String): Boolean {
+        return code == 404 ||
+            detalhe.contains("rejeitar_empresa_admin", ignoreCase = true) &&
+            (
+                detalhe.contains("not find", ignoreCase = true) ||
+                detalhe.contains("not found", ignoreCase = true) ||
+                detalhe.contains("PGRST202", ignoreCase = true)
+            )
+    }
+
+    private fun funcaoEliminarOfertaIndisponivel(code: Int, detalhe: String): Boolean {
+        return code == 404 ||
+            detalhe.contains("eliminar_oferta_empresa", ignoreCase = true) &&
+            (
+                detalhe.contains("not find", ignoreCase = true) ||
+                detalhe.contains("not found", ignoreCase = true) ||
+                detalhe.contains("PGRST202", ignoreCase = true)
+            )
+    }
+
+    private fun mensagemErroRejeitarEmpresa(code: Int, detalhe: String): String {
+        return when {
+            code == 401 || code == 403 -> "Não tem permissões para rejeitar esta empresa."
+            detalhe.isNotBlank() -> "Erro ao rejeitar empresa ($code): $detalhe"
+            else -> "Erro ao rejeitar empresa ($code)."
+        }
+    }
+
+    private fun mensagemErroEliminarOferta(code: Int, detalhe: String): String {
+        return when {
+            detalhe.contains("estagio associado", ignoreCase = true) ||
+                detalhe.contains("estágio associado", ignoreCase = true) ->
+                "Não é possível eliminar uma das ofertas porque já existe um estágio associado."
+            code == 409 || detalhe.contains("foreign key", ignoreCase = true) ->
+                "Não foi possível eliminar uma das ofertas porque já tem candidaturas ou estágios associados."
+            else -> "Erro ao eliminar oferta ($code)."
         }
     }
 }

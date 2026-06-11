@@ -98,6 +98,11 @@ interface SupabaseApi {
         @Body status: Map<String, String>
     ): Response<List<Empresa>>
 
+    @POST("rpc/rejeitar_empresa_admin")
+    suspend fun rejeitarEmpresaAdmin(
+        @Body params: Map<String, String>
+    ): Response<Boolean>
+
     @GET("empresa")
     suspend fun getEmpresasPendentes(
         @Query("status") status: String = "eq.pendente",
@@ -604,6 +609,11 @@ interface SupabaseApi {
     @DELETE("orientador_empresa")
     suspend fun deleteOrientadorEmpresa(
         @Query("idutilizador") idOrientador: String
+    ): Response<Unit>
+
+    @DELETE("orientador_empresa")
+    suspend fun deleteOrientadoresByEmpresa(
+        @Query("idempresa") idEmpresa: String
     ): Response<Unit>
 
     @PATCH("orientador_empresa")

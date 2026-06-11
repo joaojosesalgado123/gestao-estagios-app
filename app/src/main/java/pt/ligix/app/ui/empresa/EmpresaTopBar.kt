@@ -53,6 +53,7 @@ fun EmpresaTopBar(
     )
     val localNotifVm = LocalEmpresaNotificacoesViewModel.current
     val onPerfilClick = LocalEmpresaPerfilClick.current
+    val sessaoEmpresa = LocalEmpresaSessao.current
     val notifVm = notificacoesViewModel ?: localNotifVm ?: viewModel(
         key = "empresa_notificacoes",
         factory = EmpresaNotificacoesViewModelFactory(sessionManager)
@@ -60,6 +61,9 @@ fun EmpresaTopBar(
 
     val historicoMensagens by mensVm.historicoNotificacoes.collectAsState()
     val notificacoesCandidaturas by notifVm.notificacoes.collectAsState()
+    val empresaSessao by sessaoEmpresa?.empresa?.collectAsState()
+        ?: remember { mutableStateOf(null) }
+    val empresaRejeitada = empresaSessao?.status == "rejeitada"
 
     val todasNotificacoes = remember(notificacoesCandidaturas, historicoMensagens, notificacoesExtras) {
         val lista = mutableListOf<NotificacaoUnificada>()
@@ -83,7 +87,7 @@ fun EmpresaTopBar(
         .mapNotNull { it.firstOrNull()?.toString() }
         .take(2).joinToString("").uppercase()
 
-    if (mostrarSininho) {
+    if (mostrarSininho && !empresaRejeitada) {
         Dialog(onDismissRequest = { mostrarSininho = false }) {
             Card(shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -154,13 +158,15 @@ fun EmpresaTopBar(
         Text("LIGIX", color = DarkBlue, fontSize = 18.sp,
             fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
         Spacer(modifier = Modifier.weight(1f))
-        Box(contentAlignment = Alignment.TopEnd) {
-            IconButton(onClick = { mostrarSininho = true }) {
-                Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = DarkBlue)
-            }
-            if (todasNotificacoes.isNotEmpty()) {
-                Box(modifier = Modifier.size(8.dp).background(Color.Red, CircleShape)
-                    .align(Alignment.TopEnd))
+        if (!empresaRejeitada) {
+            Box(contentAlignment = Alignment.TopEnd) {
+                IconButton(onClick = { mostrarSininho = true }) {
+                    Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = DarkBlue)
+                }
+                if (todasNotificacoes.isNotEmpty()) {
+                    Box(modifier = Modifier.size(8.dp).background(Color.Red, CircleShape)
+                        .align(Alignment.TopEnd))
+                }
             }
         }
         Box(
