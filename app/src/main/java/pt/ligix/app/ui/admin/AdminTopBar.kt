@@ -1,6 +1,7 @@
 package pt.ligix.app.ui.admin
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -26,6 +27,7 @@ fun AdminTopBar() {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
     val repository = remember { AdminRepository() }
+    val onPerfilClick = LocalAdminPerfilClick.current
 
     var nomeAdmin by remember { mutableStateOf("") }
     var pendentes by remember { mutableStateOf(0) }
@@ -128,7 +130,11 @@ fun AdminTopBar() {
         Spacer(modifier = Modifier.width(4.dp))
 
         Box(
-            modifier = Modifier.size(36.dp).clip(CircleShape).background(DarkBlue),
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(DarkBlue)
+                .clickable(onClick = onPerfilClick),
             contentAlignment = Alignment.Center
         ) {
             Text(

@@ -43,6 +43,7 @@ fun EmpresaNovaOfertaScreen(
     var titulo by remember { mutableStateOf("") }
     var area by remember { mutableStateOf("") }
     var duracao by remember { mutableStateOf("") }
+    var numeroVagas by remember { mutableStateOf("1") }
     var localizacao by remember { mutableStateOf("") }
     var descricao by remember { mutableStateOf("") }
     var expandedArea by remember { mutableStateOf(false) }
@@ -202,6 +203,30 @@ fun EmpresaNovaOfertaScreen(
 
                     Spacer(Modifier.height(16.dp))
 
+                    // Número de vagas
+                    Text("Número de vagas *", fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium, color = Color.Black)
+                    Spacer(Modifier.height(6.dp))
+                    OutlinedTextField(
+                        value = numeroVagas,
+                        onValueChange = { numeroVagas = it.filter { c -> c.isDigit() } },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("Ex: 2", color = Color.LightGray) },
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = DarkBlue,
+                            unfocusedBorderColor = Color(0xFFEEEEEE),
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color(0xFFF8F8F8)
+                        ),
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                        ),
+                        singleLine = true
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
                     // Localização
                     Text("Localização *", fontSize = 13.sp,
                         fontWeight = FontWeight.Medium, color = Color.Black)
@@ -286,6 +311,7 @@ fun EmpresaNovaOfertaScreen(
                         titulo = titulo,
                         area = area,
                         duracao = duracao.toIntOrNull() ?: 0,
+                        numeroVagas = numeroVagas.toIntOrNull() ?: 0,
                         localizacao = localizacao,
                         descricao = descricao
                     )
