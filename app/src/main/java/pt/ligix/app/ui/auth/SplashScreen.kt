@@ -1,5 +1,7 @@
 package pt.ligix.app.ui.auth
 
+import android.R.attr.fontWeight
+import android.R.attr.text
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -8,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,6 +22,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.Image
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -78,19 +82,12 @@ fun SplashScreen(onComecar: () -> Unit) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 32.dp)
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.logo_ligix),
-                    contentDescription = "Ligix",
-                    tint = LigixGold,
-                    modifier = Modifier.size(28.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "LIGIX",
                     color = Color.White,
-                    fontSize = 20.sp,
+                    fontSize = 25.sp,
                     fontWeight = FontWeight.Bold,
                     letterSpacing = 3.sp
                 )
@@ -101,7 +98,7 @@ fun SplashScreen(onComecar: () -> Unit) {
             // Logo principal
             Card(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .width(280.dp)
                     .height(280.dp)
                     .alpha(alpha.value),
                 shape = RoundedCornerShape(8.dp),
@@ -113,13 +110,11 @@ fun SplashScreen(onComecar: () -> Unit) {
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
+                    Image(
                         painter = painterResource(id = R.drawable.logo_ligix),
                         contentDescription = "Ligix Logo",
-                        tint = Color.Unspecified,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp)
+                        contentScale = androidx.compose.ui.layout.ContentScale.Fit,
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
             }
@@ -134,7 +129,6 @@ fun SplashScreen(onComecar: () -> Unit) {
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center,
                 lineHeight = 40.sp,
-                modifier = Modifier.alpha(alpha.value)
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -185,7 +179,7 @@ fun SplashScreen(onComecar: () -> Unit) {
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(horizontal = 32.dp, vertical = 48.dp)
-                .fillMaxWidth()
+                .width(250.dp)
                 .height(56.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = LigixGold
