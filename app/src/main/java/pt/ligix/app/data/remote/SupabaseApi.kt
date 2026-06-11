@@ -239,6 +239,11 @@ interface SupabaseApi {
         @Query("select") select: String = "*"
     ): Response<List<Candidatura>>
 
+    @POST("rpc/eliminar_utilizador")
+    suspend fun eliminarUtilizador(
+        @Body body: Map<String, @JvmSuppressWildcards Any>
+    ): Response<Unit>
+
     @DELETE("utilizador")
     suspend fun deleteUtilizador(
         @Query("idutilizador") id: String

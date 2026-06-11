@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.first
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.util.SessionManager
 
@@ -107,7 +106,7 @@ class InstituicaoUtilizadoresViewModel(
         viewModelScope.launch {
             try {
                 val api = RetrofitClient.api
-                api.deleteUtilizador(id = "eq.$idUtilizador")
+                api.eliminarUtilizador(body = mapOf("p_idutilizador" to idUtilizador))
                 _sucesso.value = "Utilizador eliminado com sucesso!"
                 carregar()
             } catch (e: Exception) {

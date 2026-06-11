@@ -271,7 +271,7 @@ class AdminRepository {
 
     suspend fun eliminarUtilizador(idutilizador: String): Result<Unit> {
         return try {
-            val response = api.adminDeleteUtilizador(id = "eq.$idutilizador")
+            val response = api.eliminarUtilizador(body = mapOf("p_idutilizador" to idutilizador))
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {
