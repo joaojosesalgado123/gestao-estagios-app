@@ -2,15 +2,15 @@ package pt.ligix.app.data.repository
 
 import pt.ligix.app.data.remote.RetrofitClient
 import pt.ligix.app.model.Empresa
+import pt.ligix.app.viewmodel.EmpresaDetalhe
+import pt.ligix.app.viewmodel.EmpresaListagem
 import pt.ligix.app.viewmodel.EmpresaPendenteCard
+import pt.ligix.app.viewmodel.EstatisticasDashboard
+import pt.ligix.app.viewmodel.ResumoAtividadeEmpresas
+import pt.ligix.app.viewmodel.UtilizadorEdicao
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import pt.ligix.app.viewmodel.ResumoAtividadeEmpresas
-import pt.ligix.app.viewmodel.EmpresaDetalhe
-import pt.ligix.app.viewmodel.EmpresaListagem
-import pt.ligix.app.viewmodel.EstatisticasDashboard
-import pt.ligix.app.viewmodel.UtilizadorEdicao
 
 class AdminRepository {
 
@@ -271,7 +271,7 @@ class AdminRepository {
 
     suspend fun eliminarUtilizador(idutilizador: String): Result<Unit> {
         return try {
-            val response = api.adminDeleteUtilizador(id = "eq.$idutilizador")
+            val response = api.eliminarUtilizador(body = mapOf("p_idutilizador" to idutilizador))
             if (response.isSuccessful) {
                 Result.success(Unit)
             } else {

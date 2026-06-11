@@ -6,9 +6,9 @@ import pt.ligix.app.model.Avaliacao
 import pt.ligix.app.model.Candidatura
 import pt.ligix.app.model.Conversa
 import pt.ligix.app.model.Docente
-import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.model.Empresa
 import pt.ligix.app.model.Estagio
+import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.model.ItemAvaliacao
 import pt.ligix.app.model.Mensagem
 import pt.ligix.app.model.OfertaEstagio
@@ -244,6 +244,11 @@ interface SupabaseApi {
         @Query("idcandidatura") idCandidatura: String,
         @Query("select") select: String = "*"
     ): Response<List<Candidatura>>
+
+    @POST("rpc/eliminar_utilizador")
+    suspend fun eliminarUtilizador(
+        @Body body: Map<String, @JvmSuppressWildcards Any>
+    ): Response<Unit>
 
     @DELETE("utilizador")
     suspend fun deleteUtilizador(
