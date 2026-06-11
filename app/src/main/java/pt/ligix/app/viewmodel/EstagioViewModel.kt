@@ -49,7 +49,7 @@ class EstagioViewModel : ViewModel() {
     private val _feedbackMsg = MutableStateFlow<String?>(null)
     val feedbackMsg: StateFlow<String?> = _feedbackMsg
 
-    private val _horasTotal = MutableStateFlow(450)
+    private val _horasTotal = MutableStateFlow(0)
     val horasTotal: StateFlow<Int> = _horasTotal
 
     private val _aGuardarAtividade = MutableStateFlow(false)
@@ -85,6 +85,7 @@ class EstagioViewModel : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
             _erro.value = null
+            limparDadosEstagio()
             val repository = atividadesRepository
                 ?: AtividadesRepository(context).also { atividadesRepository = it }
             try {
@@ -110,7 +111,10 @@ class EstagioViewModel : ViewModel() {
                 val candidaturas = candidaturasResponse.body().orEmpty()
 
                 val candidaturaAceite = candidaturas.firstOrNull { it.status == "aceite" }
-                    ?: return@launch
+                    ?: run {
+                        limparDadosEstagio()
+                        return@launch
+                    }
 
                 val estagiosResponse = api.getEstagioByCandidatura(
                     idCandidatura = "eq.${candidaturaAceite.idCandidatura}"
@@ -122,7 +126,10 @@ class EstagioViewModel : ViewModel() {
                 }
                 val estagios = estagiosResponse.body().orEmpty()
 
-                val estagioAtual = estagios.firstOrNull() ?: return@launch
+                val estagioAtual = estagios.firstOrNull() ?: run {
+                    limparDadosEstagio()
+                    return@launch
+                }
                 _estagio.value = estagioAtual
                 repository.guardarEstagioAtivo(idAluno, estagioAtual)
                 observarAtividades(repository, idAluno, estagioAtual.idEstagio)
@@ -131,7 +138,7 @@ class EstagioViewModel : ViewModel() {
                     val oferta = api.getOfertaById(
                         idOferta = "eq.${candidaturaAceite.idOferta}"
                     ).body()?.firstOrNull()
-                    oferta?.duracao?.let { if (it > 0) _horasTotal.value = it }
+                    _horasTotal.value = oferta?.duracao?.takeIf { it > 0 } ?: 0
                     oferta?.idEmpresa?.takeIf { it.isNotBlank() }?.let { idEmpresa ->
                         _nomeEmpresa.value = api.getUtilizadorById(
                             id = "eq.$idEmpresa"
@@ -160,6 +167,22 @@ class EstagioViewModel : ViewModel() {
                 _isLoading.value = false
             }
         }
+    }
+
+    private fun limparDadosEstagio() {
+        _estagio.value = null
+        _presencas.value = emptyList()
+        _atividades.value = emptyList()
+        _horasTotal.value = 0
+        _relatorioFinal.value = null
+        _notaEmpresa.value = null
+        _notaDocente.value = null
+        _notaFinal.value = null
+        _nomeEmpresa.value = "—"
+        _nomeOrientadorEmpresa.value = "—"
+        atividadesObservationKey = null
+        atividadesJob?.cancel()
+        atividadesJob = null
     }
 
     private fun observarAtividades(
@@ -305,7 +328,13 @@ class EstagioViewModel : ViewModel() {
         }
     }
 
-    fun abrirDialogPresenca(dia: LocalDate) {
+    fun abrirDialogPresenca(dia: LocalDate, mostrarErroSemEstagio: Boolean = false) {
+        if (_estagio.value?.idEstagio.isNullOrBlank()) {
+            if (mostrarErroSemEstagio) {
+                _erro.value = "Ainda não tens um estágio atribuído. A marcação de presenças fica disponível assim que fores colocado."
+            }
+            return
+        }
         _presencaDialogDia.value = dia
     }
 
@@ -316,7 +345,11 @@ class EstagioViewModel : ViewModel() {
     fun registarPresenca(dia: LocalDate, presente: Boolean) {
         viewModelScope.launch {
             try {
-                val estagioId = _estagio.value?.idEstagio ?: return@launch
+                val estagioId = _estagio.value?.idEstagio ?: run {
+                    _erro.value = "Ainda não tens um estágio atribuído. A marcação de presenças fica disponível assim que fores colocado."
+                    _presencaDialogDia.value = null
+                    return@launch
+                }
                 val dataStr = dia.format(DateTimeFormatter.ISO_LOCAL_DATE)
                 val status = if (presente) "presente" else "ausente"
                 val api = RetrofitClient.api
