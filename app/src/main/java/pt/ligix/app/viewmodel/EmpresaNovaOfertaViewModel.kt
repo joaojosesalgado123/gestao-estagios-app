@@ -35,11 +35,16 @@ class EmpresaNovaOfertaViewModel(
         titulo: String,
         area: String,
         duracao: Int,
+        numeroVagas: Int,
         localizacao: String,
         descricao: String
     ) {
         if (titulo.isBlank() || area.isBlank() || localizacao.isBlank()) {
             _erro.value = "Preenche todos os campos obrigatórios."
+            return
+        }
+        if (numeroVagas <= 0) {
+            _erro.value = "O número de vagas deve ser superior a zero."
             return
         }
 
@@ -60,6 +65,7 @@ class EmpresaNovaOfertaViewModel(
                 )
                 if (area.isNotBlank()) ofertaMap["area"] = area
                 if (duracao > 0) ofertaMap["duracao"] = duracao
+                ofertaMap["numero_vagas"] = numeroVagas
                 if (localizacao.isNotBlank()) ofertaMap["localizacao"] = localizacao
                 if (descricao.isNotBlank()) ofertaMap["descricao"] = descricao
 

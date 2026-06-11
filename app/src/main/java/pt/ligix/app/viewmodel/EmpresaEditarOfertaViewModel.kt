@@ -32,11 +32,16 @@ class EmpresaEditarOfertaViewModel(
         titulo: String,
         area: String,
         duracao: Int,
+        numeroVagas: Int,
         localizacao: String,
         descricao: String
     ) {
         if (titulo.isBlank()) {
             _erro.value = "O título é obrigatório."
+            return
+        }
+        if (numeroVagas <= 0) {
+            _erro.value = "O número de vagas deve ser superior a zero."
             return
         }
 
@@ -49,6 +54,7 @@ class EmpresaEditarOfertaViewModel(
                 )
                 if (area.isNotBlank()) ofertaMap["area"] = area
                 if (duracao > 0) ofertaMap["duracao"] = duracao
+                ofertaMap["numero_vagas"] = numeroVagas
                 if (localizacao.isNotBlank()) ofertaMap["localizacao"] = localizacao
                 if (descricao.isNotBlank()) ofertaMap["descricao"] = descricao
 
