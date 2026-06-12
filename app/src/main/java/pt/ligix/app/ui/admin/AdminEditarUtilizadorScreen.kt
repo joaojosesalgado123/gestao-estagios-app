@@ -15,15 +15,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.data.repository.AdminRepository
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.viewmodel.AdminEditarUtilizadorViewModel
 import pt.ligix.app.viewmodel.AdminEditarUtilizadorViewModelFactory
 import androidx.compose.runtime.DisposableEffect
+import java.text.Normalizer
+import java.util.Locale
 
 @Composable
 fun AdminEditarUtilizadorScreen(
@@ -73,23 +77,23 @@ fun AdminEditarUtilizadorScreen(
             IconButton(onClick = onVoltar) {
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Voltar",
+                    contentDescription = stringResource(R.string.back),
                     tint = DarkBlue
                 )
             }
-            Text("Voltar", color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Medium)
+            Text(stringResource(R.string.back), color = DarkBlue, fontSize = 14.sp, fontWeight = FontWeight.Medium)
         }
 
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
             Text(
-                text = "Editar Registo de Acesso",
+                text = stringResource(R.string.edit_access_record),
                 fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkBlue
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                text = "Ajuste as credenciais e o nível de autorização para este membro do ecossistema académico.",
+                text = stringResource(R.string.edit_access_record_subtitle),
                 fontSize = 14.sp,
                 color = Color.Gray,
                 lineHeight = 20.sp
@@ -109,10 +113,6 @@ fun AdminEditarUtilizadorScreen(
                 }
                 utilizador != null -> {
                     val u = utilizador!!
-                    val roleLabel = when (u.role) {
-                        "instituicao" -> "Instituição"
-                        else -> u.role.replaceFirstChar { it.uppercase() }
-                    }
 
                     // Card: Informação Pessoal
                     Card(
@@ -120,16 +120,16 @@ fun AdminEditarUtilizadorScreen(
                         colors = CardDefaults.cardColors(containerColor = Color.White)
                     ) {
                         Column(modifier = Modifier.padding(20.dp)) {
-                            CabecalhoSeccao("Informação Pessoal", Icons.Default.Badge)
+                            CabecalhoSeccao(stringResource(R.string.personal_information), Icons.Default.Badge)
                             Spacer(Modifier.height(20.dp))
 
-                            CampoEditavel("NOME COMPLETO", nomeEdit) { nomeEdit = it }
+                            CampoEditavel(stringResource(R.string.full_name_upper), nomeEdit) { nomeEdit = it }
                             Spacer(Modifier.height(16.dp))
-                            CampoEditavel("ENDEREÇO DE E-MAIL", emailEdit) { emailEdit = it }
+                            CampoEditavel(stringResource(R.string.email_address_upper), emailEdit) { emailEdit = it }
 
                             u.camposExtras.forEach { (label, valor) ->
                                 Spacer(Modifier.height(16.dp))
-                                CampoSoLeitura(label, valor)
+                                CampoSoLeitura(labelAdminExtra(label), valor)
                             }
                         }
                     }
@@ -142,11 +142,11 @@ fun AdminEditarUtilizadorScreen(
                         colors = CardDefaults.cardColors(containerColor = Color.White)
                     ) {
                         Column(modifier = Modifier.padding(20.dp)) {
-                            CabecalhoSeccao("Autorização e Segurança", Icons.Default.Shield)
+                            CabecalhoSeccao(stringResource(R.string.authorization_security), Icons.Default.Shield)
                             Spacer(Modifier.height(20.dp))
                             CampoSoLeitura(
-                                "PERFIL DE ACESSO",
-                                roleLabel
+                                stringResource(R.string.access_profile_upper),
+                                roleAdminLabel(u.role)
                             )
                         }
                     }
@@ -172,7 +172,7 @@ fun AdminEditarUtilizadorScreen(
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Text("Guardar Alterações", color = Color.White, fontSize = 14.sp)
+                            Text(stringResource(R.string.save_changes), color = Color.White, fontSize = 14.sp)
                         }
                     }
 
@@ -182,6 +182,43 @@ fun AdminEditarUtilizadorScreen(
         }
     }
 }
+
+@Composable
+private fun labelAdminExtra(label: String): String {
+    return when (normalizarLabel(label)) {
+        "NUMERO DE ALUNO" -> stringResource(R.string.student_number_upper)
+        "CURSO" -> stringResource(R.string.course_upper)
+        "TELEMOVEL" -> stringResource(R.string.mobile_upper)
+        "AREA" -> stringResource(R.string.area_upper)
+        "ESTADO" -> stringResource(R.string.status_upper)
+        "NIPC" -> stringResource(R.string.nipc_upper)
+        "MORADA" -> stringResource(R.string.address_upper)
+        "DESCRICAO" -> stringResource(R.string.description_upper)
+        "SIGLA" -> stringResource(R.string.acronym_upper)
+        "TELEFONE" -> stringResource(R.string.phone_upper)
+        "EMAIL INSTITUCIONAL" -> stringResource(R.string.institutional_email_upper)
+        else -> label
+    }
+}
+
+@Composable
+private fun roleAdminLabel(role: String): String {
+    return when (normalizarLabel(role).replace(" ", "_")) {
+        "ALUNO" -> stringResource(R.string.role_student)
+        "DOCENTE" -> stringResource(R.string.role_teacher)
+        "ORIENTADOR", "ORIENTADOR_EMPRESA", "ORIENTADOR_DE_EMPRESA" ->
+            stringResource(R.string.company_supervisor_upper)
+        "EMPRESA" -> stringResource(R.string.role_company)
+        "ADMIN", "ADMINISTRADOR" -> stringResource(R.string.administrator_upper)
+        "INSTITUICAO" -> stringResource(R.string.institution_role)
+        else -> role.replaceFirstChar { it.uppercase() }
+    }
+}
+
+private fun normalizarLabel(label: String): String =
+    Normalizer.normalize(label.trim(), Normalizer.Form.NFD)
+        .replace(Regex("\\p{Mn}+"), "")
+        .uppercase(Locale.ROOT)
 
 @Composable
 private fun CabecalhoSeccao(titulo: String, icone: androidx.compose.ui.graphics.vector.ImageVector) {

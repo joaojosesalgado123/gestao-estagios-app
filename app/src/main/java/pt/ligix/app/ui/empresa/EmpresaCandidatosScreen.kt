@@ -15,10 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.data.repository.EmpresaRepository
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.util.SessionManager
@@ -86,7 +88,7 @@ fun EmpresaCandidatosScreen(
                         Icon(Icons.Default.ArrowBack, contentDescription = null,
                             tint = DarkBlue, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text("Voltar a Estágios", color = DarkBlue, fontSize = 13.sp)
+                        Text(stringResource(R.string.back_to_internships), color = DarkBlue, fontSize = 13.sp)
                     }
 
                     Spacer(Modifier.height(8.dp))
@@ -105,9 +107,9 @@ fun EmpresaCandidatosScreen(
                         Spacer(Modifier.height(8.dp))
                     }
 
-                    Text("Candidatos para Estágio",
+                    Text(stringResource(R.string.candidates_for_internship),
                         fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
-                    Text("Gestão de candidaturas submetidas para a vaga de estágio.",
+                    Text(stringResource(R.string.candidates_management_subtitle),
                         fontSize = 14.sp, color = Color.Gray,
                         modifier = Modifier.padding(top = 4.dp))
 
@@ -126,7 +128,7 @@ fun EmpresaCandidatosScreen(
                         ) {
                             Text(totalCandidatos.toString(),
                                 fontSize = 40.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
-                            Text("TOTAL", fontSize = 12.sp, color = Color.Gray,
+                            Text(stringResource(R.string.total_upper), fontSize = 12.sp, color = Color.Gray,
                                 letterSpacing = 1.sp)
                         }
                     }
@@ -139,7 +141,7 @@ fun EmpresaCandidatosScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("Candidatos", fontSize = 20.sp,
+                        Text(stringResource(R.string.candidates), fontSize = 20.sp,
                             fontWeight = FontWeight.Bold, color = Color.Black)
                         Box(
                             modifier = Modifier
@@ -168,7 +170,7 @@ fun EmpresaCandidatosScreen(
                             Icon(Icons.Default.PeopleOutline, contentDescription = null,
                                 tint = Color.LightGray, modifier = Modifier.size(48.dp))
                             Spacer(Modifier.height(8.dp))
-                            Text("Sem candidatos ainda", color = Color.Gray,
+                            Text(stringResource(R.string.no_candidates_yet), color = Color.Gray,
                                 fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                         }
                     } else {
@@ -242,8 +244,8 @@ fun CandidatoDetalheCard(
             if (detalhe.candidatura.status != "pendente") {
                 Spacer(Modifier.height(8.dp))
                 val (statusColor, statusText) = when (detalhe.candidatura.status) {
-                    "aceite" -> Color(0xFF2E7D32) to "APROVADO"
-                    "rejeitada" -> Color(0xFFE53935) to "REJEITADO"
+                    "aceite" -> Color(0xFF2E7D32) to stringResource(R.string.approved_upper)
+                    "rejeitada" -> Color(0xFFE53935) to stringResource(R.string.rejected_upper)
                     else -> Color.Gray to detalhe.candidatura.status.uppercase()
                 }
                 Box(
@@ -274,7 +276,7 @@ fun CandidatoDetalheCard(
                         Icon(Icons.Default.CheckCircle, contentDescription = null,
                             modifier = Modifier.size(14.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text("Aprovar", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                        Text(stringResource(R.string.approve), fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
                     }
                     OutlinedButton(
                         onClick = onRejeitar,
@@ -287,7 +289,7 @@ fun CandidatoDetalheCard(
                         Icon(Icons.Default.Cancel, contentDescription = null,
                             tint = Color(0xFFE53935), modifier = Modifier.size(14.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text("Rejeitar", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+                        Text(stringResource(R.string.reject), fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
                     }
                     OutlinedButton(
                         onClick = onVerCandidatura,
@@ -297,7 +299,7 @@ fun CandidatoDetalheCard(
                         shape = RoundedCornerShape(8.dp),
                         contentPadding = PaddingValues(horizontal = 8.dp)
                     ) {
-                        Text("Candidatura", fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = DarkBlue)
+                        Text(stringResource(R.string.application), fontWeight = FontWeight.SemiBold, fontSize = 13.sp, color = DarkBlue)
                     }
                 }
             }

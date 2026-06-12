@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -29,6 +30,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import pt.ligix.app.R
 import pt.ligix.app.ui.aluno.BolhaMensagem
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.viewmodel.MensagensViewModel
@@ -58,6 +60,9 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val mensagemErro = erroLocal ?: erro
+    val defaultFileName = stringResource(R.string.default_file_name)
+    val fileReadError = stringResource(R.string.file_read_error)
+    val fileSizeLimitError = stringResource(R.string.file_size_limit_error)
 
     val ficheiroLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let { selecionado ->
@@ -69,10 +74,10 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                 val nome = context.contentResolver.query(selecionado, null, null, null, null)?.use { cursor ->
                     val nameIndex = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
                     if (cursor.moveToFirst() && nameIndex >= 0) cursor.getString(nameIndex) else null
-                } ?: "ficheiro.pdf"
+                } ?: defaultFileName
                 when {
-                    bytes == null -> erroLocal = "Erro ao ler o ficheiro."
-                    bytes.size > 25L * 1024L * 1024L -> erroLocal = "O ficheiro não pode ultrapassar 25MB."
+                    bytes == null -> erroLocal = fileReadError
+                    bytes.size > 25L * 1024L * 1024L -> erroLocal = fileSizeLimitError
                     else -> viewModel.enviarFicheiro(bytes, nome)
                 }
             }
@@ -109,7 +114,7 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                     value = pesquisa,
                     onValueChange = { pesquisa = it },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                    placeholder = { Text("Procurar conversas ou contactos...", color = Color.Gray, fontSize = 14.sp) },
+                    placeholder = { Text(stringResource(R.string.search_conversations_contacts), color = Color.Gray, fontSize = 14.sp) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
                     trailingIcon = {
                         if (pesquisa.isNotEmpty()) {
@@ -143,9 +148,9 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                             Icon(Icons.Default.ChatBubbleOutline, contentDescription = null,
                                 tint = Color.LightGray, modifier = Modifier.size(64.dp))
                             Spacer(modifier = Modifier.height(12.dp))
-                            Text("Sem conversas ativas", color = Color.Gray,
+                            Text(stringResource(R.string.no_active_conversations), color = Color.Gray,
                                 fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
-                            Text("As mensagens aparecerão quando tiveres um estágio ativo.",
+                            Text(stringResource(R.string.messages_when_active_internship),
                                 color = Color.LightGray, fontSize = 13.sp,
                                 modifier = Modifier.padding(horizontal = 32.dp),
                                 textAlign = TextAlign.Center)
@@ -164,7 +169,7 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                                 Icon(Icons.Default.SearchOff, contentDescription = null,
                                     tint = Color.LightGray, modifier = Modifier.size(48.dp))
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Text("Sem resultados para \"$pesquisa\"", color = Color.Gray, fontSize = 14.sp)
+                                Text(stringResource(R.string.no_results_for, pesquisa), color = Color.Gray, fontSize = 14.sp)
                             }
                         }
                     } else {
@@ -199,7 +204,7 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                                                     if (ultimaMensagem.ficheiroNome != null)
                                                         "$nomeRemetente: 📎 ${ultimaMensagem.ficheiroNome}"
                                                     else "$nomeRemetente: ${ultimaMensagem.conteudo.take(40)}"
-                                                } else "Sem mensagens ainda",
+                                                } else stringResource(R.string.no_messages_yet),
                                                 fontSize = 13.sp, color = Color.Gray, maxLines = 1
                                             )
                                         }
@@ -236,7 +241,7 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = { viewModel.fecharChat() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar", tint = DarkBlue)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_back), tint = DarkBlue)
                     }
                     Box(
                         modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp)).background(DarkBlue),
@@ -248,7 +253,7 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                     Spacer(modifier = Modifier.width(10.dp))
                     Column {
                         Text(nomeEstagio, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
-                        Text("Aluno • Docente • Orientador", fontSize = 11.sp, color = Color.Gray)
+                        Text(stringResource(R.string.chat_participants_teacher), fontSize = 11.sp, color = Color.Gray)
                     }
                 }
 
@@ -263,7 +268,7 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                     if (mensagens.isEmpty()) {
                         item {
                             Box(modifier = Modifier.fillParentMaxSize(), contentAlignment = Alignment.Center) {
-                                Text("Sem mensagens ainda. Envia a primeira!",
+                                Text(stringResource(R.string.no_messages_send_first),
                                     color = Color.LightGray, fontSize = 14.sp)
                             }
                         }
@@ -272,7 +277,7 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                             BolhaMensagem(
                                 mensagem = mensagem,
                                 isMinha = mensagem.idRemetente == idUtilizador,
-                                nomeRemetente = nomesParticipantes[mensagem.idRemetente] ?: "Desconhecido",
+                                nomeRemetente = nomesParticipantes[mensagem.idRemetente] ?: stringResource(R.string.unknown_user),
                                 onAbrirFicheiro = { viewModel.abrirFicheiroMensagem(context, it) }
                             )
                         }
@@ -294,14 +299,14 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                         onClick = { ficheiroLauncher.launch("application/pdf") },
                         modifier = Modifier.size(40.dp)
                     ) {
-                        Icon(Icons.Default.AttachFile, contentDescription = "Anexar",
+                        Icon(Icons.Default.AttachFile, contentDescription = stringResource(R.string.attach),
                             tint = if (isSending) Color.LightGray else Color.Gray)
                     }
                     OutlinedTextField(
                         value = textoMensagem,
                         onValueChange = { textoMensagem = it },
                         modifier = Modifier.weight(1f),
-                        placeholder = { Text("Escreve uma mensagem...", color = Color.Gray, fontSize = 14.sp) },
+                        placeholder = { Text(stringResource(R.string.write_message), color = Color.Gray, fontSize = 14.sp) },
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedContainerColor = Color(0xFFF5F5F5), focusedContainerColor = Color(0xFFF5F5F5),
                             unfocusedBorderColor = Color.Transparent, focusedBorderColor = DarkBlue
@@ -322,7 +327,7 @@ fun OrientadorChatScreen(modifier: Modifier = Modifier) {
                             .background(if (textoMensagem.isNotBlank()) DarkBlue else Color.LightGray)
                     ) {
                         if (isSending) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
-                        else Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Enviar", tint = Color.White)
+                        else Icon(Icons.AutoMirrored.Filled.Send, contentDescription = stringResource(R.string.send), tint = Color.White)
                     }
                 }
             }

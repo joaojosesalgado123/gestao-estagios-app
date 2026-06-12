@@ -16,10 +16,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.data.repository.EmpresaRepository
 import pt.ligix.app.model.OfertaEstagio
 import pt.ligix.app.ui.auth.DarkBlue
@@ -50,8 +52,8 @@ fun EmpresaOfertasScreen(
     val erro by viewModel.erro.collectAsState()
     val feedback by viewModel.feedback.collectAsState()
 
-    var filtroSelecionado by remember { mutableStateOf("Todas as Ofertas") }
-    val filtros = listOf("Todas as Ofertas", "Ativas", "Rascunhos")
+    var filtroSelecionado by remember { mutableStateOf("") }
+    val filtros = listOf(stringResource(R.string.all_offers), stringResource(R.string.active_plural), stringResource(R.string.drafts))
 
     LaunchedEffect(Unit) { viewModel.carregarDados(context) }
 
@@ -70,18 +72,18 @@ fun EmpresaOfertasScreen(
 
             Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
 
-                Text("Gestão de Estágios",
+                Text(stringResource(R.string.internship_management),
                     fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
-                Text("Faça a curadoria das suas oportunidades ativas e em rascunho.",
+                Text(stringResource(R.string.internship_management_subtitle),
                     fontSize = 14.sp, color = Color.Gray,
                     modifier = Modifier.padding(top = 4.dp))
 
                 Spacer(Modifier.height(24.dp))
 
                 // Estatísticas
-                EmpresaEstatisticaCard("VAGAS ATIVAS", vagasAtivas.toString(), DarkBlue)
+                EmpresaEstatisticaCard(stringResource(R.string.active_vacancies_upper), vagasAtivas.toString(), DarkBlue)
                 Spacer(Modifier.height(12.dp))
-                EmpresaEstatisticaCard("CANDIDATURAS EM ANÁLISE", candidaturasPendentes.toString(), Color(0xFFBDBDBD))
+                EmpresaEstatisticaCard(stringResource(R.string.applications_under_review_upper), candidaturasPendentes.toString(), Color(0xFFBDBDBD))
 
                 Spacer(Modifier.height(24.dp))
 
@@ -97,7 +99,7 @@ fun EmpresaOfertasScreen(
                         .padding(horizontal = 16.dp, vertical = 10.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Todas as Ofertas", fontSize = 15.sp,
+                    Text(stringResource(R.string.all_offers), fontSize = 15.sp,
                         fontWeight = FontWeight.Bold, color = DarkBlue)
                 }
 
@@ -113,14 +115,14 @@ fun EmpresaOfertasScreen(
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = DarkBlue)
                     ) {
-                        Text("Atribuir Orientador", fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.assign_mentor), fontWeight = FontWeight.SemiBold)
                     }
                     Button(
                         onClick = onNovaOferta,
                         colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("Novo Estágio", color = Color.White, fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.new_internship), color = Color.White, fontWeight = FontWeight.SemiBold)
                     }
                 }
 
@@ -161,7 +163,7 @@ fun EmpresaOfertasScreen(
                             ) {
                                 Icon(
                                     Icons.Default.Close,
-                                    contentDescription = "Fechar mensagem",
+                                    contentDescription = stringResource(R.string.close_message),
                                     tint = Color.Gray,
                                     modifier = Modifier.size(16.dp)
                                 )
@@ -184,9 +186,9 @@ fun EmpresaOfertasScreen(
                         Icon(Icons.Default.WorkOff, contentDescription = null,
                             tint = Color.LightGray, modifier = Modifier.size(48.dp))
                         Spacer(Modifier.height(8.dp))
-                        Text("Sem ofertas publicadas", color = Color.Gray,
+                        Text(stringResource(R.string.no_published_offers), color = Color.Gray,
                             fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-                        Text("Cria um novo estágio para começar!", color = Color.LightGray,
+                        Text(stringResource(R.string.create_new_internship_start), color = Color.LightGray,
                             fontSize = 13.sp)
                     }
                 } else {
@@ -266,17 +268,17 @@ fun OfertaCard(
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                 ) {
-                    Text("Ver Candidatos", fontSize = 12.sp, color = Color.White)
+                    Text(stringResource(R.string.view_candidates), fontSize = 12.sp, color = Color.White)
                 }
 
                 Spacer(Modifier.weight(1f))
 
                 IconButton(onClick = onEditar, modifier = Modifier.size(36.dp)) {
-                    Icon(Icons.Default.Edit, contentDescription = "Editar",
+                    Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit),
                         tint = Color.Gray, modifier = Modifier.size(18.dp))
                 }
                 IconButton(onClick = onEliminar, modifier = Modifier.size(36.dp)) {
-                    Icon(Icons.Default.Delete, contentDescription = "Eliminar",
+                    Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.delete),
                         tint = Color.Gray, modifier = Modifier.size(18.dp))
                 }
             }

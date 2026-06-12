@@ -15,12 +15,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.common.PhoneNumberInput
 import pt.ligix.app.util.SessionManager
@@ -78,14 +80,14 @@ fun EmpresaCriarOrientadorScreen(
                 Icon(Icons.Default.ArrowBack, contentDescription = null,
                     tint = DarkBlue, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(4.dp))
-                Text("Voltar para Orientadores", color = DarkBlue, fontSize = 13.sp)
+                Text(stringResource(R.string.back_to_mentors), color = DarkBlue, fontSize = 13.sp)
             }
 
             Spacer(Modifier.height(8.dp))
 
-            Text("Criar Orientador", fontSize = 30.sp,
+            Text(stringResource(R.string.create_mentor), fontSize = 30.sp,
                 fontWeight = FontWeight.Bold, color = Color.Black)
-            Text("Crie um Orientador para a sua Empresa",
+            Text(stringResource(R.string.create_mentor_subtitle),
                 fontSize = 14.sp, color = Color.Gray,
                 modifier = Modifier.padding(top = 6.dp))
 
@@ -103,14 +105,14 @@ fun EmpresaCriarOrientadorScreen(
                         Icon(Icons.Default.Badge, contentDescription = null,
                             tint = DarkBlue, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Informação Pessoal", fontSize = 16.sp,
+                        Text(stringResource(R.string.personal_information), fontSize = 16.sp,
                             fontWeight = FontWeight.Bold, color = Color.Black)
                     }
 
                     Spacer(Modifier.height(20.dp))
 
                     // Nome
-                    Text("NOME COMPLETO", fontSize = 11.sp, color = Color.Gray,
+                    Text(stringResource(R.string.full_name_upper), fontSize = 11.sp, color = Color.Gray,
                         letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
                     Spacer(Modifier.height(6.dp))
                     OutlinedTextField(
@@ -131,7 +133,7 @@ fun EmpresaCriarOrientadorScreen(
                     Spacer(Modifier.height(16.dp))
 
                     // Email
-                    Text("ENDEREÇO DE E-MAIL", fontSize = 11.sp, color = Color.Gray,
+                    Text(stringResource(R.string.email_address_upper), fontSize = 11.sp, color = Color.Gray,
                         letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
                     Spacer(Modifier.height(6.dp))
                     OutlinedTextField(
@@ -152,7 +154,7 @@ fun EmpresaCriarOrientadorScreen(
                     Spacer(Modifier.height(16.dp))
 
                     PhoneNumberInput(
-                        label = "TELEMÓVEL",
+                        label = stringResource(R.string.mobile_upper),
                         value = telemovel,
                         onValueChange = { telemovel = it },
                         containerColor = Color(0xFFF0F0F0)
@@ -161,14 +163,14 @@ fun EmpresaCriarOrientadorScreen(
                     Spacer(Modifier.height(16.dp))
 
                     // Área
-                    Text("ÁREA DE TRABALHO", fontSize = 11.sp, color = Color.Gray,
+                    Text(stringResource(R.string.work_area_upper), fontSize = 11.sp, color = Color.Gray,
                         letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
                     Spacer(Modifier.height(6.dp))
                     OutlinedTextField(
                         value = area,
                         onValueChange = { area = it },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("ex: Informática, Design, Gestão...", color = Color.LightGray) },
+                        placeholder = { Text(stringResource(R.string.work_area_placeholder), color = Color.LightGray) },
                         shape = RoundedCornerShape(10.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = DarkBlue,
@@ -195,18 +197,18 @@ fun EmpresaCriarOrientadorScreen(
                         Icon(Icons.Default.Shield, contentDescription = null,
                             tint = DarkBlue, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Autorização e Segurança", fontSize = 16.sp,
+                        Text(stringResource(R.string.authorization_security), fontSize = 16.sp,
                             fontWeight = FontWeight.Bold, color = Color.Black)
                     }
 
                     Spacer(Modifier.height(20.dp))
 
                     // Perfil de acesso (fixo)
-                    Text("PERFIL DE ACESSO", fontSize = 11.sp, color = Color.Gray,
+                    Text(stringResource(R.string.access_profile_upper), fontSize = 11.sp, color = Color.Gray,
                         letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
                     Spacer(Modifier.height(6.dp))
                     OutlinedTextField(
-                        value = "Orientador",
+                        value = stringResource(R.string.supervisor),
                         onValueChange = {},
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(10.dp),
@@ -225,14 +227,14 @@ fun EmpresaCriarOrientadorScreen(
                     Spacer(Modifier.height(16.dp))
 
                     // Palavra-passe
-                    Text("PALAVRA-PASSE", fontSize = 11.sp, color = Color.Gray,
+                    Text(stringResource(R.string.password_upper), fontSize = 11.sp, color = Color.Gray,
                         letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
                     Spacer(Modifier.height(6.dp))
                     OutlinedTextField(
                         value = palavraPasse,
                         onValueChange = { palavraPasse = it },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Palavra-passe inicial", color = Color.LightGray) },
+                        placeholder = { Text(stringResource(R.string.initial_password), color = Color.LightGray) },
                         shape = RoundedCornerShape(10.dp),
                         visualTransformation = if (mostrarPasse) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
@@ -251,7 +253,7 @@ fun EmpresaCriarOrientadorScreen(
                         ),
                         singleLine = true
                     )
-                    Text("Mínimo de 6 caracteres.",
+                    Text(stringResource(R.string.minimum_6_chars),
                         fontSize = 12.sp, color = Color.Gray,
                         modifier = Modifier.padding(top = 6.dp))
                 }
@@ -285,7 +287,7 @@ fun EmpresaCriarOrientadorScreen(
                     Icon(Icons.Default.CheckCircle, contentDescription = null,
                         tint = Color.White, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Criar Orientador", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.create_mentor), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
 

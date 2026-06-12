@@ -13,10 +13,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.data.repository.AdminRepository
 import pt.ligix.app.viewmodel.EmpresaPendenteCard
 import pt.ligix.app.ui.auth.DarkBlue
@@ -53,14 +55,14 @@ fun AdminDashboardScreen(
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
             // Cabeçalho
             Text(
-                text = "Resumo Diário",
+                text = stringResource(R.string.daily_summary),
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkBlue
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Visão geral do ecossistema de estágios. Acompanhe as métricas essenciais e gira as pendências do dia.",
+                text = stringResource(R.string.admin_dashboard_subtitle),
                 fontSize = 14.sp,
                 color = Color.Gray,
                 lineHeight = 20.sp
@@ -70,19 +72,19 @@ fun AdminDashboardScreen(
 
 
             CardMetrica(
-                titulo = "TOTAL DE UTILIZADORES",
+                titulo = stringResource(R.string.total_users_upper),
                 valor = estatisticas?.totalUtilizadores?.toString() ?: "—",
                 corAcento = DarkBlue
             )
             Spacer(modifier = Modifier.height(12.dp))
             CardMetrica(
-                titulo = "ESTAGIÁRIOS ATIVOS",
+                titulo = stringResource(R.string.active_interns_upper),
                 valor = estatisticas?.estagiariosAtivos?.toString() ?: "—",
                 corAcento = LigixGold
             )
             Spacer(modifier = Modifier.height(12.dp))
             CardMetrica(
-                titulo = "PENDENTES",
+                titulo = stringResource(R.string.pending_upper),
                 valor = estatisticas?.empresasPendentes?.toString() ?: "—",
                 corAcento = Color(0xFFBDBDBD)
             )
@@ -91,14 +93,14 @@ fun AdminDashboardScreen(
 
             // Secção de empresas pendentes
             Text(
-                text = "Empresas Pendentes",
+                text = stringResource(R.string.pending_companies),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkBlue
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Instituições à espera de aprovação.",
+                text = stringResource(R.string.institutions_waiting_approval),
                 fontSize = 13.sp,
                 color = Color.Gray
             )
@@ -136,7 +138,7 @@ fun AdminDashboardScreen(
                         colors = CardDefaults.cardColors(containerColor = Color.White)
                     ) {
                         Text(
-                            text = "Sem empresas pendentes neste momento.",
+                            text = stringResource(R.string.no_pending_companies_now),
                             modifier = Modifier.fillMaxWidth().padding(24.dp),
                             color = Color.Gray,
                             fontSize = 14.sp
@@ -247,7 +249,7 @@ private fun CardEmpresaPendente(
                         color = Color.Black
                     )
                     Text(
-                        text = empresa.descricao ?: "Sem descrição",
+                        text = empresa.descricao ?: stringResource(R.string.no_description),
                         fontSize = 13.sp,
                         color = Color.Gray
                     )
@@ -265,7 +267,7 @@ private fun CardEmpresaPendente(
                 ) {
                     Icon(Icons.Default.Visibility, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Detalhes", color = DarkBlue, fontSize = 13.sp)
+                    Text(stringResource(R.string.view_details), color = DarkBlue, fontSize = 13.sp)
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(
@@ -277,7 +279,7 @@ private fun CardEmpresaPendente(
                 ) {
                     Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Aprovar", color = Color.White, fontSize = 13.sp)
+                    Text(stringResource(R.string.approve), color = Color.White, fontSize = 13.sp)
                 }
             }
         }

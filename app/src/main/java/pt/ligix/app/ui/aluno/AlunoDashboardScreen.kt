@@ -16,9 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import pt.ligix.app.R
 import androidx.lifecycle.viewmodel.compose.viewModel
 import pt.ligix.app.data.repository.AlunoRepository
 import pt.ligix.app.model.Candidatura
@@ -56,6 +58,12 @@ fun AlunoDashboardScreen(
     val feedbackCandidatura by viewModel.feedbackCandidatura.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     var candidaturaAConfirmar by remember { mutableStateOf<Candidatura?>(null) }
+    val saudacaoTraduzida = when (saudacao) {
+        "Bom dia" -> stringResource(R.string.good_morning)
+        "Boa tarde" -> stringResource(R.string.good_afternoon)
+        "Boa noite" -> stringResource(R.string.good_evening)
+        else -> saudacao
+    }
 
     LaunchedEffect(Unit) { viewModel.carregarDados(context) }
     LaunchedEffect(feedbackCandidatura) {
@@ -71,7 +79,7 @@ fun AlunoDashboardScreen(
             onDismissRequest = { candidaturaAConfirmar = null },
             title = {
                 Text(
-                    if (pendente) "Cancelar candidatura" else "Remover candidatura",
+                    if (pendente) stringResource(R.string.cancel_application_title) else stringResource(R.string.remove_application_title),
                     fontWeight = FontWeight.Bold,
                     color = DarkBlue
                 )
@@ -79,9 +87,9 @@ fun AlunoDashboardScreen(
             text = {
                 Text(
                     if (pendente) {
-                        "Queres cancelar a tua candidatura? Poderás voltar a candidatar-te mais tarde."
+                        stringResource(R.string.cancel_application_message)
                     } else {
-                        "Queres remover o resultado desta candidatura da tua lista?"
+                        stringResource(R.string.remove_application_message)
                     }
                 )
             },
@@ -96,12 +104,12 @@ fun AlunoDashboardScreen(
                         }
                     }
                 ) {
-                    Text(if (pendente) "Cancelar candidatura" else "Remover", color = Color.Red)
+                    Text(if (pendente) stringResource(R.string.cancel_application) else stringResource(R.string.remove), color = Color.Red)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { candidaturaAConfirmar = null }) {
-                    Text("Manter", color = Color.Gray)
+                    Text(stringResource(R.string.keep), color = Color.Gray)
                 }
             }
         )
@@ -121,7 +129,7 @@ fun AlunoDashboardScreen(
                 // Sininho com badge — fora do IconButton
                 Box(contentAlignment = Alignment.TopEnd) {
                     IconButton(onClick = onSininho) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = DarkBlue)
+                        Icon(Icons.Default.Notifications, contentDescription = stringResource(R.string.cd_notifications), tint = DarkBlue)
                     }
                     if (historicoNotificacoes.isNotEmpty()) {
                         Box(
@@ -149,8 +157,8 @@ fun AlunoDashboardScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                Text("$saudacao, $nome", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
-                Text("Aqui está o resumo da tua jornada de estágio hoje.", fontSize = 14.sp, color = Color.Gray, lineHeight = 20.sp)
+                Text("$saudacaoTraduzida, $nome", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
+                Text(stringResource(R.string.student_dashboard_subtitle), fontSize = 14.sp, color = Color.Gray, lineHeight = 20.sp)
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -162,8 +170,8 @@ fun AlunoDashboardScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
-                    Text("O meu Estado", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                    Text("Acompanhamento das tuas candidaturas ativas", fontSize = 13.sp, color = Color.Gray)
+                    Text(stringResource(R.string.my_status), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                    Text(stringResource(R.string.active_applications_tracking), fontSize = 13.sp, color = Color.Gray)
                     Spacer(modifier = Modifier.height(16.dp))
 
                     if (isLoading) {
@@ -172,8 +180,8 @@ fun AlunoDashboardScreen(
                         Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Default.Inbox, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(48.dp))
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Sem Candidaturas Efetuadas", color = Color.Gray, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-                            Text("Procura estágios e submete a tua candidatura!", color = Color.LightGray, fontSize = 12.sp)
+                            Text(stringResource(R.string.no_applications_made), color = Color.Gray, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.search_internships_submit), color = Color.LightGray, fontSize = 12.sp)
                         }
                     } else {
                         candidaturas.forEach { item ->
@@ -197,19 +205,19 @@ fun AlunoDashboardScreen(
                 Button(onClick = onProcurarEstagios, modifier = Modifier.fillMaxWidth().height(56.dp), colors = ButtonDefaults.buttonColors(containerColor = DarkBlue), shape = RoundedCornerShape(12.dp)) {
                     Icon(Icons.Default.Search, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Procurar Estágios", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.search_internships), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedButton(onClick = onRegistarAtividade, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.outlinedButtonColors(contentColor = DarkBlue)) {
                     Icon(Icons.Default.Edit, contentDescription = null, tint = DarkBlue)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Registar Atividade", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = DarkBlue)
+                    Text(stringResource(R.string.register_activity), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = DarkBlue)
                 }
                 Spacer(modifier = Modifier.height(12.dp))
                 OutlinedButton(onClick = onMensagens, modifier = Modifier.fillMaxWidth().height(56.dp), shape = RoundedCornerShape(12.dp), colors = ButtonDefaults.outlinedButtonColors(contentColor = DarkBlue)) {
                     Icon(Icons.Default.Message, contentDescription = null, tint = DarkBlue)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Mensagens", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = DarkBlue)
+                    Text(stringResource(R.string.messages), fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = DarkBlue)
                 }
             }
 
@@ -223,13 +231,13 @@ fun AlunoDashboardScreen(
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text("PROGRESSO DE HORAS", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.7f), letterSpacing = 1.sp)
+                        Text(stringResource(R.string.hours_progress_upper), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White.copy(alpha = 0.7f), letterSpacing = 1.sp)
                         Icon(Icons.Default.EmojiEvents, contentDescription = null, tint = LigixGold, modifier = Modifier.size(28.dp))
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     val progresso = if (totalHoras > 0) horasAcumuladas.toFloat() / totalHoras.toFloat() else 0f
                     Text("$horasAcumuladas / ${if (totalHoras > 0) totalHoras else "—"}", fontSize = 36.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                    Text("Horas acumuladas este semestre", fontSize = 13.sp, color = Color.White.copy(alpha = 0.7f))
+                    Text(stringResource(R.string.accumulated_hours_semester), fontSize = 13.sp, color = Color.White.copy(alpha = 0.7f))
                     Spacer(modifier = Modifier.height(12.dp))
                     LinearProgressIndicator(
                         progress = { progresso.coerceIn(0f, 1f) },
@@ -284,7 +292,7 @@ fun CandidaturaCard(
             ) {
                 Icon(
                     Icons.Default.Delete,
-                    contentDescription = "Remover candidatura",
+                    contentDescription = stringResource(R.string.remove_application_cd),
                     tint = Color.White
                 )
             }
@@ -299,10 +307,10 @@ fun CandidaturaCard(
 @Composable
 private fun CandidaturaCardContent(candidatura: Candidatura, oferta: OfertaEstagio?) {
     val (statusLabel, statusColor) = when (candidatura.status) {
-        "pendente" -> "EM ANÁLISE" to Color(0xFFF5A623)
-        "aceite" -> "ACEITE" to DarkBlue
-        "rejeitada" -> "REJEITADA" to Color(0xFFE53935)
-        "cancelada" -> "CANCELADA" to Color(0xFF9E9E9E)
+        "pendente" -> stringResource(R.string.application_status_pending_upper) to Color(0xFFF5A623)
+        "aceite" -> stringResource(R.string.application_status_accepted_upper) to DarkBlue
+        "rejeitada" -> stringResource(R.string.application_status_rejected_upper) to Color(0xFFE53935)
+        "cancelada" -> stringResource(R.string.application_status_canceled_upper) to Color(0xFF9E9E9E)
         else -> candidatura.status.uppercase() to Color.Gray
     }
 
@@ -315,12 +323,12 @@ private fun CandidaturaCardContent(candidatura: Candidatura, oferta: OfertaEstag
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(oferta?.titulo ?: "Oferta", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+            Text(oferta?.titulo ?: stringResource(R.string.offer), fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
             Text(
                 text = buildString {
                     oferta?.area?.let { append(it) }
                     oferta?.localizacao?.let { if (isNotEmpty()) append(" • "); append(it) }
-                    if (isEmpty()) append("Estágio")
+                    if (isEmpty()) append(stringResource(R.string.internship))
                 },
                 fontSize = 12.sp, color = Color.Gray
             )

@@ -16,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -65,7 +66,7 @@ fun LoginScreen(
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.logo_ligix),
-                    contentDescription = "Ligix",
+                    contentDescription = stringResource(R.string.cd_ligix),
                     tint = Color.Unspecified,
                     modifier = Modifier.height(32.dp)
                 )
@@ -99,7 +100,7 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Bem-vindo",
+                        text = stringResource(R.string.login_title),
                         fontSize = 28.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
@@ -108,7 +109,7 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Aceda à sua conta InternConnect",
+                        text = stringResource(R.string.login_subtitle),
                         fontSize = 14.sp,
                         color = TextGrey
                     )
@@ -117,7 +118,7 @@ fun LoginScreen(
 
                     // Campo Email
                     Text(
-                        text = "E-MAIL INSTITUCIONAL",
+                        text = stringResource(R.string.institutional_email_upper),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black,
@@ -150,7 +151,7 @@ fun LoginScreen(
 
                     // Campo Password
                     Text(
-                        text = "PALAVRA-PASSE",
+                        text = stringResource(R.string.password_upper),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black,
@@ -180,7 +181,7 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Esqueci-me da palavra-passe",
+                        text = stringResource(R.string.forgot_password),
                         color = LigixGold,
                         fontSize = 13.sp,
                         modifier = Modifier
@@ -216,7 +217,7 @@ fun LoginScreen(
                             )
                         } else {
                             Text(
-                                text = "Entrar",
+                                text = stringResource(R.string.login_button),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -230,7 +231,7 @@ fun LoginScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         HorizontalDivider(modifier = Modifier.weight(1f))
-                        Text("  OU  ", color = TextGrey, fontSize = 12.sp)
+                        Text("  ${stringResource(R.string.or)}  ", color = TextGrey, fontSize = 12.sp)
                         HorizontalDivider(modifier = Modifier.weight(1f))
                     }
 
@@ -248,7 +249,7 @@ fun LoginScreen(
                         border = null
                     ) {
                         Text(
-                            text = "Criar Conta",
+                            text = stringResource(R.string.create_account),
                             color = DarkBlue,
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold
@@ -258,7 +259,7 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = "Ao continuar, concorda com os nossos Termos de Serviço e Política de Privacidade.",
+                        text = stringResource(R.string.terms_privacy),
                         fontSize = 11.sp,
                         color = TextGrey,
                         textAlign = TextAlign.Center,
@@ -279,12 +280,12 @@ fun LoginScreen(
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "Interessado em parcerias corporativas?",
+                    text = stringResource(R.string.company_partnership_prompt),
                     fontSize = 13.sp,
                     color = TextGrey
                 )
                 Text(
-                    text = "Saiba mais como empresa",
+                    text = stringResource(R.string.learn_more_company),
                     fontSize = 13.sp,
                     color = DarkBlue,
                     fontWeight = FontWeight.Bold,

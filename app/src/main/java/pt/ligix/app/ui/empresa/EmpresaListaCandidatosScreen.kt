@@ -16,10 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.data.repository.EmpresaRepository
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.auth.LigixGold
@@ -63,9 +65,9 @@ fun EmpresaListaCandidatosScreen(
 
             Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
 
-                Text("Candidatos", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
+                Text(stringResource(R.string.candidates), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
                 Text(
-                    "Gestão de candidaturas submetidas para a vaga de estágio.",
+                    stringResource(R.string.candidates_management_subtitle),
                     fontSize = 14.sp, color = Color.Gray,
                     modifier = Modifier.padding(top = 4.dp)
                 )
@@ -87,13 +89,13 @@ fun EmpresaListaCandidatosScreen(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(totalCandidatos.toString(),
                                 fontSize = 36.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
-                            Text("TOTAL", fontSize = 11.sp, color = Color.Gray, letterSpacing = 0.5.sp)
+                            Text(stringResource(R.string.total_upper), fontSize = 11.sp, color = Color.Gray, letterSpacing = 0.5.sp)
                         }
                         Divider(modifier = Modifier.height(40.dp).width(1.dp), color = Color(0xFFEEEEEE))
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(emRevisao.toString(),
                                 fontSize = 36.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
-                            Text("EM REVISÃO", fontSize = 11.sp, color = Color.Gray, letterSpacing = 0.5.sp)
+                            Text(stringResource(R.string.under_review_upper), fontSize = 11.sp, color = Color.Gray, letterSpacing = 0.5.sp)
                         }
                     }
                 }
@@ -113,14 +115,14 @@ fun EmpresaListaCandidatosScreen(
                         Icon(Icons.Default.PeopleAlt, contentDescription = null,
                             tint = Color.LightGray, modifier = Modifier.size(48.dp))
                         Spacer(Modifier.height(8.dp))
-                        Text("Sem candidaturas", color = Color.Gray,
+                        Text(stringResource(R.string.no_applications), color = Color.Gray,
                             fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                     }
                 } else {
 
                     // ── NOVOS CANDIDATOS ──
                     if (pendentes.isNotEmpty()) {
-                        ListaSecaoHeader("Novos Candidatos", pendentes.size, LigixGold)
+                        ListaSecaoHeader(stringResource(R.string.new_candidates), pendentes.size, LigixGold)
                         Spacer(Modifier.height(16.dp))
                         pendentes.forEach { c ->
                             ListaCandidatoCardNovo(
@@ -136,7 +138,7 @@ fun EmpresaListaCandidatosScreen(
 
                     // ── ACEITES ──
                     if (aceites.isNotEmpty()) {
-                        ListaSecaoHeader("Aceites", aceites.size, Color(0xFF388E3C))
+                        ListaSecaoHeader(stringResource(R.string.accepted_plural), aceites.size, Color(0xFF388E3C))
                         Spacer(Modifier.height(16.dp))
                         aceites.forEach { c ->
                             ListaCandidatoCardSimples(
@@ -150,7 +152,7 @@ fun EmpresaListaCandidatosScreen(
 
                     // ── REJEITADOS ──
                     if (rejeitados.isNotEmpty()) {
-                        ListaSecaoHeader("Rejeitados", rejeitados.size, Color(0xFF9E9E9E))
+                        ListaSecaoHeader(stringResource(R.string.rejected_plural), rejeitados.size, Color(0xFF9E9E9E))
                         Spacer(Modifier.height(16.dp))
                         rejeitados.forEach { c ->
                             ListaCandidatoCardSimples(
@@ -242,7 +244,7 @@ fun ListaCandidatoCardNovo(
                     Icon(Icons.Default.CheckCircle, contentDescription = null,
                         tint = Color.White, modifier = Modifier.size(15.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("Aprovar", color = Color.White, fontSize = 13.sp)
+                    Text(stringResource(R.string.approve), color = Color.White, fontSize = 13.sp)
                 }
                 OutlinedButton(
                     onClick = onRejeitar, modifier = Modifier.weight(1f),
@@ -254,14 +256,14 @@ fun ListaCandidatoCardNovo(
                     Icon(Icons.Default.Cancel, contentDescription = null,
                         tint = Color.Red, modifier = Modifier.size(15.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("Rejeitar", color = Color.Red, fontSize = 13.sp)
+                    Text(stringResource(R.string.reject), color = Color.Red, fontSize = 13.sp)
                 }
                 OutlinedButton(
                     onClick = onVerCandidatura, modifier = Modifier.weight(1f),
                     shape = RoundedCornerShape(10.dp),
                     contentPadding = PaddingValues(vertical = 10.dp)
                 ) {
-                    Text("Candidatura", fontSize = 13.sp)
+                    Text(stringResource(R.string.application), fontSize = 13.sp)
                 }
             }
         }
@@ -304,7 +306,7 @@ fun ListaCandidatoCardSimples(
 
             OutlinedButton(onClick = onVerCandidatura, modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(10.dp)) {
-                Text("Candidatura", fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                Text(stringResource(R.string.application), fontSize = 13.sp, fontWeight = FontWeight.Medium)
             }
         }
     }

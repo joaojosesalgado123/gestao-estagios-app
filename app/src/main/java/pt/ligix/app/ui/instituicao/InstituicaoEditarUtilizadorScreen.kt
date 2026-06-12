@@ -14,10 +14,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.common.PhoneNumberInput
 import pt.ligix.app.ui.common.dismissDropdownsOnOutsideTap
@@ -75,8 +77,8 @@ fun InstituicaoEditarUtilizadorScreen(
     }
 
     val roleLabel = when (utilizador.role) {
-        "aluno" -> "Aluno"
-        "docente" -> "Docente"
+        "aluno" -> stringResource(R.string.student)
+        "docente" -> stringResource(R.string.teacher)
         else -> utilizador.role.replaceFirstChar { it.uppercase() }
     }
 
@@ -91,7 +93,7 @@ fun InstituicaoEditarUtilizadorScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onVoltar) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Voltar", tint = DarkBlue)
+                Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back), tint = DarkBlue)
             }
             Text("LIGIX", color = DarkBlue, fontSize = 18.sp,
                 fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
@@ -99,9 +101,9 @@ fun InstituicaoEditarUtilizadorScreen(
 
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
             Spacer(Modifier.height(8.dp))
-            Text("Editar Registo de Acesso", fontSize = 26.sp,
+            Text(stringResource(R.string.edit_access_record), fontSize = 26.sp,
                 fontWeight = FontWeight.Bold, color = Color.Black)
-            Text("Ajuste as credenciais para este membro do ecossistema académico.",
+            Text(stringResource(R.string.edit_access_record_short_subtitle),
                 fontSize = 14.sp, color = Color.Gray,
                 modifier = Modifier.padding(top = 6.dp))
 
@@ -126,14 +128,14 @@ fun InstituicaoEditarUtilizadorScreen(
                         Icon(Icons.Default.Badge, contentDescription = null,
                             tint = DarkBlue, modifier = Modifier.size(22.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Informação Pessoal", fontSize = 18.sp,
+                        Text(stringResource(R.string.personal_information), fontSize = 18.sp,
                             fontWeight = FontWeight.Bold, color = Color.Black)
                     }
                     Spacer(Modifier.height(16.dp))
 
-                    EditarCampo("NOME COMPLETO", editNome) { editNome = it }
+                    EditarCampo(stringResource(R.string.full_name_upper), editNome) { editNome = it }
                     Spacer(Modifier.height(12.dp))
-                    EditarCampoReadOnly("ENDEREÇO DE E-MAIL", utilizador.email)
+                    EditarCampoReadOnly(stringResource(R.string.email_address_upper), utilizador.email)
                 }
             }
 
@@ -153,16 +155,16 @@ fun InstituicaoEditarUtilizadorScreen(
                                 Icon(Icons.Default.School, contentDescription = null,
                                     tint = DarkBlue, modifier = Modifier.size(22.dp))
                                 Spacer(Modifier.width(8.dp))
-                                Text("Dados Académicos", fontSize = 18.sp,
+                                Text(stringResource(R.string.academic_data), fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold, color = Color.Black)
                             }
                             Spacer(Modifier.height(16.dp))
-                            EditarCampo("NÚMERO DE ALUNO", editNumeroAluno) { editNumeroAluno = it }
+                            EditarCampo(stringResource(R.string.student_number_upper), editNumeroAluno) { editNumeroAluno = it }
                             Spacer(Modifier.height(12.dp))
-                            EditarCampo("CURSO", editCurso) { editCurso = it }
+                            EditarCampo(stringResource(R.string.course_upper), editCurso) { editCurso = it }
                             Spacer(Modifier.height(12.dp))
                             PhoneNumberInput(
-                                label = "TELEMÓVEL",
+                                label = stringResource(R.string.mobile_upper),
                                 value = editTelemovel,
                                 onValueChange = { editTelemovel = it },
                                 containerColor = androidx.compose.ui.graphics.Color(0xFFF0F0F0),
@@ -184,14 +186,14 @@ fun InstituicaoEditarUtilizadorScreen(
                                 Icon(Icons.Default.Work, contentDescription = null,
                                     tint = DarkBlue, modifier = Modifier.size(22.dp))
                                 Spacer(Modifier.width(8.dp))
-                                Text("Dados Profissionais", fontSize = 18.sp,
+                                Text(stringResource(R.string.professional_data), fontSize = 18.sp,
                                     fontWeight = FontWeight.Bold, color = Color.Black)
                             }
                             Spacer(Modifier.height(16.dp))
-                            EditarCampo("ÁREA", editArea) { editArea = it }
+                            EditarCampo(stringResource(R.string.area_upper), editArea) { editArea = it }
                             Spacer(Modifier.height(12.dp))
                             PhoneNumberInput(
-                                label = "TELEMÓVEL",
+                                label = stringResource(R.string.mobile_upper),
                                 value = editTelemovel,
                                 onValueChange = { editTelemovel = it },
                                 containerColor = androidx.compose.ui.graphics.Color(0xFFF0F0F0),
@@ -217,11 +219,11 @@ fun InstituicaoEditarUtilizadorScreen(
                         Icon(Icons.Default.Security, contentDescription = null,
                             tint = DarkBlue, modifier = Modifier.size(22.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Autorização e Segurança", fontSize = 18.sp,
+                        Text(stringResource(R.string.authorization_security), fontSize = 18.sp,
                             fontWeight = FontWeight.Bold, color = Color.Black)
                     }
                     Spacer(Modifier.height(16.dp))
-                    EditarCampoReadOnly("PERFIL DE ACESSO", roleLabel)
+                    EditarCampoReadOnly(stringResource(R.string.access_profile_upper), roleLabel)
                 }
             }
 
@@ -252,7 +254,7 @@ fun InstituicaoEditarUtilizadorScreen(
                     Icon(Icons.Default.CheckCircle, contentDescription = null,
                         modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Editar Registo", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.edit_record), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
             Spacer(Modifier.height(32.dp))

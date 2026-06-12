@@ -15,10 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.data.repository.EmpresaRepository
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.auth.LigixGold
@@ -54,9 +56,9 @@ fun EmpresaDetalhesCandidaturaScreen(
     val iniciais = nomeAluno.split(" ").mapNotNull { it.firstOrNull()?.toString() }.take(2).joinToString("")
 
     val (statusColor, statusText) = when (candidatura?.status) {
-        "aceite" -> Color(0xFF2E7D32) to "APROVADO"
-        "rejeitada" -> Color(0xFFE53935) to "REJEITADO"
-        "pendente" -> LigixGold to "EM AVALIAÇÃO"
+        "aceite" -> Color(0xFF2E7D32) to stringResource(R.string.approved_upper)
+        "rejeitada" -> Color(0xFFE53935) to stringResource(R.string.rejected_upper)
+        "pendente" -> LigixGold to stringResource(R.string.under_evaluation_upper)
         else -> Color.Gray to (candidatura?.status?.uppercase() ?: "")
     }
 
@@ -91,7 +93,7 @@ fun EmpresaDetalhesCandidaturaScreen(
                     Icon(Icons.Default.ArrowBack, contentDescription = null,
                         tint = DarkBlue, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("Voltar", color = DarkBlue, fontSize = 13.sp)
+                    Text(stringResource(R.string.back), color = DarkBlue, fontSize = 13.sp)
                 }
 
                 Spacer(Modifier.height(16.dp))
@@ -152,14 +154,14 @@ fun EmpresaDetalhesCandidaturaScreen(
                 Spacer(Modifier.height(20.dp))
 
                 // Documentos Anexos
-                Text("Documentos Anexos", fontSize = 18.sp,
+                Text(stringResource(R.string.attached_documents), fontSize = 18.sp,
                     fontWeight = FontWeight.Bold, color = DarkBlue)
 
                 Spacer(Modifier.height(12.dp))
 
                 candidatura?.cvFicheiro?.let { url ->
                     DocumentoAnexoCard(
-                        titulo = "Currículo",
+                        titulo = stringResource(R.string.curriculum),
                         subtitulo = "PDF",
                         icon = Icons.Default.Description,
                         onDownload = { viewModel.abrirFicheiro(context, url) }
@@ -167,8 +169,8 @@ fun EmpresaDetalhesCandidaturaScreen(
                     Spacer(Modifier.height(10.dp))
                 } ?: run {
                     DocumentoAnexoCard(
-                        titulo = "Currículo",
-                        subtitulo = "Não anexado",
+                        titulo = stringResource(R.string.curriculum),
+                        subtitulo = stringResource(R.string.not_attached_m),
                         icon = Icons.Default.Description,
                         onDownload = null
                     )
@@ -177,15 +179,15 @@ fun EmpresaDetalhesCandidaturaScreen(
 
                 candidatura?.cartaMotivacaoFicheiro?.let { url ->
                     DocumentoAnexoCard(
-                        titulo = "Carta de Motivação",
+                        titulo = stringResource(R.string.motivation_letter),
                         subtitulo = "PDF",
                         icon = Icons.Default.School,
                         onDownload = { viewModel.abrirFicheiro(context, url) }
                     )
                 } ?: run {
                     DocumentoAnexoCard(
-                        titulo = "Carta de Motivação",
-                        subtitulo = "Não anexada",
+                        titulo = stringResource(R.string.motivation_letter),
+                        subtitulo = stringResource(R.string.not_attached_f),
                         icon = Icons.Default.School,
                         onDownload = null
                     )
@@ -194,7 +196,7 @@ fun EmpresaDetalhesCandidaturaScreen(
                 Spacer(Modifier.height(20.dp))
 
                 // A candidatar-se a
-                Text("A CANDIDATAR-SE A", fontSize = 11.sp, color = Color.Gray,
+                Text(stringResource(R.string.applying_to_upper), fontSize = 11.sp, color = Color.Gray,
                     letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
                 Spacer(Modifier.height(8.dp))
                 Card(
@@ -238,14 +240,14 @@ fun EmpresaDetalhesCandidaturaScreen(
                 Spacer(Modifier.height(20.dp))
 
                 // Notas internas
-                Text("NOTAS", fontSize = 11.sp, color = Color.Gray,
+                Text(stringResource(R.string.notes_upper), fontSize = 11.sp, color = Color.Gray,
                     letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
                 Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
                     value = notas,
                     onValueChange = { notas = it },
                     modifier = Modifier.fillMaxWidth().height(100.dp),
-                    placeholder = { Text("Adicione notas internas sobre este candidato...", color = Color.LightGray) },
+                    placeholder = { Text(stringResource(R.string.internal_notes_placeholder), color = Color.LightGray) },
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = DarkBlue,
@@ -262,7 +264,7 @@ fun EmpresaDetalhesCandidaturaScreen(
                     shape = RoundedCornerShape(10.dp),
                     enabled = notas != notasBD
                 ) {
-                    Text(if (notasGuardadas) "Notas guardadas ✓" else "Guardar Notas",
+                    Text(if (notasGuardadas) "${stringResource(R.string.notes_saved)} ✓" else stringResource(R.string.save_notes),
                         fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                 }
 
@@ -284,7 +286,7 @@ fun EmpresaDetalhesCandidaturaScreen(
                             border = androidx.compose.foundation.BorderStroke(1.dp, Color.Red),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Red)
                         ) {
-                            Text("Rejeitar Candidatura", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                            Text(stringResource(R.string.reject_application), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                         }
                         Button(
                             onClick = {
@@ -295,7 +297,7 @@ fun EmpresaDetalhesCandidaturaScreen(
                             colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
                             shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text("Aceitar Aluno", fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                            Text(stringResource(R.string.accept_student), fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                         }
                     }
                 }

@@ -15,11 +15,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.flow.first
+import pt.ligix.app.R
 import pt.ligix.app.data.repository.EmpresaRepository
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.auth.LigixGold
@@ -59,9 +61,9 @@ fun OrientadorHomeScreen(
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
 
             // Saudação
-            Text("Olá, $nomeOrientador",
+            Text(stringResource(R.string.docente_home_greeting, nomeOrientador),
                 fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
-            Text("Bem-vindo ao seu painel de curadoria académica. Aqui está o resumo de hoje.",
+            Text(stringResource(R.string.docente_home_subtitle),
                 fontSize = 14.sp, color = Color.Gray,
                 modifier = Modifier.padding(top = 6.dp))
 
@@ -74,17 +76,17 @@ fun OrientadorHomeScreen(
                 )
             } else {
                 // Cards de estatísticas
-                OrientadorStatCard("ORIENTANDOS ATIVOS", orientandosAtivos.toString(), DarkBlue)
+                OrientadorStatCard(stringResource(R.string.active_orientees_upper), orientandosAtivos.toString(), DarkBlue)
                 Spacer(Modifier.height(12.dp))
-                OrientadorStatCard("ATIVIDADES ESTA SEMANA", revisoesPendentes.toString(), LigixGold)
+                OrientadorStatCard(stringResource(R.string.activities_this_week_upper), revisoesPendentes.toString(), LigixGold)
                 Spacer(Modifier.height(12.dp))
-                OrientadorStatCard("AVALIAÇÕES EM FALTA", avaliacoesEmFalta.toString(), Color(0xFFBDBDBD))
+                OrientadorStatCard(stringResource(R.string.missing_evaluations_upper), avaliacoesEmFalta.toString(), Color(0xFFBDBDBD))
             }
 
             Spacer(Modifier.height(32.dp))
 
             // Atividade Recente
-            Text("Atividade Recente", fontSize = 20.sp,
+            Text(stringResource(R.string.recent_activity), fontSize = 20.sp,
                 fontWeight = FontWeight.Bold, color = DarkBlue)
 
             Spacer(Modifier.height(12.dp))
@@ -97,7 +99,7 @@ fun OrientadorHomeScreen(
                     Icon(Icons.Default.Inbox, contentDescription = null,
                         tint = Color.LightGray, modifier = Modifier.size(48.dp))
                     Spacer(Modifier.height(8.dp))
-                    Text("Sem atividade recente", color = Color.Gray,
+                    Text(stringResource(R.string.no_recent_activity), color = Color.Gray,
                         fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                 }
             } else {
@@ -131,10 +133,7 @@ fun OrientadorHomeScreen(
                             Spacer(Modifier.width(14.dp))
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    buildString {
-                                        append(nomeAluno)
-                                        append(" registou uma atividade")
-                                    },
+                                    stringResource(R.string.student_registered_activity, nomeAluno),
                                     fontSize = 13.sp, color = Color.Black,
                                     fontWeight = FontWeight.SemiBold, lineHeight = 18.sp
                                 )
@@ -150,7 +149,7 @@ fun OrientadorHomeScreen(
                             }
                             Spacer(Modifier.width(8.dp))
                             IconButton(onClick = { onVerDiario(idEstagio, nomeAluno) }) {
-                                Icon(Icons.Default.RemoveRedEye, contentDescription = "Ver atividades",
+                                Icon(Icons.Default.RemoveRedEye, contentDescription = stringResource(R.string.view_activities),
                                     tint = DarkBlue, modifier = Modifier.size(24.dp))
                             }
                         }

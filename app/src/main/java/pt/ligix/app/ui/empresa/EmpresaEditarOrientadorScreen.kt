@@ -14,10 +14,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.common.PhoneNumberInput
 import pt.ligix.app.viewmodel.EmpresaEditarOrientadorViewModel
@@ -72,14 +74,14 @@ fun EmpresaEditarOrientadorScreen(
                 Icon(Icons.Default.ArrowBack, contentDescription = null,
                     tint = DarkBlue, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(4.dp))
-                Text("Voltar para Orientadores", color = DarkBlue, fontSize = 13.sp)
+                Text(stringResource(R.string.back_to_mentors), color = DarkBlue, fontSize = 13.sp)
             }
 
             Spacer(Modifier.height(8.dp))
 
-            Text("Editar Orientador", fontSize = 30.sp,
+            Text(stringResource(R.string.edit_mentor), fontSize = 30.sp,
                 fontWeight = FontWeight.Bold, color = Color.Black)
-            Text("Edite os dados do orientador da sua Empresa",
+            Text(stringResource(R.string.edit_mentor_subtitle),
                 fontSize = 14.sp, color = Color.Gray,
                 modifier = Modifier.padding(top = 6.dp))
 
@@ -97,14 +99,14 @@ fun EmpresaEditarOrientadorScreen(
                         Icon(Icons.Default.Badge, contentDescription = null,
                             tint = DarkBlue, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Informação Pessoal", fontSize = 16.sp,
+                        Text(stringResource(R.string.personal_information), fontSize = 16.sp,
                             fontWeight = FontWeight.Bold, color = Color.Black)
                     }
 
                     Spacer(Modifier.height(20.dp))
 
                     // Nome
-                    Text("NOME COMPLETO", fontSize = 11.sp, color = Color.Gray,
+                    Text(stringResource(R.string.full_name_upper), fontSize = 11.sp, color = Color.Gray,
                         letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
                     Spacer(Modifier.height(6.dp))
                     OutlinedTextField(
@@ -124,7 +126,7 @@ fun EmpresaEditarOrientadorScreen(
                     Spacer(Modifier.height(16.dp))
 
                     // Email
-                    Text("ENDEREÇO DE E-MAIL", fontSize = 11.sp, color = Color.Gray,
+                    Text(stringResource(R.string.email_address_upper), fontSize = 11.sp, color = Color.Gray,
                         letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
                     Spacer(Modifier.height(6.dp))
                     OutlinedTextField(
@@ -144,7 +146,7 @@ fun EmpresaEditarOrientadorScreen(
                     Spacer(Modifier.height(16.dp))
 
                     PhoneNumberInput(
-                        label = "TELEMÓVEL",
+                        label = stringResource(R.string.mobile_upper),
                         value = telemovel,
                         onValueChange = { telemovel = it },
                         containerColor = Color(0xFFF0F0F0)
@@ -153,14 +155,14 @@ fun EmpresaEditarOrientadorScreen(
                     Spacer(Modifier.height(16.dp))
 
                     // Área
-                    Text("ÁREA DE TRABALHO", fontSize = 11.sp, color = Color.Gray,
+                    Text(stringResource(R.string.work_area_upper), fontSize = 11.sp, color = Color.Gray,
                         letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
                     Spacer(Modifier.height(6.dp))
                     OutlinedTextField(
                         value = area,
                         onValueChange = { area = it },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("ex: Informática, Design, Gestão...", color = Color.LightGray) },
+                        placeholder = { Text(stringResource(R.string.work_area_placeholder), color = Color.LightGray) },
                         shape = RoundedCornerShape(10.dp),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = DarkBlue,
@@ -187,18 +189,18 @@ fun EmpresaEditarOrientadorScreen(
                         Icon(Icons.Default.Shield, contentDescription = null,
                             tint = DarkBlue, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Autorização e Segurança", fontSize = 16.sp,
+                        Text(stringResource(R.string.authorization_security), fontSize = 16.sp,
                             fontWeight = FontWeight.Bold, color = Color.Black)
                     }
 
                     Spacer(Modifier.height(20.dp))
 
                     // Perfil de acesso (fixo)
-                    Text("PERFIL DE ACESSO", fontSize = 11.sp, color = Color.Gray,
+                    Text(stringResource(R.string.access_profile_upper), fontSize = 11.sp, color = Color.Gray,
                         letterSpacing = 0.5.sp, fontWeight = FontWeight.Medium)
                     Spacer(Modifier.height(6.dp))
                     OutlinedTextField(
-                        value = "Orientador",
+                        value = stringResource(R.string.supervisor),
                         onValueChange = {},
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(10.dp),
@@ -214,7 +216,7 @@ fun EmpresaEditarOrientadorScreen(
                         singleLine = true
                     )
 
-                    Text("A palavra-passe deve ser alterada pelo próprio orientador através da recuperação de acesso.",
+                    Text(stringResource(R.string.password_change_note),
                         fontSize = 12.sp, color = Color.Gray,
                         modifier = Modifier.padding(top = 6.dp))
                 }
@@ -248,7 +250,7 @@ fun EmpresaEditarOrientadorScreen(
                     Icon(Icons.Default.Save, contentDescription = null,
                         tint = Color.White, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Guardar Alterações", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.save_changes), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
 

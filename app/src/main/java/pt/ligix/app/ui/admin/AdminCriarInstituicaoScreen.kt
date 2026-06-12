@@ -31,9 +31,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.data.repository.AdminRepository
 import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.ui.auth.DarkBlue
@@ -97,19 +99,19 @@ fun AdminCriarInstituicaoScreen(
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(Modifier.width(4.dp))
-                Text("Voltar para Utilizadores", color = DarkBlue, fontSize = 13.sp)
+                Text(stringResource(R.string.back_to_users), color = DarkBlue, fontSize = 13.sp)
             }
 
             Spacer(Modifier.height(8.dp))
 
             Text(
-                text = "Criar Instituição",
+                text = stringResource(R.string.create_institution),
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
             )
             Text(
-                text = "Crie uma conta institucional para gerir alunos e docentes da escola.",
+                text = stringResource(R.string.create_institution_subtitle),
                 fontSize = 14.sp,
                 color = Color.Gray,
                 modifier = Modifier.padding(top = 6.dp)
@@ -124,7 +126,7 @@ fun AdminCriarInstituicaoScreen(
                 elevation = CardDefaults.cardElevation(2.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
-                    CabecalhoFormulario("Dados da instituição", Icons.Default.School)
+                    CabecalhoFormulario(stringResource(R.string.institution_data), Icons.Default.School)
 
                     Spacer(Modifier.height(20.dp))
 
@@ -147,17 +149,17 @@ fun AdminCriarInstituicaoScreen(
                     Spacer(Modifier.height(16.dp))
 
                     CampoFormulario(
-                        label = "NOME DA INSTITUIÇÃO",
+                        label = stringResource(R.string.institution_name_upper),
                         value = nome,
                         onValueChange = { nome = it },
-                        placeholder = "Escola Secundária de Exemplo",
+                        placeholder = stringResource(R.string.school_name_placeholder),
                         leadingIcon = Icons.Default.School
                     )
 
                     Spacer(Modifier.height(16.dp))
 
                     CampoFormulario(
-                        label = "SIGLA",
+                        label = stringResource(R.string.acronym_upper),
                         value = sigla,
                         onValueChange = { sigla = it.uppercase() },
                         placeholder = "ESE",
@@ -167,10 +169,10 @@ fun AdminCriarInstituicaoScreen(
                     Spacer(Modifier.height(16.dp))
 
                     CampoFormulario(
-                        label = "EMAIL INSTITUCIONAL",
+                        label = stringResource(R.string.institutional_email_upper),
                         value = email,
                         onValueChange = { email = it },
-                        placeholder = "secretaria@escola.pt",
+                        placeholder = stringResource(R.string.institution_email_placeholder),
                         leadingIcon = Icons.Default.Email,
                         keyboardType = KeyboardType.Email
                     )
@@ -178,7 +180,7 @@ fun AdminCriarInstituicaoScreen(
                     Spacer(Modifier.height(16.dp))
 
                     PhoneNumberInput(
-                        label = "TELEFONE",
+                        label = stringResource(R.string.phone_upper),
                         value = telefone,
                         onValueChange = { telefone = it },
                         containerColor = Color(0xFFF0F0F0),
@@ -189,10 +191,10 @@ fun AdminCriarInstituicaoScreen(
                     Spacer(Modifier.height(16.dp))
 
                     CampoFormulario(
-                        label = "MORADA",
+                        label = stringResource(R.string.address_upper),
                         value = morada,
                         onValueChange = { morada = it },
-                        placeholder = "Rua, número, localidade",
+                        placeholder = stringResource(R.string.address_full_placeholder),
                         leadingIcon = Icons.Default.LocationOn,
                         singleLine = false,
                         minLines = 2
@@ -201,10 +203,10 @@ fun AdminCriarInstituicaoScreen(
                     Spacer(Modifier.height(16.dp))
 
                     CampoFormulario(
-                        label = "NIPC",
+                        label = stringResource(R.string.nipc_upper),
                         value = nipc,
                         onValueChange = { nipc = it },
-                        placeholder = "Opcional",
+                        placeholder = stringResource(R.string.optional),
                         leadingIcon = Icons.Default.Numbers,
                         keyboardType = KeyboardType.Number
                     )
@@ -220,29 +222,32 @@ fun AdminCriarInstituicaoScreen(
                 elevation = CardDefaults.cardElevation(2.dp)
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
-                    CabecalhoFormulario("Autorização e segurança", Icons.Default.Shield)
+                    CabecalhoFormulario(stringResource(R.string.authorization_security), Icons.Default.Shield)
 
                     Spacer(Modifier.height(20.dp))
 
-                    CampoReadOnly("PERFIL DE ACESSO", "Instituição")
+                    CampoReadOnly(
+                        stringResource(R.string.access_profile_upper),
+                        stringResource(R.string.institution_role)
+                    )
 
                     Spacer(Modifier.height(16.dp))
 
                     CampoFormulario(
-                        label = "USERNAME",
+                        label = stringResource(R.string.username_upper),
                         value = username,
                         onValueChange = { username = it },
-                        placeholder = "escola_exemplo",
+                        placeholder = stringResource(R.string.school_username_placeholder),
                         leadingIcon = Icons.Default.Badge
                     )
 
                     Spacer(Modifier.height(16.dp))
 
                     CampoFormulario(
-                        label = "PALAVRA-PASSE TEMPORÁRIA",
+                        label = stringResource(R.string.temporary_password_upper),
                         value = password,
                         onValueChange = { password = it },
-                        placeholder = "Mínimo de 6 caracteres",
+                        placeholder = stringResource(R.string.minimum_6_chars),
                         leadingIcon = Icons.Default.Shield,
                         keyboardType = KeyboardType.Password,
                         visualTransformation = if (mostrarPassword) {
@@ -302,7 +307,7 @@ fun AdminCriarInstituicaoScreen(
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text = "Criar Instituição",
+                        text = stringResource(R.string.create_institution),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -343,7 +348,7 @@ private fun CampoSelecaoInstituicao(
 
     Column {
         Text(
-            "ESCOLA",
+            stringResource(R.string.school_upper),
             fontSize = 11.sp,
             color = Color.Gray,
             letterSpacing = 0.5.sp,
@@ -365,9 +370,9 @@ private fun CampoSelecaoInstituicao(
             Text(
                 text = when {
                     selecionada != null -> selecionada.textoApresentacao()
-                    isLoading -> "A carregar escolas..."
-                    instituicoes.isEmpty() -> "Sem escolas disponíveis"
-                    else -> "Selecionar escola da lista"
+                    isLoading -> stringResource(R.string.loading_schools)
+                    instituicoes.isEmpty() -> stringResource(R.string.no_schools_available)
+                    else -> stringResource(R.string.select_school_from_list)
                 },
                 color = if (selecionada == null) Color.Gray else Color.Black,
                 modifier = Modifier.weight(1f),
@@ -390,7 +395,9 @@ private fun CampoSelecaoInstituicao(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp),
-                    placeholder = { Text("Pesquisar por nome ou sigla", color = Color.Gray) },
+                    placeholder = {
+                        Text(stringResource(R.string.search_by_name_or_acronym), color = Color.Gray)
+                    },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
@@ -411,7 +418,7 @@ private fun CampoSelecaoInstituicao(
                             .height(96.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("Sem escolas encontradas", color = Color.Gray, fontSize = 14.sp)
+                        Text(stringResource(R.string.no_schools_found), color = Color.Gray, fontSize = 14.sp)
                     }
                 } else {
                     LazyColumn(

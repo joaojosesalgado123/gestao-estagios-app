@@ -15,10 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.auth.LigixGold
 import pt.ligix.app.util.SessionManager
@@ -52,9 +54,9 @@ fun InstituicaoHomeScreen(modifier: Modifier = Modifier, onVerOrientadores: () -
 
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
 
-            Text("Olá, $nomeAdmin", fontSize = 28.sp,
+            Text(stringResource(R.string.institution_home_greeting, nomeAdmin), fontSize = 28.sp,
                 fontWeight = FontWeight.Bold, color = DarkBlue)
-            Text("Visão geral do ecossistema de estágios. Acompanhe as métricas essenciais.",
+            Text(stringResource(R.string.institution_home_subtitle),
                 fontSize = 14.sp, color = Color.Gray,
                 modifier = Modifier.padding(top = 6.dp))
 
@@ -65,18 +67,18 @@ fun InstituicaoHomeScreen(modifier: Modifier = Modifier, onVerOrientadores: () -
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     color = DarkBlue)
             } else {
-                InstituicaoStatCard("TOTAL DE UTILIZADORES", totalUtilizadores.toString(), DarkBlue)
+                InstituicaoStatCard(stringResource(R.string.total_users_upper), totalUtilizadores.toString(), DarkBlue)
                 Spacer(Modifier.height(12.dp))
-                InstituicaoStatCard("ESTAGIÁRIOS ATIVOS", estagiariosAtivos.toString(), LigixGold)
+                InstituicaoStatCard(stringResource(R.string.active_interns_upper), estagiariosAtivos.toString(), LigixGold)
                 Spacer(Modifier.height(12.dp))
-                InstituicaoStatCard("PENDENTES", pendentes.toString(), Color(0xFFBDBDBD))
+                InstituicaoStatCard(stringResource(R.string.pending_upper), pendentes.toString(), Color(0xFFBDBDBD))
             }
 
             Spacer(Modifier.height(32.dp))
 
-            Text("Estágios Pendentes", fontSize = 20.sp,
+            Text(stringResource(R.string.pending_internships), fontSize = 20.sp,
                 fontWeight = FontWeight.Bold, color = DarkBlue)
-            Text("Estágios a aguardar docentes", fontSize = 13.sp,
+            Text(stringResource(R.string.internships_waiting_teachers), fontSize = 13.sp,
                 color = Color.Gray, modifier = Modifier.padding(top = 4.dp))
 
             Spacer(Modifier.height(12.dp))
@@ -89,7 +91,7 @@ fun InstituicaoHomeScreen(modifier: Modifier = Modifier, onVerOrientadores: () -
                     Icon(Icons.Default.Inbox, contentDescription = null,
                         tint = Color.LightGray, modifier = Modifier.size(48.dp))
                     Spacer(Modifier.height(8.dp))
-                    Text("Sem estágios pendentes", color = Color.Gray,
+                    Text(stringResource(R.string.no_pending_internships), color = Color.Gray,
                         fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                 }
             } else {
@@ -129,7 +131,7 @@ fun InstituicaoHomeScreen(modifier: Modifier = Modifier, onVerOrientadores: () -
                             shape = RoundedCornerShape(8.dp),
                             colors = ButtonDefaults.outlinedButtonColors(contentColor = DarkBlue)
                         ) {
-                            Text("Detalhes", fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.view_details), fontWeight = FontWeight.SemiBold)
                         }
                     }
                     Spacer(Modifier.height(8.dp))

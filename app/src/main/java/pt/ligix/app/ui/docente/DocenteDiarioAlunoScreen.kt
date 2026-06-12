@@ -35,12 +35,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.model.ATIVIDADE_CATEGORIA_IMPORTANTE
 import pt.ligix.app.model.ATIVIDADE_CATEGORIA_REUNIAO
 import pt.ligix.app.model.Atividade
@@ -57,7 +60,6 @@ import pt.ligix.app.viewmodel.DocenteDiarioAlunoViewModelFactory
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 @Composable
 fun DocenteDiarioAlunoScreen(
@@ -83,6 +85,8 @@ fun DocenteDiarioAlunoScreen(
     val isLoading by viewModel.isLoading.collectAsState()
 
     val hoje = LocalDate.now()
+    val locale = LocalConfiguration.current.locales.get(0)
+    val semData = stringResource(R.string.no_date)
     var mesAtual by remember { mutableStateOf(YearMonth.now()) }
 
     LaunchedEffect(idEstagio) {
@@ -105,10 +109,10 @@ fun DocenteDiarioAlunoScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onVoltar) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Voltar", tint = DarkBlue)
+                Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.cd_back), tint = DarkBlue)
             }
             Column(modifier = Modifier.weight(1f)) {
-                Text("Orientandos > Diário do Aluno", fontSize = 11.sp, color = Color.Gray)
+                Text(stringResource(R.string.orientees_student_diary), fontSize = 11.sp, color = Color.Gray)
                 Text(nomeAluno, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
             }
         }
@@ -140,7 +144,7 @@ fun DocenteDiarioAlunoScreen(
                     ) {
                         Column(modifier = Modifier.padding(20.dp)) {
                             Text(
-                                "RESUMO DO PROGRESSO",
+                                stringResource(R.string.progress_summary_upper),
                                 color = Color.White.copy(alpha = 0.7f),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.SemiBold,
@@ -150,7 +154,7 @@ fun DocenteDiarioAlunoScreen(
                             Row(verticalAlignment = Alignment.Bottom) {
                                 Text("$horasFeitas", color = Color.White, fontSize = 40.sp, fontWeight = FontWeight.Bold)
                                 Text(
-                                    " / $horasTotal horas",
+                                    stringResource(R.string.hours_progress_suffix, horasTotal),
                                     color = Color.White.copy(alpha = 0.7f),
                                     fontSize = 18.sp,
                                     modifier = Modifier.padding(bottom = 6.dp)
@@ -171,7 +175,7 @@ fun DocenteDiarioAlunoScreen(
                             Row(modifier = Modifier.fillMaxWidth()) {
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        "CONCLUÍDO",
+                                        stringResource(R.string.completed_upper),
                                         color = Color.White.copy(alpha = 0.7f),
                                         fontSize = 10.sp,
                                         letterSpacing = 0.5.sp
@@ -185,7 +189,7 @@ fun DocenteDiarioAlunoScreen(
                                 }
                                 Column(modifier = Modifier.weight(1f)) {
                                     Text(
-                                        "RESTANTES",
+                                        stringResource(R.string.remaining_upper),
                                         color = Color.White.copy(alpha = 0.7f),
                                         fontSize = 10.sp,
                                         letterSpacing = 0.5.sp
@@ -195,7 +199,7 @@ fun DocenteDiarioAlunoScreen(
                                     } else {
                                         0
                                     }
-                                    Text("$diasRestantes dias", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.days_count, diasRestantes), color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
 
@@ -214,7 +218,7 @@ fun DocenteDiarioAlunoScreen(
                             ) {
                                 Icon(Icons.Default.Star, contentDescription = null, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(8.dp))
-                                Text("Avaliar Aluno", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text(stringResource(R.string.evaluate_student), fontWeight = FontWeight.Bold, fontSize = 14.sp)
                             }
 
                             Spacer(Modifier.height(10.dp))
@@ -229,7 +233,7 @@ fun DocenteDiarioAlunoScreen(
                             ) {
                                 Icon(Icons.Default.Download, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(8.dp))
-                                Text("Transferir Relatório do Aluno", color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                                Text(stringResource(R.string.download_student_report), color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                             }
                         }
                     }
@@ -237,7 +241,7 @@ fun DocenteDiarioAlunoScreen(
 
                 item {
                     Text(
-                        "Presenças Aluno",
+                        stringResource(R.string.student_attendance),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = DarkBlue,
@@ -262,7 +266,7 @@ fun DocenteDiarioAlunoScreen(
                                     Icon(Icons.Default.ChevronLeft, contentDescription = null, tint = DarkBlue)
                                 }
                                 Text(
-                                    mesAtual.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale("pt", "PT")))
+                                    mesAtual.format(DateTimeFormatter.ofPattern("MMMM yyyy", locale))
                                         .replaceFirstChar { it.uppercase() },
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold,
@@ -276,7 +280,15 @@ fun DocenteDiarioAlunoScreen(
                             Spacer(Modifier.height(8.dp))
 
                             Row(modifier = Modifier.fillMaxWidth()) {
-                                listOf("DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB").forEach { dia ->
+                                listOf(
+                                    stringResource(R.string.weekday_sun_short),
+                                    stringResource(R.string.weekday_mon_short),
+                                    stringResource(R.string.weekday_tue_short),
+                                    stringResource(R.string.weekday_wed_short),
+                                    stringResource(R.string.weekday_thu_short),
+                                    stringResource(R.string.weekday_fri_short),
+                                    stringResource(R.string.weekday_sat_short)
+                                ).forEach { dia ->
                                     Text(
                                         dia,
                                         modifier = Modifier.weight(1f),
@@ -356,11 +368,11 @@ fun DocenteDiarioAlunoScreen(
                                 horizontalArrangement = Arrangement.Center,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                LegendaItem(VerdePresenca, "Presente")
+                                LegendaItem(VerdePresenca, stringResource(R.string.present))
                                 Spacer(Modifier.width(16.dp))
-                                LegendaItem(VermelhoAusencia, "Ausente")
+                                LegendaItem(VermelhoAusencia, stringResource(R.string.absent))
                                 Spacer(Modifier.width(16.dp))
-                                LegendaItem(DarkBlue, "Hoje")
+                                LegendaItem(DarkBlue, stringResource(R.string.today))
                             }
                         }
                     }
@@ -368,7 +380,7 @@ fun DocenteDiarioAlunoScreen(
 
                 item {
                     Text(
-                        "Cronologia de Atividades",
+                        stringResource(R.string.activity_timeline),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = DarkBlue,
@@ -387,14 +399,14 @@ fun DocenteDiarioAlunoScreen(
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(Icons.Default.EventNote, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(48.dp))
                                 Spacer(Modifier.height(8.dp))
-                                Text("Sem atividades registadas", color = Color.Gray, fontSize = 14.sp)
+                                Text(stringResource(R.string.no_registered_activities), color = Color.Gray, fontSize = 14.sp)
                             }
                         }
                     }
                 } else {
                     val agrupadas = atividades
                         .sortedByDescending { it.dataAtividade }
-                        .groupBy { it.dataAtividade ?: "Sem data" }
+                        .groupBy { it.dataAtividade ?: semData }
 
                     agrupadas.forEach { (_, lista) ->
                         items(lista) { atividade ->
@@ -411,11 +423,15 @@ fun DocenteDiarioAlunoScreen(
 private fun DocenteAtividadeCard(
     atividade: Atividade
 ) {
+    val locale = LocalConfiguration.current.locales.get(0)
     val categoria = atividade.categoriaAtividade()
+    val reuniaoLabel = stringResource(R.string.activity_category_meeting_upper)
+    val importanteLabel = stringResource(R.string.activity_category_important_upper)
+    val desenvolvimentoLabel = stringResource(R.string.activity_category_development_upper)
     val (bgCategoria, corCategoria, labelCategoria) = when {
-        categoria == ATIVIDADE_CATEGORIA_REUNIAO -> Triple(Color(0xFFFFF3E0), Color(0xFFE65100), "REUNIÃO")
-        categoria == ATIVIDADE_CATEGORIA_IMPORTANTE -> Triple(Color(0xFFFFF8E1), Color(0xFF8A6D00), "IMPORTANTE")
-        else -> Triple(Color(0xFFE3F2FD), Color(0xFF1565C0), "DESENVOLVIMENTO")
+        categoria == ATIVIDADE_CATEGORIA_REUNIAO -> Triple(Color(0xFFFFF3E0), Color(0xFFE65100), reuniaoLabel)
+        categoria == ATIVIDADE_CATEGORIA_IMPORTANTE -> Triple(Color(0xFFFFF8E1), Color(0xFF8A6D00), importanteLabel)
+        else -> Triple(Color(0xFFE3F2FD), Color(0xFF1565C0), desenvolvimentoLabel)
     }
 
     Card(
@@ -449,7 +465,7 @@ private fun DocenteAtividadeCard(
                 atividade.dataAtividade?.let { data ->
                     Text(
                         try {
-                            LocalDate.parse(data).format(DateTimeFormatter.ofPattern("dd MMM, yyyy", Locale("pt", "PT"))).uppercase()
+                            LocalDate.parse(data).format(DateTimeFormatter.ofPattern("dd MMM, yyyy", locale)).uppercase(locale)
                         } catch (_: Exception) {
                             data
                         },
