@@ -266,11 +266,24 @@ interface SupabaseApi {
         @Query("select") select: String = "*"
     ): Response<List<InstituicaoEnsino>>
 
+    @POST("instituicao_ensino")
+    suspend fun createInstituicaoEnsino(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Body body: Map<String, @JvmSuppressWildcards Any?>
+    ): Response<List<InstituicaoEnsino>>
+
     @PATCH("instituicao_ensino")
     suspend fun updateInstituicao(
         @Header("Prefer") prefer: String = "return=representation",
         @Query("idinstituicao") id: String,
         @Body body: Map<String, String>
+    ): Response<List<InstituicaoEnsino>>
+
+    @PATCH("instituicao_ensino")
+    suspend fun updateInstituicaoMap(
+        @Header("Prefer") prefer: String = "return=representation",
+        @Query("idinstituicao") id: String,
+        @Body body: Map<String, @JvmSuppressWildcards Any?>
     ): Response<List<InstituicaoEnsino>>
 
     @GET("aluno")

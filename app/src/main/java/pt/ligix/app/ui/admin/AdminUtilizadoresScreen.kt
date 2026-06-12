@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
@@ -33,7 +34,8 @@ import androidx.compose.material3.TextButton
 @Composable
 fun AdminUtilizadoresScreen(
     modifier: Modifier = Modifier,
-    onEditarUtilizador: (String, String) -> Unit = { _, _ -> }
+    onEditarUtilizador: (String, String) -> Unit = { _, _ -> },
+    onCriarInstituicao: () -> Unit = {}
 ) {
     val viewModel: AdminUtilizadoresViewModel = viewModel(
         factory = AdminUtilizadoresViewModelFactory(AdminRepository())
@@ -78,19 +80,40 @@ fun AdminUtilizadoresScreen(
         AdminTopBar()
 
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
-            Text(
-                text = "Utilizadores",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Bold,
-                color = DarkBlue
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Gerir acessos e perfis da plataforma curatorial.",
-                fontSize = 14.sp,
-                color = Color.Gray,
-                lineHeight = 20.sp
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Utilizadores",
+                        fontSize = 28.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DarkBlue
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Gerir acessos e perfis da plataforma curatorial.",
+                        fontSize = 14.sp,
+                        color = Color.Gray,
+                        lineHeight = 20.sp
+                    )
+                }
+                Spacer(modifier = Modifier.width(12.dp))
+                FloatingActionButton(
+                    onClick = onCriarInstituicao,
+                    modifier = Modifier.size(48.dp),
+                    containerColor = DarkBlue,
+                    contentColor = Color.White,
+                    elevation = FloatingActionButtonDefaults.elevation(defaultElevation = 2.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = "Criar instituição",
+                        modifier = Modifier.size(26.dp)
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -360,6 +383,7 @@ private fun BadgeRole(role: String) {
         "docente"    -> Triple("DOCENTE",    Color(0xFFE8F5E9),              Color(0xFF2E7D32))
         "orientador" -> Triple("ORIENTADOR", Color(0xFFEDE7F6),              Color(0xFF5E35B1))
         "empresa"    -> Triple("EMPRESA",    Color(0xFFE3F2FD),              Color(0xFF1565C0))
+        "instituicao" -> Triple("INSTITUIÇÃO", Color(0xFFE8EAF6),            DarkBlue)
         else         -> Triple(role.uppercase(), Color.LightGray,            Color.DarkGray)
     }
     Box(

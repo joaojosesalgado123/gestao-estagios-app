@@ -109,6 +109,10 @@ fun AdminEditarUtilizadorScreen(
                 }
                 utilizador != null -> {
                     val u = utilizador!!
+                    val roleLabel = when (u.role) {
+                        "instituicao" -> "Instituição"
+                        else -> u.role.replaceFirstChar { it.uppercase() }
+                    }
 
                     // Card: Informação Pessoal
                     Card(
@@ -142,7 +146,7 @@ fun AdminEditarUtilizadorScreen(
                             Spacer(Modifier.height(20.dp))
                             CampoSoLeitura(
                                 "PERFIL DE ACESSO",
-                                u.role.replaceFirstChar { it.uppercase() }
+                                roleLabel
                             )
                         }
                     }
