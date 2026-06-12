@@ -34,14 +34,17 @@ fun InstituicaoOrientadoresScreen(modifier: Modifier = Modifier) {
     )
 
     val estagiosPendentes by viewModel.estagiosPendentes.collectAsState()
+    val estagiosAtribuidos by viewModel.estagiosAtribuidos.collectAsState()
     val docentes by viewModel.docentes.collectAsState()
+    var abaAtiva by remember { mutableStateOf(0) }
     val isLoading by viewModel.isLoading.collectAsState()
     val sucesso by viewModel.sucesso.collectAsState()
     val erro by viewModel.erro.collectAsState()
     val pesquisa by viewModel.pesquisa.collectAsState()
 
-    val estagiosFiltrados = if (pesquisa.isEmpty()) estagiosPendentes
-    else estagiosPendentes.filter {
+    val listaAtual = if (abaAtiva == 0) estagiosPendentes else estagiosAtribuidos
+    val estagiosFiltrados = if (pesquisa.isEmpty()) listaAtual
+    else listaAtual.filter {
         it.nomeAluno.contains(pesquisa, ignoreCase = true) ||
         it.tituloOferta.contains(pesquisa, ignoreCase = true)
     }
@@ -103,6 +106,37 @@ fun InstituicaoOrientadoresScreen(modifier: Modifier = Modifier) {
             }
 
             Divider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFEEEEEE))
+
+            // Separadores
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .background(Color.White, RoundedCornerShape(12.dp))
+                    .padding(4.dp)
+            ) {
+                listOf("Por Atribuir", "Atribuídos").forEachIndexed { index, label ->
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(
+                                if (abaAtiva == index) DarkBlue else Color.Transparent,
+                                RoundedCornerShape(10.dp)
+                            )
+                            .clickable { abaAtiva = index; viewModel.setPesquisa("") }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            label,
+                            color = if (abaAtiva == index) Color.White else Color.Gray,
+                            fontWeight = if (abaAtiva == index) FontWeight.Bold else FontWeight.Normal,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
 
             // Pesquisa
             OutlinedTextField(
@@ -166,6 +200,8 @@ fun InstituicaoOrientadoresScreen(modifier: Modifier = Modifier) {
                         nomeAluno = estagio.nomeAluno,
                         tituloOferta = estagio.tituloOferta,
                         docentes = docentes,
+                        docenteAtualId = estagio.idDocente,
+                        modoTroca = abaAtiva == 1,
                         onAtribuir = { idDocente ->
                             viewModel.atribuirDocente(estagio.idEstagio, idDocente)
                         }
@@ -183,9 +219,12 @@ fun AtribuicaoDocenteCard(
     nomeAluno: String,
     tituloOferta: String,
     docentes: List<pt.ligix.app.viewmodel.DocenteItem>,
+    docenteAtualId: String? = null,
+    modoTroca: Boolean = false,
     onAtribuir: (String) -> Unit
 ) {
-    var docenteSelecionado by remember { mutableStateOf<pt.ligix.app.viewmodel.DocenteItem?>(null) }
+    val docenteAtual = docentes.firstOrNull { it.idUtilizador == docenteAtualId }
+    var docenteSelecionado by remember(docenteAtualId) { mutableStateOf(docenteAtual) }
     var expandido by remember { mutableStateOf(false) }
 
     val iniciais = nomeAluno.split(" ")
@@ -227,7 +266,19 @@ fun AtribuicaoDocenteCard(
             Divider(color = Color(0xFFF0F0F0))
 
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("SELECIONAR DOCENTE", fontSize = 11.sp,
+                if (modoTroca && docenteAtual != null) {
+                    Row(
+                        modifier = Modifier.padding(bottom = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.CheckCircle, contentDescription = null,
+                            tint = Color(0xFF2E7D32), modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Docente atual: ${docenteAtual.nome}",
+                            fontSize = 13.sp, color = Color(0xFF2E7D32))
+                    }
+                }
+                Text(if (modoTroca) "TROCAR DOCENTE" else "SELECIONAR DOCENTE", fontSize = 11.sp,
                     color = Color.Gray, letterSpacing = 0.5.sp,
                     fontWeight = FontWeight.Medium)
                 Spacer(Modifier.height(8.dp))
