@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -31,6 +32,7 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
 import androidx.compose.runtime.CompositionLocalProvider
+import pt.ligix.app.R
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.viewmodel.MensagensViewModel
@@ -86,21 +88,21 @@ fun OrientadorMainScreen(onLogout: () -> Unit = {}) {
                     NavigationBarItem(
                         selected = selectedTab == 0,
                         onClick = { selectedTab = 0 },
-                        icon = { Icon(Icons.Default.Home, contentDescription = "Início") },
-                        label = { Text("Início", fontSize = 10.sp) }
+                        icon = { Icon(Icons.Default.Home, contentDescription = stringResource(R.string.home)) },
+                        label = { Text(stringResource(R.string.home), fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 1,
                         onClick = { selectedTab = 1 },
-                        icon = { Icon(Icons.Default.People, contentDescription = "Alunos") },
-                        label = { Text("Alunos", fontSize = 10.sp) }
+                        icon = { Icon(Icons.Default.People, contentDescription = stringResource(R.string.students)) },
+                        label = { Text(stringResource(R.string.students), fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 2,
                         onClick = { selectedTab = 2 },
                         icon = {
                             Box {
-                                Icon(Icons.Default.Chat, contentDescription = "Chat")
+                                Icon(Icons.Default.Chat, contentDescription = stringResource(R.string.chat))
                                 if (historicoNotificacoes.isNotEmpty()) {
                                     Box(modifier = Modifier.size(8.dp)
                                         .background(Color.Red, CircleShape)
@@ -108,13 +110,13 @@ fun OrientadorMainScreen(onLogout: () -> Unit = {}) {
                                 }
                             }
                         },
-                        label = { Text("Chat", fontSize = 10.sp) }
+                        label = { Text(stringResource(R.string.chat), fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 3,
                         onClick = { navegarParaPerfil() },
-                        icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
-                        label = { Text("Perfil", fontSize = 10.sp) }
+                        icon = { Icon(Icons.Default.Person, contentDescription = stringResource(R.string.profile)) },
+                        label = { Text(stringResource(R.string.profile), fontSize = 10.sp) }
                     )
                 }
             }
@@ -192,7 +194,7 @@ fun OrientadorMainScreen(onLogout: () -> Unit = {}) {
                     }
                     IconButton(onClick = { mensagensViewModel.dispensarNotificacao() },
                         modifier = Modifier.size(24.dp)) {
-                        Icon(Icons.Default.Close, contentDescription = "Fechar",
+                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close),
                             tint = Color.Gray, modifier = Modifier.size(16.dp))
                     }
                 }

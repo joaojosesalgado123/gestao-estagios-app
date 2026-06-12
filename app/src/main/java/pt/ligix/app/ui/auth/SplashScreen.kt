@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -107,7 +108,7 @@ fun SplashScreen(onComecar: () -> Unit) {
                 ) {
                     Image(
                         painter = painterResource(id = R.drawable.logo_ligix),
-                        contentDescription = "Ligix Logo",
+                        contentDescription = stringResource(R.string.cd_ligix_logo),
                         contentScale = androidx.compose.ui.layout.ContentScale.Fit,
                         modifier = Modifier.fillMaxSize()
                     )
@@ -118,7 +119,7 @@ fun SplashScreen(onComecar: () -> Unit) {
 
             // Texto principal
             Text(
-                text = "Bem-vindo ao\nLIGIX",
+                text = stringResource(R.string.splash_title),
                 color = Color.White,
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
@@ -130,7 +131,7 @@ fun SplashScreen(onComecar: () -> Unit) {
 
             // Subtítulo
             Text(
-                text = "A ponte entre o prestígio académico\ne as melhores oportunidades de carreira.",
+                text = stringResource(R.string.splash_subtitle),
                 color = LigixGrey,
                 fontSize = 14.sp,
                 textAlign = TextAlign.Center,
@@ -182,7 +183,7 @@ fun SplashScreen(onComecar: () -> Unit) {
             shape = RoundedCornerShape(12.dp)
         ) {
             Text(
-                text = "Começar  →",
+                text = stringResource(R.string.start_button),
                 color = Color.White,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold

@@ -55,6 +55,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -83,12 +84,16 @@ fun RegisterScreen(
     erroMensagem: String? = null
 ) {
     var tabSelecionada by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Aluno", "Empresa", "Docente")
+    val tabs = listOf(
+        stringResource(R.string.role_student),
+        stringResource(R.string.role_company),
+        stringResource(R.string.role_teacher)
+    )
     val dropdownDismissController = rememberDropdownDismissController()
     val emailLabel = if (tabSelecionada == 1) {
-        "E-MAIL CORPORATIVO"
+        stringResource(R.string.corporate_email_upper)
     } else {
-        "E-MAIL INSTITUCIONAL"
+        stringResource(R.string.institutional_email_upper)
     }
     val emailPlaceholder = when (tabSelecionada) {
         0 -> "aluno@universidade.pt"
@@ -153,7 +158,7 @@ fun RegisterScreen(
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.logo_ligix),
-                    contentDescription = "Ligix",
+                    contentDescription = stringResource(R.string.cd_ligix),
                     tint = Color.Unspecified,
                     modifier = Modifier.height(32.dp)
                 )
@@ -186,7 +191,7 @@ fun RegisterScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Criar Conta",
+                text = stringResource(R.string.register_title),
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
@@ -195,7 +200,7 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                text = "Crie a sua conta InternConnect",
+                text = stringResource(R.string.register_subtitle),
                 fontSize = 14.sp,
                 color = TextGrey
             )
@@ -235,20 +240,20 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             CampoTexto(
-                label = "USERNAME",
+                label = stringResource(R.string.username_upper),
                 value = username,
                 onValueChange = { username = it },
-                placeholder = "Username",
+                placeholder = stringResource(R.string.username_placeholder),
                 icon = Icons.Default.Person
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             CampoTexto(
-                label = "NOME COMPLETO",
+                label = stringResource(R.string.full_name_upper),
                 value = nome,
                 onValueChange = { nome = it },
-                placeholder = "Nome Completo",
+                placeholder = stringResource(R.string.full_name_placeholder),
                 icon = Icons.Default.Person
             )
 
@@ -268,7 +273,7 @@ fun RegisterScreen(
             when (tabSelecionada) {
                 0 -> {
                     PhoneNumberInput(
-                        label = "TELEMÓVEL",
+                        label = stringResource(R.string.mobile_upper),
                         value = telemovelAluno,
                         onValueChange = { telemovelAluno = it },
                         labelColor = Color.Black,
@@ -287,15 +292,15 @@ fun RegisterScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     CampoTexto(
-                        label = "CURSO",
+                        label = stringResource(R.string.course_upper),
                         value = curso,
                         onValueChange = { curso = it },
-                        placeholder = "Engenharia Informática",
+                        placeholder = stringResource(R.string.course_placeholder),
                         icon = Icons.Default.School
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     CampoTexto(
-                        label = "NÚMERO DE ALUNO",
+                        label = stringResource(R.string.student_number_upper),
                         value = numeroAluno,
                         onValueChange = { numeroAluno = it },
                         placeholder = "31385",
@@ -305,7 +310,7 @@ fun RegisterScreen(
                 }
                 1 -> {
                     PhoneNumberInput(
-                        label = "TELEMÓVEL",
+                        label = stringResource(R.string.mobile_upper),
                         value = telemovelEmpresa,
                         onValueChange = { telemovelEmpresa = it },
                         labelColor = Color.Black,
@@ -324,24 +329,24 @@ fun RegisterScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     CampoTexto(
-                        label = "MORADA",
+                        label = stringResource(R.string.address_upper),
                         value = morada,
                         onValueChange = { morada = it },
-                        placeholder = "Rua Example, 123",
+                        placeholder = stringResource(R.string.address_placeholder),
                         icon = Icons.Default.LocationOn
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     CampoTexto(
-                        label = "DESCRIÇÃO",
+                        label = stringResource(R.string.description_upper),
                         value = descricao,
                         onValueChange = { descricao = it },
-                        placeholder = "Descrição da empresa",
+                        placeholder = stringResource(R.string.company_description_placeholder),
                         icon = Icons.Default.Info
                     )
                 }
                 2 -> {
                     PhoneNumberInput(
-                        label = "TELEMÓVEL",
+                        label = stringResource(R.string.mobile_upper),
                         value = telemovelDocente,
                         onValueChange = { telemovelDocente = it },
                         labelColor = Color.Black,
@@ -351,10 +356,10 @@ fun RegisterScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     CampoTexto(
-                        label = "ÁREA",
+                        label = stringResource(R.string.area_upper),
                         value = area,
                         onValueChange = { area = it },
-                        placeholder = "Engenharia Informática",
+                        placeholder = stringResource(R.string.area_placeholder),
                         icon = Icons.Default.Work
                     )
                     Spacer(modifier = Modifier.height(16.dp))
@@ -372,7 +377,7 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             CampoPassword(
-                label = "PALAVRA-PASSE",
+                label = stringResource(R.string.password_upper),
                 value = password,
                 onValueChange = { password = it }
             )
@@ -380,7 +385,7 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             CampoPassword(
-                label = "CONFIRMAR PALAVRA-PASSE",
+                label = stringResource(R.string.confirm_password_upper),
                 value = confirmarPassword,
                 onValueChange = { confirmarPassword = it }
             )
@@ -424,7 +429,7 @@ fun RegisterScreen(
                 if (isLoading) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                 } else {
-                    Text(text = "Criar Conta", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text(text = stringResource(R.string.create_account), fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
             }
 
@@ -435,7 +440,7 @@ fun RegisterScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 HorizontalDivider(modifier = Modifier.weight(1f))
-                Text("  OU  ", color = TextGrey, fontSize = 12.sp)
+                Text("  ${stringResource(R.string.or)}  ", color = TextGrey, fontSize = 12.sp)
                 HorizontalDivider(modifier = Modifier.weight(1f))
             }
 
@@ -451,7 +456,7 @@ fun RegisterScreen(
                 border = null
             ) {
                 Text(
-                    text = "Entrar",
+                    text = stringResource(R.string.login_button),
                     color = DarkBlue,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold
@@ -461,7 +466,7 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             Text(
-                text = "Ao continuar, concorda com os nossos Termos de Serviço e Política de Privacidade.",
+                text = stringResource(R.string.terms_privacy),
                 fontSize = 11.sp,
                 color = TextGrey,
                 textAlign = TextAlign.Center,
@@ -511,7 +516,7 @@ private fun CampoInstituicao(
     }
 
     Text(
-        text = "INSTITUIÇÃO DE ENSINO",
+        text = stringResource(R.string.education_institution_upper),
         fontSize = 11.sp,
         fontWeight = FontWeight.Bold,
         color = Color.Black,
@@ -544,8 +549,8 @@ private fun CampoInstituicao(
             Text(
                 text = when {
                     texto.isNotBlank() -> texto
-                    isLoading -> "A carregar instituições..."
-                    else -> "Instituições disponíveis"
+                    isLoading -> stringResource(R.string.loading_institutions)
+                    else -> stringResource(R.string.available_institutions)
                 },
                 color = if (texto.isBlank()) TextGrey else Color.Black,
                 modifier = Modifier.weight(1f),
@@ -569,7 +574,7 @@ private fun CampoInstituicao(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 8.dp),
-                placeholder = { Text("Pesquisar por nome ou sigla", color = TextGrey) },
+                placeholder = { Text(stringResource(R.string.search_by_name_or_acronym), color = TextGrey) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextGrey) },
                 singleLine = true,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -590,7 +595,7 @@ private fun CampoInstituicao(
                         .height(96.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("Sem instituições encontradas", color = TextGrey, fontSize = 14.sp)
+                    Text(stringResource(R.string.no_institutions_found), color = TextGrey, fontSize = 14.sp)
                 }
             } else {
                 val alturaLista = (opcoes.size.coerceAtMost(5) * 52).dp

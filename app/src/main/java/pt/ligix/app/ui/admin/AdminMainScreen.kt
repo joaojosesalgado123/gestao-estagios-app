@@ -12,7 +12,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
+import pt.ligix.app.R
 
 @Composable
 fun AdminMainScreen(onLogout: () -> Unit = {}) {
@@ -37,32 +39,32 @@ fun AdminMainScreen(onLogout: () -> Unit = {}) {
                     NavigationBarItem(
                         selected = selectedTab == 0,
                         onClick = { selectedTab = 0 },
-                        icon = { Icon(Icons.Default.Home, contentDescription = "Início") },
-                        label = { Text("Início", fontSize = 10.sp) }
+                        icon = { Icon(Icons.Default.Home, contentDescription = stringResource(R.string.home)) },
+                        label = { Text(stringResource(R.string.home), fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 1,
                         onClick = { selectedTab = 1 },
-                        icon = { Icon(Icons.Default.People, contentDescription = "Utilizadores") },
-                        label = { Text("Utilizadores", fontSize = 10.sp) }
+                        icon = { Icon(Icons.Default.People, contentDescription = stringResource(R.string.users)) },
+                        label = { Text(stringResource(R.string.users), fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 2,
                         onClick = { selectedTab = 2 },
-                        icon = { Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = "Aprovações") },
-                        label = { Text("Aprovações", fontSize = 10.sp) }
+                        icon = { Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = stringResource(R.string.approvals)) },
+                        label = { Text(stringResource(R.string.approvals), fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 3,
                         onClick = { selectedTab = 3 },
-                        icon = { Icon(Icons.Default.Business, contentDescription = "Empresas") },
-                        label = { Text("Empresas", fontSize = 10.sp) }
+                        icon = { Icon(Icons.Default.Business, contentDescription = stringResource(R.string.companies)) },
+                        label = { Text(stringResource(R.string.companies), fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 4,
                         onClick = { navegarParaPerfil() },
-                        icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
-                        label = { Text("Perfil", fontSize = 10.sp) }
+                        icon = { Icon(Icons.Default.Person, contentDescription = stringResource(R.string.profile)) },
+                        label = { Text(stringResource(R.string.profile), fontSize = 10.sp) }
                     )
                 }
             }

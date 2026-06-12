@@ -33,11 +33,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import pt.ligix.app.R
 
 @Composable
 fun RecuperarPasswordScreen(
@@ -67,7 +69,7 @@ fun RecuperarPasswordScreen(
                 IconButton(onClick = onVoltar) {
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Voltar",
+                        contentDescription = stringResource(R.string.cd_back),
                         tint = Color.Black
                     )
                 }
@@ -102,7 +104,7 @@ fun RecuperarPasswordScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Recuperar Password",
+                        text = stringResource(R.string.recover_password_title),
                         fontSize = 26.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
@@ -111,7 +113,7 @@ fun RecuperarPasswordScreen(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Recupere a sua conta",
+                        text = stringResource(R.string.recover_password_subtitle),
                         fontSize = 14.sp,
                         color = TextGrey
                     )
@@ -119,7 +121,7 @@ fun RecuperarPasswordScreen(
                     Spacer(modifier = Modifier.height(32.dp))
 
                     Text(
-                        text = "E-MAIL INSTITUCIONAL",
+                        text = stringResource(R.string.institutional_email_upper),
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black,
@@ -186,7 +188,7 @@ fun RecuperarPasswordScreen(
                             )
                         } else {
                             Text(
-                                text = "Recuperar Password",
+                                text = stringResource(R.string.recover_password_title),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -196,7 +198,7 @@ fun RecuperarPasswordScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = "Ao continuar, concorda com os nossos Termos de Serviço e Política de Privacidade.",
+                        text = stringResource(R.string.terms_privacy),
                         fontSize = 11.sp,
                         color = TextGrey,
                         textAlign = TextAlign.Center,

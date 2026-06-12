@@ -27,13 +27,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.auth.LigixGold
+import pt.ligix.app.ui.common.LanguageSettingsCard
 import pt.ligix.app.viewmodel.AdminPerfilViewModel
 import pt.ligix.app.viewmodel.AdminPerfilViewModelFactory
 import java.text.SimpleDateFormat
@@ -53,8 +56,6 @@ fun AdminPerfilScreen(
     val guardadoComSucesso by viewModel.guardadoComSucesso.collectAsState()
 
     var modoEdicao by remember { mutableStateOf(false) }
-    var idioma by remember { mutableStateOf("Português") }
-    var expandedIdioma by remember { mutableStateOf(false) }
     var editNome by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) { viewModel.carregarPerfil(context) }
@@ -99,7 +100,7 @@ fun AdminPerfilScreen(
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    "ADMINISTRADOR",
+                    stringResource(R.string.administrator_upper),
                     fontSize = 10.sp,
                     color = Color.Gray,
                     letterSpacing = 1.sp,
@@ -128,7 +129,7 @@ fun AdminPerfilScreen(
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            "ACESSO PRIVILEGIADO",
+                            stringResource(R.string.privileged_access_upper),
                             fontSize = 11.sp,
                             color = LigixGold,
                             fontWeight = FontWeight.Bold,
@@ -146,7 +147,7 @@ fun AdminPerfilScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "Informações\nUtilizador",
+                stringResource(R.string.user_info_title),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
@@ -159,7 +160,7 @@ fun AdminPerfilScreen(
                         shape = RoundedCornerShape(10.dp),
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                     ) {
-                        Text("Cancelar", fontSize = 14.sp, color = Color.Gray)
+                        Text(stringResource(R.string.cancel), fontSize = 14.sp, color = Color.Gray)
                     }
                     Button(
                         onClick = { viewModel.guardarPerfil(editNome.trim()) },
@@ -177,7 +178,7 @@ fun AdminPerfilScreen(
                         } else {
                             Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Guardar", fontSize = 14.sp)
+                            Text(stringResource(R.string.save), fontSize = 14.sp)
                         }
                     }
                 } else {
@@ -189,7 +190,7 @@ fun AdminPerfilScreen(
                     ) {
                         Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Editar", fontSize = 14.sp)
+                        Text(stringResource(R.string.edit), fontSize = 14.sp)
                     }
                 }
             }
@@ -207,23 +208,23 @@ fun AdminPerfilScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         // Informação Pessoal
-        AdminPerfilSecao(titulo = "Informação Pessoal", icon = Icons.Default.AdminPanelSettings) {
+        AdminPerfilSecao(titulo = stringResource(R.string.personal_info), icon = Icons.Default.AdminPanelSettings) {
             if (modoEdicao) {
                 AdminPerfilCampoEditavel(
-                    label = "NOME COMPLETO",
+                    label = stringResource(R.string.full_name_upper),
                     valor = editNome,
                     onValorChange = { editNome = it }
                 )
             } else {
                 AdminPerfilCampo(
-                    label = "NOME COMPLETO",
+                    label = stringResource(R.string.full_name_upper),
                     valor = utilizador?.nome ?: "—",
                     icon = Icons.Default.Badge
                 )
             }
             Spacer(modifier = Modifier.height(8.dp))
             AdminPerfilCampo(
-                label = "UTILIZADOR",
+                label = stringResource(R.string.user_upper),
                 valor = utilizador?.username ?: "—",
                 icon = Icons.Default.Person
             )
@@ -232,15 +233,15 @@ fun AdminPerfilScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         // Conta
-        AdminPerfilSecao(titulo = "Conta", icon = Icons.Default.VerifiedUser) {
+        AdminPerfilSecao(titulo = stringResource(R.string.account), icon = Icons.Default.VerifiedUser) {
             AdminPerfilCampo(
-                label = "E-MAIL",
+                label = stringResource(R.string.email_upper),
                 valor = utilizador?.email ?: "—",
                 icon = Icons.Default.Email
             )
             Spacer(modifier = Modifier.height(8.dp))
             AdminPerfilCampo(
-                label = "MEMBRO DESDE",
+                label = stringResource(R.string.member_since_upper),
                 valor = formatarDataMembro(utilizador?.createdAt),
                 icon = Icons.Default.Event
             )
@@ -248,72 +249,7 @@ fun AdminPerfilScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Configurações
-        Card(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        Icons.Default.Tune,
-                        contentDescription = null,
-                        tint = DarkBlue,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Configurações", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            Icons.Default.Language,
-                            contentDescription = null,
-                            tint = Color.Gray,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Idioma", fontSize = 14.sp, color = Color.DarkGray)
-                    }
-                    Box {
-                        OutlinedButton(
-                            onClick = { expandedIdioma = true },
-                            shape = RoundedCornerShape(8.dp),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
-                        ) {
-                            Text(idioma, fontSize = 13.sp, color = DarkBlue)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Icon(
-                                Icons.Default.KeyboardArrowDown,
-                                contentDescription = null,
-                                tint = DarkBlue,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                        DropdownMenu(
-                            expanded = expandedIdioma,
-                            onDismissRequest = { expandedIdioma = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Português") },
-                                onClick = { idioma = "Português"; expandedIdioma = false }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("English") },
-                                onClick = { idioma = "English"; expandedIdioma = false }
-                            )
-                        }
-                    }
-                }
-            }
-        }
+        LanguageSettingsCard(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp))
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -324,7 +260,7 @@ fun AdminPerfilScreen(
             Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = Color.Red)
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                "TERMINAR SESSÃO",
+                stringResource(R.string.logout),
                 color = Color.Red,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp,
@@ -427,7 +363,7 @@ private fun formatarDataMembro(createdAt: String?): String {
     return try {
         val dataParte = createdAt.substringBefore("T")
         val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val outputFormat = SimpleDateFormat("MMMM 'de' yyyy", Locale("pt", "PT"))
+        val outputFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
         val date = inputFormat.parse(dataParte)
         if (date != null) outputFormat.format(date).replaceFirstChar { it.uppercase() } else "—"
     } catch (e: Exception) {

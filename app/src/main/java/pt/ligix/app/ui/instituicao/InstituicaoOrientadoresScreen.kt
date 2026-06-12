@@ -16,10 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.viewmodel.InstituicaoOrientadoresViewModel
@@ -67,9 +69,9 @@ fun InstituicaoOrientadoresScreen(modifier: Modifier = Modifier) {
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
-            Text("Atribuição de Docentes", fontSize = 28.sp,
+            Text(stringResource(R.string.teacher_assignment), fontSize = 28.sp,
                 fontWeight = FontWeight.Bold, color = DarkBlue)
-            Text("Faça a gestão e atribuição de docentes aos alunos de dissertação e projeto. Certifique-se de que a carga horária está equilibrada.",
+            Text(stringResource(R.string.teacher_assignment_subtitle),
                 fontSize = 14.sp, color = Color.Gray,
                 modifier = Modifier.padding(top = 6.dp))
 
@@ -86,9 +88,9 @@ fun InstituicaoOrientadoresScreen(modifier: Modifier = Modifier) {
                         tint = Color.Gray, modifier = Modifier.size(24.dp))
                     Spacer(Modifier.width(8.dp))
                     Column {
-                        Text("Pendentes de", fontWeight = FontWeight.Bold,
+                        Text(stringResource(R.string.pending_of), fontWeight = FontWeight.Bold,
                             fontSize = 16.sp, color = Color.Black)
-                        Text("Atribuição", fontWeight = FontWeight.Bold,
+                        Text(stringResource(R.string.assignment), fontWeight = FontWeight.Bold,
                             fontSize = 16.sp, color = Color.Black)
                     }
                 }
@@ -97,7 +99,7 @@ fun InstituicaoOrientadoresScreen(modifier: Modifier = Modifier) {
                     colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
                     shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text("${estagiosPendentes.size} Pendentes",
+                    Text(stringResource(R.string.pending_count, estagiosPendentes.size),
                         fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
                 }
             }
@@ -109,7 +111,7 @@ fun InstituicaoOrientadoresScreen(modifier: Modifier = Modifier) {
                 value = pesquisa,
                 onValueChange = { viewModel.setPesquisa(it) },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Pesquisar por nome ou e-mail...", color = Color.Gray) },
+                placeholder = { Text(stringResource(R.string.search_name_email), color = Color.Gray) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -157,7 +159,7 @@ fun InstituicaoOrientadoresScreen(modifier: Modifier = Modifier) {
                     Icon(Icons.Default.CheckCircle, contentDescription = null,
                         tint = Color.LightGray, modifier = Modifier.size(48.dp))
                     Spacer(Modifier.height(8.dp))
-                    Text("Todos os estágios têm docente atribuído",
+                    Text(stringResource(R.string.all_internships_have_teacher),
                         color = Color.Gray, fontSize = 14.sp)
                 }
             } else {
@@ -227,7 +229,7 @@ fun AtribuicaoDocenteCard(
             Divider(color = Color(0xFFF0F0F0))
 
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("SELECIONAR DOCENTE", fontSize = 11.sp,
+                Text(stringResource(R.string.select_teacher_upper), fontSize = 11.sp,
                     color = Color.Gray, letterSpacing = 0.5.sp,
                     fontWeight = FontWeight.Medium)
                 Spacer(Modifier.height(8.dp))
@@ -237,7 +239,7 @@ fun AtribuicaoDocenteCard(
                         value = docenteSelecionado?.nome ?: "",
                         onValueChange = {},
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Selecionar um docente...", color = Color.Gray) },
+                        placeholder = { Text(stringResource(R.string.select_teacher_placeholder), color = Color.Gray) },
                         readOnly = true,
                         trailingIcon = {
                             Icon(Icons.Default.KeyboardArrowDown, contentDescription = null,
@@ -280,7 +282,7 @@ fun AtribuicaoDocenteCard(
                     Icon(Icons.Default.PersonAdd, contentDescription = null,
                         modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Atribuir Docente", fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.assign_teacher), fontWeight = FontWeight.SemiBold)
                 }
             }
         }

@@ -17,10 +17,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.data.repository.EmpresaRepository
 import pt.ligix.app.model.Candidatura
 import pt.ligix.app.model.OfertaEstagio
@@ -76,7 +78,7 @@ fun EmpresaDashboardScreen(
 
             Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
 
-                Text("Resumo Operacional",
+                Text(stringResource(R.string.operational_summary),
                     fontSize = 28.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
                 Text(nomeEmpresa,
                     fontSize = 14.sp, color = Color.Gray,
@@ -90,11 +92,11 @@ fun EmpresaDashboardScreen(
                         color = DarkBlue
                     )
                 } else {
-                    EmpresaEstatisticaCard("VAGAS ATIVAS", vagasAtivas.toString(), DarkBlue)
+                    EmpresaEstatisticaCard(stringResource(R.string.active_vacancies_upper), vagasAtivas.toString(), DarkBlue)
                     Spacer(Modifier.height(12.dp))
-                    EmpresaEstatisticaCard("CANDIDATURAS PENDENTES", candidaturasPendentes.toString(), LigixGold)
+                    EmpresaEstatisticaCard(stringResource(R.string.pending_applications_upper), candidaturasPendentes.toString(), LigixGold)
                     Spacer(Modifier.height(12.dp))
-                    EmpresaEstatisticaCard("ESTÁGIOS A DECORRER", estagiosADeCorrer.toString(), Color(0xFFBDBDBD))
+                    EmpresaEstatisticaCard(stringResource(R.string.ongoing_internships_upper), estagiosADeCorrer.toString(), Color(0xFFBDBDBD))
                 }
 
                 Spacer(Modifier.height(32.dp))
@@ -104,14 +106,14 @@ fun EmpresaDashboardScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Candidaturas\nRecentes",
+                    Text(stringResource(R.string.recent_applications),
                         fontSize = 22.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
                     Button(
                         onClick = onVerTodasCandidaturas,
                         colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
                         shape = RoundedCornerShape(8.dp)
                     ) {
-                        Text("Ver Todas", color = Color.White, fontSize = 13.sp)
+                        Text(stringResource(R.string.view_all), color = Color.White, fontSize = 13.sp)
                     }
                 }
 
@@ -130,7 +132,7 @@ fun EmpresaDashboardScreen(
                         Icon(Icons.Default.Inbox, contentDescription = null,
                             tint = Color.LightGray, modifier = Modifier.size(48.dp))
                         Spacer(Modifier.height(8.dp))
-                        Text("Sem candidaturas pendentes", color = Color.Gray,
+                        Text(stringResource(R.string.no_pending_applications), color = Color.Gray,
                             fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                     }
                 } else {
@@ -146,9 +148,9 @@ fun EmpresaDashboardScreen(
                         .background(Color(0xFFEEEEEE), RoundedCornerShape(12.dp))
                         .padding(20.dp)
                 ) {
-                    Text("Nova Oferta", fontWeight = FontWeight.Bold,
+                    Text(stringResource(R.string.new_offer), fontWeight = FontWeight.Bold,
                         fontSize = 18.sp, color = Color.Black)
-                    Text("Crie uma nova oportunidade de estágio para atrair os melhores talentos académicos.",
+                    Text(stringResource(R.string.new_offer_desc),
                         fontSize = 13.sp, color = Color.Gray,
                         modifier = Modifier.padding(top = 6.dp, bottom = 16.dp))
                     OutlinedButton(
@@ -163,7 +165,7 @@ fun EmpresaDashboardScreen(
                     ) {
                         Icon(Icons.Default.Add, contentDescription = null, tint = DarkBlue)
                         Spacer(Modifier.width(6.dp))
-                        Text("Publicar Vaga", color = DarkBlue, fontWeight = FontWeight.Normal, fontSize = 14.sp)
+                        Text(stringResource(R.string.publish_vacancy), color = DarkBlue, fontWeight = FontWeight.Normal, fontSize = 14.sp)
                     }
                 }
 
@@ -203,7 +205,7 @@ fun EmpresaEstatisticaCard(label: String, valor: String, barColor: Color) {
 @Composable
 fun EmpresaCandidatoCardBD(detalhe: CandidaturaEmpresaDetalhe, onAvaliar: () -> Unit) {
     val iniciais = detalhe.nomeAluno.split(" ").map { it.firstOrNull()?.toString() ?: "" }.take(2).joinToString("")
-    val vaga = detalhe.oferta?.titulo ?: "Oferta"
+    val vaga = detalhe.oferta?.titulo ?: stringResource(R.string.offer)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -226,7 +228,7 @@ fun EmpresaCandidatoCardBD(detalhe: CandidaturaEmpresaDetalhe, onAvaliar: () -> 
             Text(if (detalhe.curso.isNotEmpty()) "${detalhe.curso} - ${detalhe.instituicao ?: ""}" else "",
             fontSize = 15.sp, color = Color.Gray,
             modifier = Modifier.padding(top = 2.dp))
-        Text("Candidatura: $vaga",
+        Text(stringResource(R.string.application_prefix, vaga),
                 fontSize = 15.sp, color = DarkBlue, fontWeight = FontWeight.Medium,
                 modifier = Modifier.padding(top = 4.dp))
 
@@ -238,7 +240,7 @@ fun EmpresaCandidatoCardBD(detalhe: CandidaturaEmpresaDetalhe, onAvaliar: () -> 
                 colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
                 shape = RoundedCornerShape(8.dp)
             ) {
-                Text("Avaliar", color = Color.White, fontWeight = FontWeight.Medium)
+                Text(stringResource(R.string.evaluate), color = Color.White, fontWeight = FontWeight.Medium)
                 Spacer(Modifier.width(8.dp))
                 Icon(Icons.Default.ArrowForward, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
             }
@@ -276,7 +278,7 @@ fun EmpresaCandidatoCard(candidato: CandidatoItem, onAvaliar: () -> Unit) {
                             .background(LigixGold.copy(alpha = 0.15f), RoundedCornerShape(4.dp))
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
-                        Text("DESTAQUE", color = LigixGold,
+                        Text(stringResource(R.string.featured_upper), color = LigixGold,
                             fontSize = 10.sp, fontWeight = FontWeight.Bold)
                     }
                 }
@@ -285,7 +287,7 @@ fun EmpresaCandidatoCard(candidato: CandidatoItem, onAvaliar: () -> Unit) {
             Text("${candidato.curso} • ${candidato.escola}",
                 fontSize = 14.sp, color = Color.Gray,
                 modifier = Modifier.padding(top = 2.dp))
-            Text("Candidatura: ${candidato.vaga}",
+            Text(stringResource(R.string.application_prefix, candidato.vaga),
                 fontSize = 14.sp, color = DarkBlue, fontWeight = FontWeight.Medium,
                 modifier = Modifier.padding(top = 4.dp))
 
@@ -300,7 +302,7 @@ fun EmpresaCandidatoCard(candidato: CandidatoItem, onAvaliar: () -> Unit) {
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
-                    if (candidato.destaque) "Avaliar →" else "Avaliar",
+                    if (candidato.destaque) "${stringResource(R.string.evaluate)} →" else stringResource(R.string.evaluate),
                     color = if (candidato.destaque) Color.White else Color.Black,
                     fontWeight = FontWeight.Medium
                 )

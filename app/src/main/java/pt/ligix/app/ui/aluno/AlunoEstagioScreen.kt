@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -39,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import kotlinx.coroutines.delay
 import pt.ligix.app.model.ATIVIDADE_CATEGORIAS
 import pt.ligix.app.model.ATIVIDADE_CATEGORIA_DESENVOLVIMENTO
@@ -89,9 +91,10 @@ private fun nomeRelatorioSubmetido(relatorio: RelatorioFinal): String =
         ?.takeIf { it.isNotBlank() }
         ?: "relatorio-final.pdf"
 
+@Composable
 private fun dataRelatorioSubmetido(relatorio: RelatorioFinal): String {
     val valor = relatorio.dataSubmissao.ifBlank { relatorio.createdAt }
-    if (valor.isBlank()) return "Data não disponível"
+    if (valor.isBlank()) return stringResource(R.string.date_unavailable)
 
     return try {
         OffsetDateTime.parse(valor).format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"))
@@ -100,18 +103,21 @@ private fun dataRelatorioSubmetido(relatorio: RelatorioFinal): String {
     }
 }
 
+@Composable
 private fun notaTexto(nota: Double?): String =
-    nota?.let { String.format(Locale.US, "%.1f", it.coerceIn(0.0, 20.0)) } ?: "Não avaliado"
+    nota?.let { String.format(Locale.US, "%.1f", it.coerceIn(0.0, 20.0)) } ?: stringResource(R.string.not_evaluated)
 
+@Composable
 private fun contribuicaoTexto(nota: Double?, peso: Double): String =
-    nota?.let { String.format(Locale.US, "%.1f pts", it.coerceIn(0.0, 20.0) * peso) } ?: "Não avaliado"
+    nota?.let { stringResource(R.string.points_value, it.coerceIn(0.0, 20.0) * peso) } ?: stringResource(R.string.not_evaluated)
 
+@Composable
 private fun mensagemNotaFinal(nota: Double?): String = when {
-    nota == null -> "A aguardar avaliação"
-    nota >= 18.0 -> "Excelente desempenho"
-    nota >= 14.0 -> "Bom desempenho"
-    nota >= 10.0 -> "Aprovado"
-    else -> "Requer melhoria"
+    nota == null -> stringResource(R.string.waiting_evaluation)
+    nota >= 18.0 -> stringResource(R.string.excellent_performance)
+    nota >= 14.0 -> stringResource(R.string.good_performance)
+    nota >= 10.0 -> stringResource(R.string.passed)
+    else -> stringResource(R.string.needs_improvement)
 }
 
 @Composable
@@ -129,7 +135,7 @@ private fun EstagioSubPageTopBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = onVoltar) {
-            Icon(Icons.Default.ArrowBack, contentDescription = "Voltar", tint = DarkBlue)
+            Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back), tint = DarkBlue)
         }
         Text(
             titulo,
@@ -144,7 +150,7 @@ private fun EstagioSubPageTopBar(
             IconButton(onClick = onSininho) {
                 Icon(
                     Icons.Default.Notifications,
-                    contentDescription = "Notificações",
+                    contentDescription = stringResource(R.string.notifications),
                     tint = DarkBlue
                 )
             }
@@ -198,6 +204,11 @@ fun AlunoEstagioScreen(
     val totalHorasTexto = if (horasTotal > 0) horasTotal.toString() else "—"
     val temEstagioAtivo = estagio?.idEstagio?.isNotBlank() == true
     val relatorioSubmetido = relatorioFinal != null
+    val semDataLabel = stringResource(R.string.no_date)
+    val hojeLabel = stringResource(R.string.today)
+    val ontemLabel = stringResource(R.string.yesterday)
+    val presenteLabel = stringResource(R.string.present)
+    val ausenteLabel = stringResource(R.string.absent)
 
     LaunchedEffect(Unit) {
         estagio_viewModel.carregarDados(context)
@@ -299,8 +310,8 @@ fun AlunoEstagioScreen(
     atividadeParaApagar?.let { atividade ->
         AlertDialog(
             onDismissRequest = { atividadeParaApagar = null },
-            title = { Text("Apagar atividade", fontWeight = FontWeight.Bold, color = DarkBlue) },
-            text = { Text("Tens a certeza que queres apagar \"${atividade.titulo}\"?") },
+            title = { Text(stringResource(R.string.delete_activity), fontWeight = FontWeight.Bold, color = DarkBlue) },
+            text = { Text(stringResource(R.string.delete_activity_confirm, atividade.titulo)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -309,12 +320,12 @@ fun AlunoEstagioScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = VermelhoAusencia)
                 ) {
-                    Text("Apagar")
+                    Text(stringResource(R.string.delete_action))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { atividadeParaApagar = null }) {
-                    Text("Cancelar", color = Color.Gray)
+                    Text(stringResource(R.string.cancel), color = Color.Gray)
                 }
             },
             shape = RoundedCornerShape(16.dp)
@@ -348,7 +359,7 @@ fun AlunoEstagioScreen(
                         IconButton(onClick = onSininho) {
                             Icon(
                                 Icons.Default.Notifications,
-                                contentDescription = "Notificações",
+                                contentDescription = stringResource(R.string.notifications),
                                 tint = DarkBlue
                             )
                         }
@@ -372,13 +383,13 @@ fun AlunoEstagioScreen(
                         .padding(horizontal = 20.dp, vertical = 14.dp)
                 ) {
                     Text(
-                        "O Meu Estágio",
+                        stringResource(R.string.my_internship),
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
                         color = DarkBlue
                     )
                     Text(
-                        "Acompanha o progresso das tuas horas e atividades.",
+                        stringResource(R.string.my_internship_subtitle),
                         fontSize = 13.sp,
                         color = Color.Gray
                     )
@@ -398,7 +409,7 @@ fun AlunoEstagioScreen(
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
                         Text(
-                            "PROGRESSO DE HORAS",
+                            stringResource(R.string.hours_progress_upper),
                             color = Color.White.copy(alpha = 0.7f),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold,
@@ -412,7 +423,7 @@ fun AlunoEstagioScreen(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            "Horas acumuladas este semestre",
+                            stringResource(R.string.accumulated_hours_semester),
                             color = Color.White.copy(alpha = 0.65f),
                             fontSize = 13.sp
                         )
@@ -432,11 +443,11 @@ fun AlunoEstagioScreen(
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
                             if (relatorioSubmetido)
-                                "Relatório final submetido."
+                                stringResource(R.string.final_report_submitted_message)
                             else if (horasFeitas >= horasTotal && horasTotal > 0)
-                                "Completaste as horas! Podes submeter o relatório final."
+                                stringResource(R.string.hours_completed_submit_report)
                             else
-                                "Quando completares as horas, submete o relatório final para avaliação.",
+                                stringResource(R.string.submit_report_after_hours),
                             color = if (relatorioSubmetido || horasFeitas >= horasTotal && horasTotal > 0) Amarelo
                             else Color.White.copy(alpha = 0.65f),
                             fontSize = 12.sp
@@ -460,7 +471,7 @@ fun AlunoEstagioScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
-                                if (relatorioSubmetido) "Ver Relatório Submetido" else "Submeter Relatório Final",
+                                if (relatorioSubmetido) stringResource(R.string.view_submitted_report) else stringResource(R.string.submit_final_report),
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp
                             )
@@ -476,7 +487,7 @@ fun AlunoEstagioScreen(
                         ) {
                             Icon(Icons.Default.Grade, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Nota Final", color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                            Text(stringResource(R.string.final_grade), color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                         }
                     }
                 }
@@ -500,17 +511,17 @@ fun AlunoEstagioScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             IconButton(onClick = { mesAtual = mesAtual.minusMonths(1) }) {
-                                Icon(Icons.Default.ChevronLeft, contentDescription = "Mês anterior", tint = DarkBlue)
+                            Icon(Icons.Default.ChevronLeft, contentDescription = stringResource(R.string.previous_month), tint = DarkBlue)
                             }
                             Text(
-                                mesAtual.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale("pt", "PT")))
+                                mesAtual.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault()))
                                     .replaceFirstChar { it.uppercase() },
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = DarkBlue
                             )
                             IconButton(onClick = { mesAtual = mesAtual.plusMonths(1) }) {
-                                Icon(Icons.Default.ChevronRight, contentDescription = "Próximo mês", tint = DarkBlue)
+                                Icon(Icons.Default.ChevronRight, contentDescription = stringResource(R.string.next_month), tint = DarkBlue)
                             }
                         }
 
@@ -518,7 +529,15 @@ fun AlunoEstagioScreen(
 
                         // Cabeçalho dias da semana
                         Row(modifier = Modifier.fillMaxWidth()) {
-                            listOf("DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB").forEach { dia ->
+                            listOf(
+                                stringResource(R.string.weekday_sun_short),
+                                stringResource(R.string.weekday_mon_short),
+                                stringResource(R.string.weekday_tue_short),
+                                stringResource(R.string.weekday_wed_short),
+                                stringResource(R.string.weekday_thu_short),
+                                stringResource(R.string.weekday_fri_short),
+                                stringResource(R.string.weekday_sat_short)
+                            ).forEach { dia ->
                                 Text(
                                     dia,
                                     modifier = Modifier.weight(1f),
@@ -604,11 +623,11 @@ fun AlunoEstagioScreen(
                             horizontalArrangement = Arrangement.Center,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            LegendaItem(VerdePresenca, "Presente")
+                            LegendaItem(VerdePresenca, presenteLabel)
                             Spacer(modifier = Modifier.width(16.dp))
-                            LegendaItem(VermelhoAusencia, "Ausente")
+                            LegendaItem(VermelhoAusencia, ausenteLabel)
                             Spacer(modifier = Modifier.width(16.dp))
-                            LegendaItem(DarkBlue, "Hoje")
+                            LegendaItem(DarkBlue, hojeLabel)
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
@@ -629,7 +648,7 @@ fun AlunoEstagioScreen(
                         ) {
                             Icon(Icons.Default.AddCircleOutline, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Marcar Presença", fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.mark_attendance), fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
@@ -638,8 +657,8 @@ fun AlunoEstagioScreen(
             // ───── REGISTO DE ATIVIDADES ─────
             item {
                 Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
-                    Text("Registo de Atividades", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
-                    Text("Acompanha o teu progresso diário.", fontSize = 13.sp, color = Color.Gray)
+                    Text(stringResource(R.string.activity_records), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
+                    Text(stringResource(R.string.activity_records_subtitle), fontSize = 13.sp, color = Color.Gray)
                     Spacer(modifier = Modifier.height(12.dp))
                     Button(
                         onClick = { mostrarNovaAtividade = true },
@@ -649,7 +668,7 @@ fun AlunoEstagioScreen(
                     ) {
                         Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Registar Nova Atividade", fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.register_new_activity), fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
@@ -663,23 +682,23 @@ fun AlunoEstagioScreen(
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Default.EventNote, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(40.dp))
                             Spacer(modifier = Modifier.height(6.dp))
-                            Text("Sem atividades registadas", color = Color.Gray, fontSize = 14.sp)
+                            Text(stringResource(R.string.no_registered_activities), color = Color.Gray, fontSize = 14.sp)
                         }
                     }
                 }
             } else {
                 val agrupadas = atividades
                     .sortedByDescending { it.dataAtividade }
-                    .groupBy { it.dataAtividade ?: "Sem data" }
+                    .groupBy { it.dataAtividade ?: semDataLabel }
 
                 agrupadas.forEach { (data, lista) ->
                     item {
                         val dataFormatada = try {
                             val ld = LocalDate.parse(data)
                             when (ld) {
-                                hoje -> "Hoje, ${ld.format(DateTimeFormatter.ofPattern("dd 'de' MMMM", Locale("pt", "PT")))}"
-                                hoje.minusDays(1) -> "Ontem, ${ld.format(DateTimeFormatter.ofPattern("dd 'de' MMMM", Locale("pt", "PT")))}"
-                                else -> ld.format(DateTimeFormatter.ofPattern("EEEE, dd 'de' MMMM", Locale("pt", "PT"))).replaceFirstChar { it.uppercase() }
+                                hoje -> "$hojeLabel, ${ld.format(DateTimeFormatter.ofPattern("dd MMMM", Locale.getDefault()))}"
+                                hoje.minusDays(1) -> "$ontemLabel, ${ld.format(DateTimeFormatter.ofPattern("dd MMMM", Locale.getDefault()))}"
+                                else -> ld.format(DateTimeFormatter.ofPattern("EEEE, dd MMMM", Locale.getDefault())).replaceFirstChar { it.uppercase() }
                             }
                         } catch (e: Exception) { data }
                         Text(
@@ -741,7 +760,7 @@ fun AlunoEstagioScreen(
 
     // ───── DIALOG PRESENÇA ─────
     presencaDialogDia?.let { dia ->
-        val dataFormatada = dia.format(DateTimeFormatter.ofPattern("dd 'de' MMMM 'de' yyyy", Locale("pt", "PT")))
+        val dataFormatada = dia.format(DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.getDefault()))
         val presencaExistente = presencas.firstOrNull {
             try { LocalDate.parse(it.data) == dia } catch (e: Exception) { false }
         }
@@ -763,7 +782,7 @@ fun AlunoEstagioScreen(
                         Icon(Icons.Default.CalendarToday, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(28.dp))
                     }
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("Marcação de Presença", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
+                    Text(stringResource(R.string.attendance_marking), fontSize = 17.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(dataFormatada, fontSize = 14.sp, color = Color.Gray, textAlign = TextAlign.Center)
                     Spacer(modifier = Modifier.height(8.dp))
@@ -771,7 +790,7 @@ fun AlunoEstagioScreen(
                     if (presencaExistente != null) {
                         val presente = presencaExistente.status.equals("presente", ignoreCase = true)
                         val corStatus = if (presente) VerdePresenca else VermelhoAusencia
-                        val textoStatus = if (presente) "Presente ✓" else "Ausente ✗"
+                        val textoStatus = if (presente) "${stringResource(R.string.present)} ✓" else "${stringResource(R.string.absent)} ✗"
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -780,13 +799,13 @@ fun AlunoEstagioScreen(
                                 .padding(10.dp),
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("Registo atual: $textoStatus", color = corStatus, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+                            Text(stringResource(R.string.current_record, textoStatus), color = corStatus, fontSize = 13.sp, fontWeight = FontWeight.Medium)
                         }
                         Spacer(modifier = Modifier.height(12.dp))
-                        Text("Desejas alterar este registo?", fontSize = 14.sp, color = Color(0xFF555555), textAlign = TextAlign.Center)
+                        Text(stringResource(R.string.change_record_question), fontSize = 14.sp, color = Color(0xFF555555), textAlign = TextAlign.Center)
                     } else {
-                        Text("Estiveste presente no estágio neste dia?", fontSize = 14.sp, color = Color(0xFF555555), textAlign = TextAlign.Center)
-                        Text("Cada dia de presença conta como 8 horas.", fontSize = 12.sp, color = Color.Gray, textAlign = TextAlign.Center)
+                        Text(stringResource(R.string.present_question), fontSize = 14.sp, color = Color(0xFF555555), textAlign = TextAlign.Center)
+                        Text(stringResource(R.string.attendance_hours_note), fontSize = 12.sp, color = Color.Gray, textAlign = TextAlign.Center)
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
@@ -800,7 +819,7 @@ fun AlunoEstagioScreen(
                         ) {
                             Icon(Icons.Default.Close, contentDescription = null, tint = VermelhoAusencia, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Ausente", color = VermelhoAusencia, fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.absent), color = VermelhoAusencia, fontWeight = FontWeight.SemiBold)
                         }
                         Button(
                             onClick = { estagio_viewModel.registarPresenca(dia, true) },
@@ -810,13 +829,13 @@ fun AlunoEstagioScreen(
                         ) {
                             Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Presente", fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.present), fontWeight = FontWeight.SemiBold)
                         }
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
                     TextButton(onClick = { estagio_viewModel.fecharDialogPresenca() }) {
-                        Text("Cancelar", color = Color.Gray, fontSize = 13.sp)
+                        Text(stringResource(R.string.cancel), color = Color.Gray, fontSize = 13.sp)
                     }
                 }
             }
@@ -853,7 +872,7 @@ fun RelatorioFinalScreen(
     Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF5F5F7))) {
         Column(modifier = Modifier.fillMaxSize()) {
             EstagioSubPageTopBar(
-                titulo = "Conclusão de Estágio",
+                titulo = stringResource(R.string.internship_completion),
                 historicoNotificacoes = historicoNotificacoes,
                 onSininho = onSininho,
                 onVoltar = onVoltar
@@ -867,7 +886,7 @@ fun RelatorioFinalScreen(
                     .padding(bottom = 82.dp)
             ) {
                 Text(
-                    "Conclusão de Estágio",
+                    stringResource(R.string.internship_completion),
                     color = DarkBlue,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold
@@ -875,9 +894,9 @@ fun RelatorioFinalScreen(
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
                     if (relatorioFinal == null)
-                        "Submete o relatório final e consulta a avaliação final do teu estágio."
+                        stringResource(R.string.final_report_intro)
                     else
-                        "O relatório final já foi submetido e fica associado ao teu estágio.",
+                        stringResource(R.string.final_report_submitted_intro),
                     color = Color(0xFF5F6270),
                     fontSize = 15.sp,
                     lineHeight = 22.sp
@@ -895,7 +914,7 @@ fun RelatorioFinalScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.UploadFile, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(24.dp))
                             Spacer(modifier = Modifier.width(10.dp))
-                            Text("Relatório Final", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1F2328))
+                            Text(stringResource(R.string.final_report), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1F2328))
                         }
 
                         Spacer(modifier = Modifier.height(18.dp))
@@ -924,14 +943,14 @@ fun RelatorioFinalScreen(
                                     }
                                     Spacer(modifier = Modifier.height(14.dp))
                                     Text(
-                                        ficheiroNome ?: "Seleciona o ficheiro do relatório",
+                                        ficheiroNome ?: stringResource(R.string.select_report_file),
                                         color = Color(0xFF1F2328),
                                         fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold,
                                         textAlign = TextAlign.Center
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
-                                    Text("PDF (máx. 25MB)", color = Color(0xFF666A78), fontSize = 13.sp)
+                                    Text(stringResource(R.string.pdf_max_25mb), color = Color(0xFF666A78), fontSize = 13.sp)
                                     Spacer(modifier = Modifier.height(18.dp))
                                     Button(
                                         onClick = { selecionarPdf.launch("application/pdf") },
@@ -939,7 +958,7 @@ fun RelatorioFinalScreen(
                                         shape = RoundedCornerShape(10.dp),
                                         modifier = Modifier.height(48.dp)
                                     ) {
-                                        Text("Selecionar Ficheiro", fontWeight = FontWeight.Bold)
+                                        Text(stringResource(R.string.select_file), fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
@@ -959,12 +978,12 @@ fun RelatorioFinalScreen(
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Icon(Icons.Default.CheckCircle, contentDescription = null, tint = VerdePresenca, modifier = Modifier.size(28.dp))
                                         Spacer(modifier = Modifier.width(10.dp))
-                                        Text("Relatório submetido", color = VerdePresenca, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                                        Text(stringResource(R.string.report_submitted), color = VerdePresenca, fontSize = 17.sp, fontWeight = FontWeight.Bold)
                                     }
                                     Spacer(modifier = Modifier.height(14.dp))
-                                    DetalheEstagioRow("Ficheiro", nomeRelatorioSubmetido(relatorioFinal))
+                                    DetalheEstagioRow(stringResource(R.string.file_label), nomeRelatorioSubmetido(relatorioFinal))
                                     Divider(color = Color(0xFFDDEFE0))
-                                    DetalheEstagioRow("Submissão", dataRelatorioSubmetido(relatorioFinal))
+                                    DetalheEstagioRow(stringResource(R.string.submission), dataRelatorioSubmetido(relatorioFinal))
                                 }
                             }
                         }
@@ -981,13 +1000,13 @@ fun RelatorioFinalScreen(
                             Icon(Icons.Default.Info, contentDescription = null, tint = Amarelo, modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
-                                Text("NOTA IMPORTANTE", color = Amarelo, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.important_note_upper), color = Amarelo, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
                                     if (relatorioFinal == null)
-                                        "A submissão do relatório final é obrigatória para o cálculo da nota definitiva."
+                                        stringResource(R.string.final_report_required_note)
                                     else
-                                        "O relatório final já está registado. Não é possível submeter outro ficheiro.",
+                                        stringResource(R.string.final_report_already_registered_note),
                                     color = Color(0xFF5F6270),
                                     fontSize = 13.sp,
                                     lineHeight = 19.sp
@@ -999,10 +1018,10 @@ fun RelatorioFinalScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Text("Detalhes do Estágio", color = DarkBlue, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.internship_details), color = DarkBlue, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    "Informações consolidadas para o teu portfólio profissional e registo académico.",
+                    stringResource(R.string.internship_details_subtitle),
                     color = Color(0xFF6A6D78),
                     fontSize = 13.sp,
                     lineHeight = 20.sp
@@ -1017,11 +1036,11 @@ fun RelatorioFinalScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
                     Column {
-                        DetalheEstagioRow("Entidade", nomeEmpresa)
+                        DetalheEstagioRow(stringResource(R.string.entity), nomeEmpresa)
                         Divider(color = Color(0xFFEEEEEE))
-                        DetalheEstagioRow("Duração", "$duracaoHoras horas")
+                        DetalheEstagioRow(stringResource(R.string.duration), stringResource(R.string.hours_count, duracaoHoras))
                         Divider(color = Color(0xFFEEEEEE))
-                        DetalheEstagioRow("Orientador", nomeOrientador)
+                        DetalheEstagioRow(stringResource(R.string.supervisor), nomeOrientador)
                     }
                 }
 
@@ -1063,11 +1082,11 @@ fun RelatorioFinalScreen(
             } else if (relatorioFinal != null) {
                 Icon(Icons.Default.CheckCircle, contentDescription = null, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(10.dp))
-                Text("Relatório Submetido", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.report_submitted), fontSize = 16.sp, fontWeight = FontWeight.Bold)
             } else {
                 Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(10.dp))
-                Text("Enviar Relatório", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.send_report), fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -1088,7 +1107,7 @@ fun NotaFinalScreen(
     Box(modifier = Modifier.fillMaxSize().background(Color(0xFFF5F5F7))) {
         Column(modifier = Modifier.fillMaxSize()) {
             EstagioSubPageTopBar(
-                titulo = "Nota Final",
+                titulo = stringResource(R.string.final_grade),
                 historicoNotificacoes = historicoNotificacoes,
                 onSininho = onSininho,
                 onVoltar = onVoltar
@@ -1102,7 +1121,7 @@ fun NotaFinalScreen(
                     .padding(bottom = 82.dp)
             ) {
                 Text(
-                    "Nota Final do Estágio",
+                    stringResource(R.string.final_internship_grade),
                     color = DarkBlue,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold
@@ -1110,9 +1129,9 @@ fun NotaFinalScreen(
                 Spacer(modifier = Modifier.height(10.dp))
                 Text(
                     if (notaFinal == null)
-                        "A nota final fica disponível quando a avaliação da empresa e a avaliação do docente estiverem submetidas."
+                        stringResource(R.string.final_grade_pending_message)
                     else
-                        "Parabéns pelo percurso realizado. Esta é a tua avaliação final.",
+                        stringResource(R.string.final_grade_available_message),
                     color = Color(0xFF5F6270),
                     fontSize = 15.sp,
                     lineHeight = 22.sp
@@ -1121,8 +1140,8 @@ fun NotaFinalScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 ModuloAvaliacaoCard(
-                    modulo = "MÓDULO 01",
-                    titulo = "Avaliação Empresa",
+                    modulo = stringResource(R.string.module_01),
+                    titulo = stringResource(R.string.company_evaluation),
                     nota = notaEmpresa,
                     icon = Icons.Default.Business
                 )
@@ -1130,8 +1149,8 @@ fun NotaFinalScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 ModuloAvaliacaoCard(
-                    modulo = "MÓDULO 02",
-                    titulo = "Avaliação Docente",
+                    modulo = stringResource(R.string.module_02),
+                    titulo = stringResource(R.string.teacher_evaluation),
                     nota = notaDocente,
                     icon = Icons.Default.School
                 )
@@ -1146,10 +1165,10 @@ fun NotaFinalScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Text("Detalhes do Estágio", color = DarkBlue, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.internship_details), color = DarkBlue, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    "Informações consolidadas para o teu portfólio profissional e registo académico.",
+                    stringResource(R.string.internship_details_subtitle),
                     color = Color(0xFF6A6D78),
                     fontSize = 13.sp,
                     lineHeight = 20.sp
@@ -1164,11 +1183,11 @@ fun NotaFinalScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
                     Column {
-                        DetalheEstagioRow("Entidade", nomeEmpresa)
+                        DetalheEstagioRow(stringResource(R.string.entity), nomeEmpresa)
                         Divider(color = Color(0xFFEEEEEE))
-                        DetalheEstagioRow("Duração", "$duracaoHoras horas")
+                        DetalheEstagioRow(stringResource(R.string.duration), stringResource(R.string.hours_count, duracaoHoras))
                         Divider(color = Color(0xFFEEEEEE))
-                        DetalheEstagioRow("Orientador", nomeOrientador)
+                        DetalheEstagioRow(stringResource(R.string.supervisor), nomeOrientador)
                     }
                 }
             }
@@ -1202,7 +1221,7 @@ private fun ModuloAvaliacaoCard(
             Spacer(modifier = Modifier.height(24.dp))
 
             if (nota == null) {
-                Text("Não avaliado", color = Color(0xFF5F6270), fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.not_evaluated), color = Color(0xFF5F6270), fontSize = 28.sp, fontWeight = FontWeight.Bold)
             } else {
                 Row(verticalAlignment = Alignment.Bottom) {
                     Text(notaTexto(nota), color = DarkBlue, fontSize = 36.sp, fontWeight = FontWeight.Bold)
@@ -1232,6 +1251,25 @@ private fun NotaFinalResumoCard(
     notaDocente: Double?,
     notaFinal: Double?
 ) {
+    val notaFinalTexto = if (notaFinal == null) stringResource(R.string.not_evaluated) else notaTexto(notaFinal)
+    val mensagemNota = when {
+        notaFinal == null -> stringResource(R.string.waiting_evaluation)
+        notaFinal >= 18.0 -> stringResource(R.string.excellent_performance)
+        notaFinal >= 14.0 -> stringResource(R.string.good_performance)
+        notaFinal >= 10.0 -> stringResource(R.string.passed)
+        else -> stringResource(R.string.needs_improvement)
+    }
+    val contribuicaoEmpresa = if (notaEmpresa == null) {
+        stringResource(R.string.not_evaluated)
+    } else {
+        stringResource(R.string.points_value, notaEmpresa.coerceIn(0.0, 20.0) * 0.5)
+    }
+    val contribuicaoDocente = if (notaDocente == null) {
+        stringResource(R.string.not_evaluated)
+    } else {
+        stringResource(R.string.points_value, notaDocente.coerceIn(0.0, 20.0) * 0.5)
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -1245,7 +1283,7 @@ private fun NotaFinalResumoCard(
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                "MÉDIA FINAL 50/50",
+                stringResource(R.string.final_average_50_50),
                 color = Color.White.copy(alpha = 0.62f),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
@@ -1253,7 +1291,7 @@ private fun NotaFinalResumoCard(
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                notaTexto(notaFinal),
+                notaFinalTexto,
                 color = Color.White,
                 fontSize = if (notaFinal == null) 32.sp else 56.sp,
                 fontWeight = FontWeight.Bold,
@@ -1261,7 +1299,7 @@ private fun NotaFinalResumoCard(
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                mensagemNotaFinal(notaFinal),
+                mensagemNota,
                 color = Color.White.copy(alpha = 0.78f),
                 fontSize = 15.sp,
                 textAlign = TextAlign.Center
@@ -1272,15 +1310,15 @@ private fun NotaFinalResumoCard(
             Spacer(modifier = Modifier.height(18.dp))
 
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text("Peso Empresa (50%)", color = Color.White.copy(alpha = 0.72f), fontSize = 13.sp)
+                Text(stringResource(R.string.company_weight), color = Color.White.copy(alpha = 0.72f), fontSize = 13.sp)
                 Spacer(modifier = Modifier.weight(1f))
-                Text(contribuicaoTexto(notaEmpresa, 0.5), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Text(contribuicaoEmpresa, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             }
             Spacer(modifier = Modifier.height(12.dp))
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text("Peso Docente (50%)", color = Color.White.copy(alpha = 0.72f), fontSize = 13.sp)
+                Text(stringResource(R.string.teacher_weight), color = Color.White.copy(alpha = 0.72f), fontSize = 13.sp)
                 Spacer(modifier = Modifier.weight(1f))
-                Text(contribuicaoTexto(notaDocente, 0.5), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                Text(contribuicaoDocente, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -1337,14 +1375,16 @@ fun NovaAtividadeScreen(
 
     val formatoData = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
     val mensagemErro = erroFormulario ?: erro
+    val fillTitleError = stringResource(R.string.fill_activity_title)
+    val fillDescriptionError = stringResource(R.string.fill_activity_description)
 
     fun tentarGuardar() {
         val tituloLimpo = titulo.trim()
         val descricaoLimpa = descricao.trim()
 
         erroFormulario = when {
-            tituloLimpo.isBlank() -> "Preenche o título da atividade."
-            descricaoLimpa.isBlank() -> "Preenche a descrição da atividade."
+            tituloLimpo.isBlank() -> fillTitleError
+            descricaoLimpa.isBlank() -> fillDescriptionError
             else -> null
         }
 
@@ -1369,12 +1409,12 @@ fun NovaAtividadeScreen(
                         mostrarDatePicker = false
                     }
                 ) {
-                    Text("Confirmar", color = DarkBlue)
+                    Text(stringResource(R.string.confirm), color = DarkBlue)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { mostrarDatePicker = false }) {
-                    Text("Cancelar", color = Color.Gray)
+                    Text(stringResource(R.string.cancel), color = Color.Gray)
                 }
             }
         ) {
@@ -1394,12 +1434,12 @@ fun NovaAtividadeScreen(
                 IconButton(onClick = onVoltar) {
                     Icon(
                         Icons.Default.ArrowBack,
-                        contentDescription = "Voltar",
+                        contentDescription = stringResource(R.string.back),
                         tint = DarkBlue
                     )
                 }
                 Text(
-                    if (modoEdicao) "Editar Atividade" else "Nova Atividade",
+                    if (modoEdicao) stringResource(R.string.edit_activity) else stringResource(R.string.new_activity),
                     color = DarkBlue,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
@@ -1424,11 +1464,11 @@ fun NovaAtividadeScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.CalendarMonth, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(22.dp))
                             Spacer(modifier = Modifier.width(10.dp))
-                            Text("Registo de Tempo", color = Color(0xFF1F2328), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.time_record), color = Color(0xFF1F2328), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         }
 
                         Spacer(modifier = Modifier.height(18.dp))
-                        FormLabel("DATA DA ATIVIDADE")
+                        FormLabel(stringResource(R.string.activity_date_upper))
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1453,11 +1493,11 @@ fun NovaAtividadeScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Description, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(22.dp))
                             Spacer(modifier = Modifier.width(10.dp))
-                            Text("Detalhes da Atividade", color = Color(0xFF1F2328), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.activity_details), color = Color(0xFF1F2328), fontSize = 18.sp, fontWeight = FontWeight.Bold)
                         }
 
                         Spacer(modifier = Modifier.height(18.dp))
-                        FormLabel("TÍTULO")
+                        FormLabel(stringResource(R.string.title_upper))
                         TextField(
                             value = titulo,
                             onValueChange = {
@@ -1465,7 +1505,7 @@ fun NovaAtividadeScreen(
                                 erroFormulario = null
                             },
                             modifier = Modifier.fillMaxWidth().height(52.dp),
-                            placeholder = { Text("Escreva o título...", fontSize = 16.sp, color = Color(0xFF23252B)) },
+                            placeholder = { Text(stringResource(R.string.write_title_placeholder), fontSize = 16.sp, color = Color(0xFF23252B)) },
                             singleLine = true,
                             shape = RoundedCornerShape(10.dp),
                             keyboardOptions = KeyboardOptions(
@@ -1481,7 +1521,7 @@ fun NovaAtividadeScreen(
                         )
 
                         Spacer(modifier = Modifier.height(18.dp))
-                        FormLabel("ETIQUETA")
+                        FormLabel(stringResource(R.string.tag_upper))
                         Spacer(modifier = Modifier.height(8.dp))
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             ATIVIDADE_CATEGORIAS.forEach { categoria ->
@@ -1509,14 +1549,14 @@ fun NovaAtividadeScreen(
                                         if (selecionada) DarkBlue else Color(0xFFBFC3D1)
                                     )
                                 ) {
-                                    Text(categoria, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                                    Text(categoriaAtividadeLabel(categoria), fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                                 }
                             }
                         }
 
                         Spacer(modifier = Modifier.height(18.dp))
                         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            FormLabel("DESCRIÇÃO DAS ATIVIDADES", modifier = Modifier.weight(1f))
+                            FormLabel(stringResource(R.string.activity_description_upper), modifier = Modifier.weight(1f))
                         }
                         Spacer(modifier = Modifier.height(6.dp))
                         TextField(
@@ -1529,7 +1569,7 @@ fun NovaAtividadeScreen(
                             shape = RoundedCornerShape(10.dp),
                             placeholder = {
                                 Text(
-                                    "Descreva detalhadamente as tarefas realizadas, desafios encontrados e resultados alcançados...",
+                                    stringResource(R.string.activity_description_placeholder),
                                     fontSize = 15.sp,
                                     lineHeight = 21.sp,
                                     color = Color(0xFF747B8A)
@@ -1584,7 +1624,7 @@ fun NovaAtividadeScreen(
                 Icon(Icons.Default.Save, contentDescription = null, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    if (modoEdicao) "Guardar Alterações" else "Guardar Registo",
+                    if (modoEdicao) stringResource(R.string.save_changes) else stringResource(R.string.save_record),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -1615,6 +1655,13 @@ fun LegendaItem(cor: Color, texto: String) {
 }
 
 @Composable
+private fun categoriaAtividadeLabel(categoria: String): String = when (categoria) {
+    ATIVIDADE_CATEGORIA_REUNIAO -> stringResource(R.string.activity_category_meeting_upper)
+    ATIVIDADE_CATEGORIA_IMPORTANTE -> stringResource(R.string.activity_category_important_upper)
+    else -> stringResource(R.string.activity_category_development_upper)
+}
+
+@Composable
 fun AtividadeCard(
     atividade: Atividade,
     onEditar: () -> Unit,
@@ -1622,13 +1669,16 @@ fun AtividadeCard(
 ) {
     var menuAberto by remember { mutableStateOf(false) }
     val categoria = atividade.categoriaAtividade()
+    val reuniaoLabel = stringResource(R.string.activity_category_meeting_upper)
+    val importanteLabel = stringResource(R.string.activity_category_important_upper)
+    val desenvolvimentoLabel = stringResource(R.string.activity_category_development_upper)
     val (bgCategoria, corCategoria, labelCategoria) = when {
         categoria == ATIVIDADE_CATEGORIA_REUNIAO ->
-            Triple(Color(0xFFFFF3E0), Color(0xFFE65100), "REUNIÃO")
+            Triple(Color(0xFFFFF3E0), Color(0xFFE65100), reuniaoLabel)
         categoria == ATIVIDADE_CATEGORIA_IMPORTANTE ->
-            Triple(Color(0xFFFFF8E1), Color(0xFF8A6D00), "IMPORTANTE")
+            Triple(Color(0xFFFFF8E1), Color(0xFF8A6D00), importanteLabel)
         else ->
-            Triple(Color(0xFFE3F2FD), Color(0xFF1565C0), "DESENVOLVIMENTO")
+            Triple(Color(0xFFE3F2FD), Color(0xFF1565C0), desenvolvimentoLabel)
     }
 
     Card(
@@ -1658,7 +1708,7 @@ fun AtividadeCard(
                     ) {
                         Icon(
                             Icons.Default.MoreVert,
-                            contentDescription = "Opções",
+                            contentDescription = stringResource(R.string.options),
                             tint = Color.Gray,
                             modifier = Modifier.size(18.dp)
                         )
@@ -1668,7 +1718,7 @@ fun AtividadeCard(
                         onDismissRequest = { menuAberto = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Editar") },
+                            text = { Text(stringResource(R.string.edit)) },
                             leadingIcon = {
                                 Icon(Icons.Default.Edit, contentDescription = null, tint = DarkBlue)
                             },
@@ -1678,7 +1728,7 @@ fun AtividadeCard(
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("Apagar", color = VermelhoAusencia) },
+                            text = { Text(stringResource(R.string.delete_action), color = VermelhoAusencia) },
                             leadingIcon = {
                                 Icon(Icons.Default.Delete, contentDescription = null, tint = VermelhoAusencia)
                             },
@@ -1699,11 +1749,11 @@ fun AtividadeCard(
             when (atividade.syncStatus) {
                 AtividadeSyncStatus.PENDING -> {
                     Spacer(modifier = Modifier.height(8.dp))
-                    EstadoSincronizacaoAtividade("Pendente de sincronização", Amarelo)
+                    EstadoSincronizacaoAtividade(stringResource(R.string.pending_sync), Amarelo)
                 }
                 AtividadeSyncStatus.ERROR -> {
                     Spacer(modifier = Modifier.height(8.dp))
-                    EstadoSincronizacaoAtividade("A aguardar nova tentativa", VermelhoAusencia)
+                    EstadoSincronizacaoAtividade(stringResource(R.string.waiting_retry), VermelhoAusencia)
                 }
                 AtividadeSyncStatus.SYNCED -> Unit
             }

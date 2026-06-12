@@ -49,17 +49,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.ui.aluno.PerfilCampo
 import pt.ligix.app.ui.aluno.PerfilCampoEditavel
 import pt.ligix.app.ui.aluno.PerfilSecao
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.common.DropdownDismissController
+import pt.ligix.app.ui.common.LanguageSettingsCard
 import pt.ligix.app.ui.common.PhoneNumberInput
 import pt.ligix.app.ui.common.dismissDropdownsOnOutsideTap
 import pt.ligix.app.ui.common.dropdownDismissBounds
@@ -90,8 +93,6 @@ fun DocentePerfilScreen(
     val guardadoComSucesso by viewModel.guardadoComSucesso.collectAsState()
 
     var modoEdicao by remember { mutableStateOf(false) }
-    var idioma by remember { mutableStateOf("Português") }
-    var expandedIdioma by remember { mutableStateOf(false) }
     var editNome by remember { mutableStateOf("") }
     var editArea by remember { mutableStateOf("") }
     var telemovelAtual by remember { mutableStateOf("") }
@@ -165,7 +166,7 @@ fun DocentePerfilScreen(
                 }
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    "NOME DE UTILIZADOR",
+                    stringResource(R.string.username_label_upper),
                     fontSize = 10.sp,
                     color = Color.Gray,
                     letterSpacing = 1.sp,
@@ -189,7 +190,7 @@ fun DocentePerfilScreen(
                         Icon(Icons.Default.Verified, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(14.dp))
                         Spacer(Modifier.width(4.dp))
                         Text(
-                            "DOCENTE",
+                            stringResource(R.string.teacher_upper),
                             fontSize = 11.sp,
                             color = DarkBlue,
                             fontWeight = FontWeight.Bold,
@@ -208,7 +209,7 @@ fun DocentePerfilScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "Informações\nUtilizador",
+                stringResource(R.string.user_info_title),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
@@ -221,7 +222,7 @@ fun DocentePerfilScreen(
                         shape = RoundedCornerShape(10.dp),
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                     ) {
-                        Text("Cancelar", fontSize = 14.sp, color = Color.Gray)
+                        Text(stringResource(R.string.cancel), fontSize = 14.sp, color = Color.Gray)
                     }
                     Button(
                         onClick = { viewModel.guardarPerfil(editNome, editArea, telemovelAtual, editIdInstituicao) },
@@ -235,7 +236,7 @@ fun DocentePerfilScreen(
                         } else {
                             Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Guardar", fontSize = 14.sp)
+                            Text(stringResource(R.string.save), fontSize = 14.sp)
                         }
                     }
                 } else {
@@ -247,7 +248,7 @@ fun DocentePerfilScreen(
                     ) {
                         Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(6.dp))
-                        Text("Editar", fontSize = 14.sp)
+                        Text(stringResource(R.string.edit), fontSize = 14.sp)
                     }
                 }
             }
@@ -264,16 +265,16 @@ fun DocentePerfilScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        PerfilSecao(titulo = "Informações", icon = Icons.Default.Person) {
+        PerfilSecao(titulo = stringResource(R.string.information), icon = Icons.Default.Person) {
             if (modoEdicao) {
                 PerfilCampoEditavel(
-                    label = "NOME COMPLETO",
+                    label = stringResource(R.string.full_name_upper),
                     valor = editNome,
                     onValorChange = { editNome = it }
                 )
             } else {
                 PerfilCampo(
-                    label = "NOME COMPLETO",
+                    label = stringResource(R.string.full_name_upper),
                     valor = utilizador?.nome ?: "—",
                     icon = Icons.Default.Badge
                 )
@@ -282,16 +283,16 @@ fun DocentePerfilScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        PerfilSecao(titulo = "Informações de Contacto", icon = Icons.Default.ContactMail) {
+        PerfilSecao(titulo = stringResource(R.string.contact_info), icon = Icons.Default.ContactMail) {
             PerfilCampo(
-                label = "EMAIL CORPORATIVO",
+                label = stringResource(R.string.corporate_email_upper),
                 valor = utilizador?.email ?: "—",
                 icon = Icons.Default.Email
             )
             Spacer(Modifier.height(8.dp))
             if (modoEdicao) {
                 PhoneNumberInput(
-                    label = "TELEMÓVEL",
+                    label = stringResource(R.string.mobile_upper),
                     value = telemovelAtual,
                     onValueChange = { telemovelAtual = it },
                     containerColor = Color(0xFFF8F8F8),
@@ -300,7 +301,7 @@ fun DocentePerfilScreen(
                 )
             } else {
                 PerfilCampo(
-                    label = "TELEMÓVEL",
+                    label = stringResource(R.string.mobile_upper),
                     valor = PhoneNumberValidator.formatForDisplay(docente?.telemovel),
                     icon = Icons.Default.Phone
                 )
@@ -309,16 +310,16 @@ fun DocentePerfilScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        PerfilSecao(titulo = "Dados Profissionais", icon = Icons.Default.School) {
+        PerfilSecao(titulo = stringResource(R.string.professional_data), icon = Icons.Default.School) {
             if (modoEdicao) {
                 PerfilCampoEditavel(
-                    label = "ÁREA DE TRABALHO",
+                    label = stringResource(R.string.work_area_upper),
                     valor = editArea,
                     onValorChange = { editArea = it }
                 )
             } else {
                 PerfilCampo(
-                    label = "ÁREA DE TRABALHO",
+                    label = stringResource(R.string.work_area_upper),
                     valor = docente?.area?.ifEmpty { "—" } ?: "—",
                     icon = Icons.Default.Work
                 )
@@ -334,7 +335,7 @@ fun DocentePerfilScreen(
                 )
             } else {
                 PerfilCampo(
-                    label = "INSTITUIÇÃO DE ENSINO",
+                    label = stringResource(R.string.education_institution_upper),
                     valor = instituicaoNome.ifEmpty { "—" },
                     icon = Icons.Default.School
                 )
@@ -343,61 +344,11 @@ fun DocentePerfilScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        Card(
+        LanguageSettingsCard(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(1.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Tune, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text("Configurações", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                }
-                Spacer(Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Language, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(20.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text("Idioma", fontSize = 14.sp, color = Color.DarkGray)
-                    }
-                    Box {
-                        OutlinedButton(
-                            onClick = { expandedIdioma = true },
-                            shape = RoundedCornerShape(8.dp),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
-                        ) {
-                            Text(idioma, fontSize = 13.sp, color = DarkBlue)
-                            Spacer(Modifier.width(4.dp))
-                            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(16.dp))
-                        }
-                        DropdownMenu(expanded = expandedIdioma, onDismissRequest = { expandedIdioma = false }) {
-                            DropdownMenuItem(
-                                text = { Text("Português") },
-                                onClick = {
-                                    idioma = "Português"
-                                    expandedIdioma = false
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("English") },
-                                onClick = {
-                                    idioma = "English"
-                                    expandedIdioma = false
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-        }
+                .padding(horizontal = 16.dp)
+        )
 
         Spacer(Modifier.height(16.dp))
 
@@ -410,7 +361,7 @@ fun DocentePerfilScreen(
             Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = Color.Red)
             Spacer(Modifier.width(8.dp))
             Text(
-                "TERMINAR SESSÃO",
+                stringResource(R.string.logout),
                 color = Color.Red,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp,
@@ -472,7 +423,7 @@ private fun CampoInstituicaoPerfil(
 
     Column {
         Text(
-            "INSTITUIÇÃO DE ENSINO",
+            stringResource(R.string.education_institution_upper),
             fontSize = 10.sp,
             color = Color.Gray,
             letterSpacing = 0.5.sp,
@@ -498,7 +449,7 @@ private fun CampoInstituicaoPerfil(
                 shape = RoundedCornerShape(10.dp)
             ) {
                 Text(
-                    texto.ifBlank { "Selecionar instituição" },
+                    texto.ifBlank { stringResource(R.string.select_institution) },
                     color = if (texto.isBlank()) Color.Gray else Color.Black,
                     modifier = Modifier.weight(1f),
                     fontSize = 14.sp
@@ -521,7 +472,7 @@ private fun CampoInstituicaoPerfil(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp),
-                    placeholder = { Text("Pesquisar por nome ou sigla", color = Color.Gray) },
+                    placeholder = { Text(stringResource(R.string.search_by_name_or_acronym), color = Color.Gray) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
@@ -542,7 +493,7 @@ private fun CampoInstituicaoPerfil(
                             .height(96.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("Sem instituições encontradas", color = Color.Gray, fontSize = 14.sp)
+                        Text(stringResource(R.string.no_institutions_found), color = Color.Gray, fontSize = 14.sp)
                     }
                 } else {
                     val alturaLista = (opcoes.size.coerceAtMost(5) * 52).dp

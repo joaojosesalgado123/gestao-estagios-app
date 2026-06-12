@@ -16,10 +16,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.data.repository.AdminRepository
 import pt.ligix.app.model.Utilizador
 import pt.ligix.app.ui.auth.DarkBlue
@@ -79,14 +81,14 @@ fun AdminUtilizadoresScreen(
 
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
             Text(
-                text = "Utilizadores",
+                text = stringResource(R.string.users),
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkBlue
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Gerir acessos e perfis da plataforma curatorial.",
+                text = stringResource(R.string.supervisors_management_subtitle),
                 fontSize = 14.sp,
                 color = Color.Gray,
                 lineHeight = 20.sp
@@ -99,7 +101,7 @@ fun AdminUtilizadoresScreen(
                 value = termoPesquisa,
                 onValueChange = { viewModel.atualizarPesquisa(it) },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Pesquisar por nome ou e-mail...", fontSize = 13.sp) },
+                placeholder = { Text(stringResource(R.string.search_name_email), fontSize = 13.sp) },
                 leadingIcon = {
                     Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray)
                 },
@@ -120,7 +122,7 @@ fun AdminUtilizadoresScreen(
             ) {
                 FiltroRole.entries.forEach { filtro ->
                     ChipFiltro(
-                        label = filtro.label,
+                        label = filtroRoleLabel(filtro),
                         contagem = contagens[filtro] ?: 0,
                         selecionado = filtroSelecionado == filtro,
                         onClick = { viewModel.selecionarFiltro(filtro) }
@@ -160,9 +162,9 @@ fun AdminUtilizadoresScreen(
                     ) {
                         Text(
                             text = if (termoPesquisa.isNotBlank())
-                                "Sem resultados para \"$termoPesquisa\"."
+                                stringResource(R.string.no_results_for, termoPesquisa)
                             else
-                                "Sem utilizadores neste filtro.",
+                                stringResource(R.string.no_users_in_filter),
                             modifier = Modifier.fillMaxWidth().padding(24.dp),
                             color = Color.Gray,
                             fontSize = 14.sp
@@ -188,14 +190,14 @@ fun AdminUtilizadoresScreen(
                     onDismissRequest = { utilizadorARejeitar = null },
                     title = {
                         Text(
-                            "Rejeitar utilizador?",
+                            stringResource(R.string.reject_user_title),
                             fontWeight = FontWeight.Bold,
                             color = DarkBlue
                         )
                     },
                     text = {
                         Text(
-                            "Tem a certeza que pretende rejeitar e eliminar o utilizador \"${alvo.nome}\" (${alvo.email})? Esta ação não pode ser desfeita."
+                            stringResource(R.string.reject_user_message, alvo.nome, alvo.email)
                         )
                     },
                     confirmButton = {
@@ -205,12 +207,12 @@ fun AdminUtilizadoresScreen(
                                 utilizadorARejeitar = null
                             }
                         ) {
-                            Text("Rejeitar", color = Color(0xFFE53935), fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.reject), color = Color(0xFFE53935), fontWeight = FontWeight.Bold)
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { utilizadorARejeitar = null }) {
-                            Text("Cancelar", color = Color.DarkGray)
+                            Text(stringResource(R.string.cancel), color = Color.DarkGray)
                         }
                     },
                     containerColor = Color.White
@@ -309,7 +311,7 @@ private fun CardUtilizador(
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = utilizador.nome.ifBlank { "Sem nome" },
+                text = utilizador.nome.ifBlank { stringResource(R.string.no_name) },
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
@@ -334,7 +336,7 @@ private fun CardUtilizador(
                 ) {
                     Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Editar", color = Color.White, fontSize = 13.sp)
+                    Text(stringResource(R.string.edit), color = Color.White, fontSize = 13.sp)
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 OutlinedButton(
@@ -346,7 +348,7 @@ private fun CardUtilizador(
                 ) {
                     Icon(Icons.Default.Cancel, contentDescription = null, tint = Color(0xFFE53935), modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("Rejeitar", color = Color(0xFFE53935), fontSize = 13.sp)
+                    Text(stringResource(R.string.reject), color = Color(0xFFE53935), fontSize = 13.sp)
                 }
             }
         }
@@ -356,10 +358,10 @@ private fun CardUtilizador(
 @Composable
 private fun BadgeRole(role: String) {
     val (label, fundo, texto) = when (role) {
-        "aluno"      -> Triple("ALUNO",      LigixGold.copy(alpha = 0.2f),   Color(0xFFB8860B))
-        "docente"    -> Triple("DOCENTE",    Color(0xFFE8F5E9),              Color(0xFF2E7D32))
-        "orientador" -> Triple("ORIENTADOR", Color(0xFFEDE7F6),              Color(0xFF5E35B1))
-        "empresa"    -> Triple("EMPRESA",    Color(0xFFE3F2FD),              Color(0xFF1565C0))
+        "aluno"      -> Triple(stringResource(R.string.student_upper),      LigixGold.copy(alpha = 0.2f),   Color(0xFFB8860B))
+        "docente"    -> Triple(stringResource(R.string.teacher_upper),    Color(0xFFE8F5E9),              Color(0xFF2E7D32))
+        "orientador" -> Triple(stringResource(R.string.mentor_upper), Color(0xFFEDE7F6),              Color(0xFF5E35B1))
+        "empresa"    -> Triple(stringResource(R.string.company_upper),    Color(0xFFE3F2FD),              Color(0xFF1565C0))
         else         -> Triple(role.uppercase(), Color.LightGray,            Color.DarkGray)
     }
     Box(
@@ -374,6 +376,15 @@ private fun BadgeRole(role: String) {
             fontWeight = FontWeight.Bold
         )
     }
+}
+
+@Composable
+private fun filtroRoleLabel(filtro: FiltroRole): String = when (filtro) {
+    FiltroRole.TODOS -> stringResource(R.string.all)
+    FiltroRole.ALUNOS -> stringResource(R.string.students)
+    FiltroRole.DOCENTES -> stringResource(R.string.role_teacher)
+    FiltroRole.ORIENTADORES -> stringResource(R.string.mentors)
+    FiltroRole.EMPRESAS -> stringResource(R.string.companies)
 }
 
 private fun matchPesquisa(u: Utilizador, termo: String): Boolean {

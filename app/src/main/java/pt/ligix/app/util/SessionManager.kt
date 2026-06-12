@@ -26,6 +26,7 @@ class SessionManager(private val context: Context) {
         val KEY_ACCESS_TOKEN = stringPreferencesKey("accessToken")
         val KEY_REFRESH_TOKEN = stringPreferencesKey("refreshToken")
         val KEY_EXPIRES_AT = longPreferencesKey("expiresAt")
+        val KEY_LANGUAGE = stringPreferencesKey("language")
     }
 
     // Guardar sessão após login
@@ -80,6 +81,16 @@ class SessionManager(private val context: Context) {
         prefs[KEY_EXPIRES_AT]
     }
 
+    val language: Flow<String> = context.dataStore.data.map { prefs ->
+        AppLanguage.normalize(prefs[KEY_LANGUAGE])
+    }
+
+    suspend fun guardarIdioma(languageCode: String) {
+        context.dataStore.edit { prefs ->
+            prefs[KEY_LANGUAGE] = AppLanguage.normalize(languageCode)
+        }
+    }
+
     suspend fun obterAccessTokenValido(): String? {
         val tokenAtual = accessToken.first()?.takeIf { it.isNotBlank() }
         val expiraEm = expiresAt.first()
@@ -116,8 +127,10 @@ class SessionManager(private val context: Context) {
 
     // RF03 - Terminar sessão
     suspend fun terminarSessao() {
+        val idiomaAtual = language.first()
         context.dataStore.edit { prefs ->
             prefs.clear()
+            prefs[KEY_LANGUAGE] = idiomaAtual
         }
         SessionTokenProvider.clear()
     }

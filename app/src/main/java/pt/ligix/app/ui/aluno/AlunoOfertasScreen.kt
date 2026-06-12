@@ -16,10 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.data.repository.OfertasRepository
 import pt.ligix.app.model.OfertaEstagio
 import pt.ligix.app.ui.auth.DarkBlue
@@ -69,6 +71,9 @@ fun AlunoOfertasScreen(
     var mostrarFiltroArea by remember { mutableStateOf(false) }
     var mostrarFiltroLocalizacao by remember { mutableStateOf(false) }
     var mostrarFiltroDuracao by remember { mutableStateOf(false) }
+    val areaLabel = stringResource(R.string.area)
+    val localizacaoLabel = stringResource(R.string.location)
+    val duracaoLabel = stringResource(R.string.duration)
 
     Column(
         modifier = Modifier
@@ -89,7 +94,7 @@ fun AlunoOfertasScreen(
             // Sininho com badge
             Box(contentAlignment = Alignment.TopEnd) {
                 IconButton(onClick = onSininho) {
-                    Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = DarkBlue)
+                    Icon(Icons.Default.Notifications, contentDescription = stringResource(R.string.cd_notifications), tint = DarkBlue)
                 }
                 if (historicoNotificacoes.isNotEmpty()) {
                     Box(
@@ -122,7 +127,7 @@ fun AlunoOfertasScreen(
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
             Text(
-                text = "Descubra o seu próximo\npasso profissional",
+                text = stringResource(R.string.discover_next_professional_step),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkBlue,
@@ -135,7 +140,7 @@ fun AlunoOfertasScreen(
                 value = searchQuery,
                 onValueChange = { viewModel.onSearchQueryChange(it) },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Pesquisar estágios, áreas ou empresas...", color = Color.Gray, fontSize = 14.sp) },
+                placeholder = { Text(stringResource(R.string.search_internships_areas_companies), color = Color.Gray, fontSize = 14.sp) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
@@ -161,21 +166,21 @@ fun AlunoOfertasScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 FiltroChip(
-                    label = filtroArea ?: "Área",
+                    label = filtroArea ?: areaLabel,
                     ativo = filtroArea != null,
                     icon = Icons.Default.FilterList,
                     onClick = { mostrarFiltroArea = true },
                     onLimpar = { viewModel.onFiltroAreaChange(null) }
                 )
                 FiltroChip(
-                    label = filtroLocalizacao ?: "Localização",
+                    label = filtroLocalizacao ?: localizacaoLabel,
                     ativo = filtroLocalizacao != null,
                     icon = Icons.Default.LocationOn,
                     onClick = { mostrarFiltroLocalizacao = true },
                     onLimpar = { viewModel.onFiltroLocalizacaoChange(null) }
                 )
                 FiltroChip(
-                    label = filtroDuracao?.let { "${it}h" } ?: "Duração",
+                    label = filtroDuracao?.let { "${it}h" } ?: duracaoLabel,
                     ativo = filtroDuracao != null,
                     icon = Icons.Default.Schedule,
                     onClick = { mostrarFiltroDuracao = true },
@@ -197,7 +202,7 @@ fun AlunoOfertasScreen(
                 ) {
                     Icon(Icons.Default.CloudOff, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(64.dp))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Não foi possível carregar ofertas", color = Color.Gray, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.unable_load_offers), color = Color.Gray, fontWeight = FontWeight.SemiBold)
                     Text(erro.orEmpty(), color = Color.LightGray, fontSize = 13.sp)
                 }
             }
@@ -206,7 +211,7 @@ fun AlunoOfertasScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.SearchOff, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(64.dp))
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Sem ofertas encontradas", color = Color.Gray)
+                    Text(stringResource(R.string.no_offers_found), color = Color.Gray)
                 }
             }
         } else {
@@ -217,7 +222,7 @@ fun AlunoOfertasScreen(
             ) {
                 item {
                     Text(
-                        text = "${ofertas.size} oferta${if (ofertas.size != 1) "s" else ""} encontrada${if (ofertas.size != 1) "s" else ""}",
+                        text = stringResource(R.string.offers_found_count, ofertas.size),
                         fontSize = 13.sp,
                         color = Color.Gray
                     )
@@ -231,7 +236,7 @@ fun AlunoOfertasScreen(
 
     if (mostrarFiltroArea) {
         FiltroDialog(
-            titulo = "Filtrar por Área",
+            titulo = stringResource(R.string.filter_by_area),
             opcoes = areas,
             selecionado = filtroArea,
             onSelecionar = { viewModel.onFiltroAreaChange(it); mostrarFiltroArea = false },
@@ -241,7 +246,7 @@ fun AlunoOfertasScreen(
 
     if (mostrarFiltroLocalizacao) {
         FiltroDialog(
-            titulo = "Filtrar por Localização",
+            titulo = stringResource(R.string.filter_by_location),
             opcoes = localizacoes,
             selecionado = filtroLocalizacao,
             onSelecionar = { viewModel.onFiltroLocalizacaoChange(it); mostrarFiltroLocalizacao = false },
@@ -251,7 +256,7 @@ fun AlunoOfertasScreen(
 
     if (mostrarFiltroDuracao) {
         FiltroDialog(
-            titulo = "Filtrar por Duração",
+            titulo = stringResource(R.string.filter_by_duration),
             opcoes = duracoes.map { "${it}h" },
             selecionado = filtroDuracao?.let { "${it}h" },
             onSelecionar = { selecionado ->
@@ -338,9 +343,9 @@ fun OfertaCard(oferta: OfertaEstagio, onClick: () -> Unit) {
             }
             Spacer(modifier = Modifier.height(12.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("${oferta.numeroVagas} vaga${if (oferta.numeroVagas != 1) "s" else ""}", fontSize = 12.sp, color = Color.Gray)
+                Text(stringResource(R.string.vacancies_count, oferta.numeroVagas), fontSize = 12.sp, color = Color.Gray)
                 Button(onClick = onClick, colors = ButtonDefaults.buttonColors(containerColor = DarkBlue), shape = RoundedCornerShape(8.dp), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
-                    Text("Ver Detalhes", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.view_details), fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
         }
@@ -373,7 +378,7 @@ fun FiltroDialog(
             }
         },
         confirmButton = {},
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Fechar", color = DarkBlue) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.close), color = DarkBlue) } },
         shape = RoundedCornerShape(16.dp)
     )
 }

@@ -14,10 +14,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.data.repository.AdminRepository
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.auth.LigixGold
@@ -72,14 +74,14 @@ fun AdminEmpresasScreen(
 
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
             Text(
-                text = "Empresas",
+                text = stringResource(R.string.companies),
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkBlue
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Histórico de candidaturas institucionais à rede académica.",
+                text = stringResource(R.string.company_history_subtitle),
                 fontSize = 14.sp,
                 color = Color.Gray,
                 lineHeight = 20.sp
@@ -91,7 +93,7 @@ fun AdminEmpresasScreen(
                 value = termoPesquisa,
                 onValueChange = { viewModel.atualizarPesquisa(it) },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Pesquisar por nome de empresa...", fontSize = 13.sp) },
+                placeholder = { Text(stringResource(R.string.search_company_name), fontSize = 13.sp) },
                 leadingIcon = {
                     Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray)
                 },
@@ -111,7 +113,7 @@ fun AdminEmpresasScreen(
             ) {
                 FiltroEmpresa.entries.forEach { filtro ->
                     ChipFiltroEmpresa(
-                        label = filtro.label,
+                        label = filtroEmpresaLabel(filtro),
                         contagem = contagens[filtro] ?: 0,
                         selecionado = filtroSelecionado == filtro,
                         onClick = { viewModel.selecionarFiltro(filtro) }
@@ -150,9 +152,9 @@ fun AdminEmpresasScreen(
                     ) {
                         Text(
                             text = if (termoPesquisa.isNotBlank())
-                                "Sem resultados para \"$termoPesquisa\"."
+                                stringResource(R.string.no_results_for, termoPesquisa)
                             else
-                                "Sem empresas neste filtro.",
+                                stringResource(R.string.no_companies_in_filter),
                             modifier = Modifier.fillMaxWidth().padding(24.dp),
                             color = Color.Gray,
                             fontSize = 14.sp
@@ -264,7 +266,7 @@ private fun CardEmpresaListagem(
                     )
                     if (data.isNotBlank()) {
                         Text(
-                            text = "Registo: $data",
+                            text = stringResource(R.string.registered_label, data),
                             fontSize = 12.sp,
                             color = Color.Gray
                         )
@@ -290,9 +292,9 @@ private fun CardEmpresaListagem(
 @Composable
 private fun BadgeStatusEmpresa(status: String) {
     val (label, fundo, texto) = when (status) {
-        "pendente"  -> Triple("PENDENTE",  LigixGold.copy(alpha = 0.2f), Color(0xFFB8860B))
-        "aprovada"  -> Triple("APROVADA",  Color(0xFFE8F5E9),            Color(0xFF2E7D32))
-        "rejeitada" -> Triple("REJEITADA", Color(0xFFFFEBEE),            Color(0xFFE53935))
+        "pendente"  -> Triple(stringResource(R.string.company_status_pending_upper),  LigixGold.copy(alpha = 0.2f), Color(0xFFB8860B))
+        "aprovada"  -> Triple(stringResource(R.string.company_status_approved_upper),  Color(0xFFE8F5E9),            Color(0xFF2E7D32))
+        "rejeitada" -> Triple(stringResource(R.string.application_status_rejected_upper), Color(0xFFFFEBEE),            Color(0xFFE53935))
         else        -> Triple(status.uppercase(), Color.LightGray,       Color.DarkGray)
     }
     Box(
@@ -309,6 +311,14 @@ private fun BadgeStatusEmpresa(status: String) {
     }
 }
 
+@Composable
+private fun filtroEmpresaLabel(filtro: FiltroEmpresa): String = when (filtro) {
+    FiltroEmpresa.TODAS -> stringResource(R.string.all)
+    FiltroEmpresa.APROVADAS -> stringResource(R.string.approved_plural)
+    FiltroEmpresa.REJEITADAS -> stringResource(R.string.rejected_plural)
+    FiltroEmpresa.PENDENTES -> stringResource(R.string.pending_plural)
+}
+
 private fun matchPesquisaEmpresa(e: EmpresaListagem, termo: String): Boolean {
     if (termo.isBlank()) return true
     val t = termo.trim().lowercase()
@@ -321,7 +331,7 @@ private fun formatarDataCurta(createdAt: String?): String {
     return try {
         val dataParte = createdAt.substringBefore("T")
         val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val outputFormat = SimpleDateFormat("dd MMM yyyy", Locale("pt", "PT"))
+        val outputFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
         val date = inputFormat.parse(dataParte)
         if (date != null) outputFormat.format(date) else ""
     } catch (e: Exception) {

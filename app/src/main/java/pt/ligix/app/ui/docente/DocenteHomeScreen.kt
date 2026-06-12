@@ -26,10 +26,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.data.repository.DocenteRepository
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.auth.LigixGold
@@ -70,13 +72,13 @@ fun DocenteHomeScreen(
 
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
             Text(
-                "Olá, $nomeDocente",
+                stringResource(R.string.docente_home_greeting, nomeDocente),
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkBlue
             )
             Text(
-                "Bem-vindo ao seu painel de curadoria académica. Aqui está o resumo de hoje.",
+                stringResource(R.string.docente_home_subtitle),
                 fontSize = 14.sp,
                 color = Color.Gray,
                 modifier = Modifier.padding(top = 6.dp)
@@ -90,11 +92,11 @@ fun DocenteHomeScreen(
                     color = DarkBlue
                 )
             } else {
-                DocenteStatCard("ORIENTANDOS ATIVOS", orientandosAtivos.toString(), DarkBlue)
+                DocenteStatCard(stringResource(R.string.active_orientees_upper), orientandosAtivos.toString(), DarkBlue)
                 Spacer(Modifier.height(12.dp))
-                DocenteStatCard("ATIVIDADES ESTA SEMANA", revisoesPendentes.toString(), LigixGold)
+                DocenteStatCard(stringResource(R.string.activities_this_week_upper), revisoesPendentes.toString(), LigixGold)
                 Spacer(Modifier.height(12.dp))
-                DocenteStatCard("AVALIAÇÕES EM FALTA", avaliacoesEmFalta.toString(), Color(0xFFBDBDBD))
+                DocenteStatCard(stringResource(R.string.missing_evaluations_upper), avaliacoesEmFalta.toString(), Color(0xFFBDBDBD))
             }
 
             erro?.let {
@@ -104,7 +106,7 @@ fun DocenteHomeScreen(
             Spacer(Modifier.height(32.dp))
 
             Text(
-                "Atividade Recente",
+                stringResource(R.string.recent_activity),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkBlue
@@ -125,7 +127,7 @@ fun DocenteHomeScreen(
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        "Sem atividade recente",
+                        stringResource(R.string.no_recent_activity),
                         color = Color.Gray,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold
@@ -213,7 +215,7 @@ private fun DocenteAtividadeResumoCard(
             Spacer(Modifier.width(14.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "${atividade.nomeAluno} registou uma atividade",
+                    stringResource(R.string.student_registered_activity, atividade.nomeAluno),
                     fontSize = 13.sp,
                     color = Color.Black,
                     fontWeight = FontWeight.SemiBold,
@@ -243,7 +245,7 @@ private fun DocenteAtividadeResumoCard(
             IconButton(onClick = onVerDiario) {
                 Icon(
                     Icons.Default.RemoveRedEye,
-                    contentDescription = "Ver atividades",
+                    contentDescription = stringResource(R.string.view_activities),
                     tint = DarkBlue,
                     modifier = Modifier.size(24.dp)
                 )

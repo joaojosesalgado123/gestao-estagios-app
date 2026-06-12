@@ -16,10 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.data.repository.EmpresaRepository
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.util.PhoneNumberValidator
@@ -64,9 +66,9 @@ fun EmpresaOrientadoresScreen(
 
             Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
 
-                Text("Orientadores", fontSize = 28.sp,
+                Text(stringResource(R.string.mentors), fontSize = 28.sp,
                     fontWeight = FontWeight.Bold, color = DarkBlue)
-                Text("Gerir acessos e perfis da plataforma curatorial.",
+                Text(stringResource(R.string.supervisors_management_subtitle),
                     fontSize = 14.sp, color = Color.Gray,
                     modifier = Modifier.padding(top = 4.dp))
 
@@ -77,7 +79,7 @@ fun EmpresaOrientadoresScreen(
                     value = pesquisa,
                     onValueChange = { pesquisa = it },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Pesquisar por nome ou e-mail...", color = Color.LightGray) },
+                    placeholder = { Text(stringResource(R.string.search_name_email), color = Color.LightGray) },
                     leadingIcon = {
                         Icon(Icons.Default.Search, contentDescription = null, tint = Color.LightGray)
                     },
@@ -106,7 +108,7 @@ fun EmpresaOrientadoresScreen(
                         Icon(Icons.Default.PersonOff, contentDescription = null,
                             tint = Color.LightGray, modifier = Modifier.size(48.dp))
                         Spacer(Modifier.height(8.dp))
-                        Text("Sem orientadores", color = Color.Gray,
+                        Text(stringResource(R.string.no_supervisors), color = Color.Gray,
                             fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                     }
                 } else {
@@ -134,7 +136,7 @@ fun EmpresaOrientadoresScreen(
             contentColor = Color.White,
             shape = RoundedCornerShape(16.dp)
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Adicionar Orientador",
+            Icon(Icons.Default.Add, contentDescription = stringResource(R.string.add_supervisor),
                 modifier = Modifier.size(28.dp))
         }
     }
@@ -180,7 +182,7 @@ fun OrientadorCard(
                         .background(Color(0xFFEEF0FB), RoundedCornerShape(8.dp))
                         .padding(horizontal = 10.dp, vertical = 4.dp)
                 ) {
-                    Text("ORIENTADOR", fontSize = 11.sp,
+                    Text(stringResource(R.string.mentor_upper), fontSize = 11.sp,
                         color = DarkBlue, fontWeight = FontWeight.Bold,
                         letterSpacing = 0.5.sp)
                 }
@@ -213,7 +215,7 @@ fun OrientadorCard(
                     Icon(Icons.Default.Edit, contentDescription = null,
                         tint = Color.White, modifier = Modifier.size(15.dp))
                     Spacer(Modifier.width(6.dp))
-                    Text("Editar", color = Color.White, fontSize = 13.sp,
+                    Text(stringResource(R.string.edit), color = Color.White, fontSize = 13.sp,
                         fontWeight = FontWeight.Medium)
                 }
                 OutlinedButton(
@@ -227,7 +229,7 @@ fun OrientadorCard(
                     Icon(Icons.Default.Cancel, contentDescription = null,
                         tint = Color.Red, modifier = Modifier.size(15.dp))
                     Spacer(Modifier.width(6.dp))
-                    Text("Eliminar", color = Color.Red, fontSize = 13.sp,
+                    Text(stringResource(R.string.delete), color = Color.Red, fontSize = 13.sp,
                         fontWeight = FontWeight.Medium)
                 }
             }

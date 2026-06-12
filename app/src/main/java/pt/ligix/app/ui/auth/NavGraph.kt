@@ -173,14 +173,9 @@ fun LigixNavGraph() {
         ) { backStackEntry ->
             val email = backStackEntry.arguments?.getString("email") ?: ""
             val isPendente = backStackEntry.arguments?.getString("isPendente") == "true"
-            val mensagem = if (isPendente)
-                "Registo submetido! Confirme o email; a sua conta fica pendente de aprovação pelo administrador."
-            else
-                "Conta criada com sucesso! Confirme o email antes de iniciar sessão."
 
             RegistoSucessoScreen(
                 email = email,
-                mensagem = mensagem,
                 isPendente = isPendente,
                 onIrParaLogin = {
                     authViewModel.resetRegistoState()

@@ -1,5 +1,6 @@
 package pt.ligix.app.ui.aluno
 
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -56,6 +57,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -68,17 +70,18 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.delay
+import pt.ligix.app.R
 import pt.ligix.app.model.OfertaEstagio
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.viewmodel.MensagensViewModel
 import pt.ligix.app.viewmodel.MensagensViewModelFactory
 
-sealed class AlunoTab(val route: String, val label: String, val icon: ImageVector) {
-    object Inicio : AlunoTab("aluno_inicio", "Início", Icons.Default.Home)
-    object Procurar : AlunoTab("aluno_procurar", "Procurar", Icons.Default.Search)
-    object Estagio : AlunoTab("aluno_estagio", "Estágio", Icons.Default.Assignment)
-    object Mensagens : AlunoTab("aluno_mensagens", "Mensagens", Icons.Default.Message)
-    object Perfil : AlunoTab("aluno_perfil", "Perfil", Icons.Default.Person)
+sealed class AlunoTab(val route: String, @StringRes val labelRes: Int, val icon: ImageVector) {
+    object Inicio : AlunoTab("aluno_inicio", R.string.home, Icons.Default.Home)
+    object Procurar : AlunoTab("aluno_procurar", R.string.search, Icons.Default.Search)
+    object Estagio : AlunoTab("aluno_estagio", R.string.internship, Icons.Default.Assignment)
+    object Mensagens : AlunoTab("aluno_mensagens", R.string.messages, Icons.Default.Message)
+    object Perfil : AlunoTab("aluno_perfil", R.string.profile, Icons.Default.Person)
 }
 
 val bottomNavRoutes = listOf(
@@ -134,10 +137,10 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
             Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Color.White), modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text("Notificações", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
+                        Text(stringResource(R.string.notifications), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
                         if (historicoNotificacoes.isNotEmpty()) {
                             TextButton(onClick = { mensagensViewModel.limparHistoricoNotificacoes() }) {
-                                Text("Limpar", fontSize = 13.sp, color = Color.Gray)
+                                Text(stringResource(R.string.clear), fontSize = 13.sp, color = Color.Gray)
                             }
                         }
                     }
@@ -146,7 +149,7 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
                         Column(modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Default.NotificationsNone, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(48.dp))
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Sem notificações", color = Color.Gray, fontSize = 14.sp)
+                            Text(stringResource(R.string.no_notifications), color = Color.Gray, fontSize = 14.sp)
                         }
                     } else {
                         LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
@@ -189,13 +192,13 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
                                 },
                                 icon = {
                                     Box {
-                                        Icon(tab.icon, contentDescription = tab.label)
+                                        Icon(tab.icon, contentDescription = stringResource(tab.labelRes))
                                         if (tab == AlunoTab.Mensagens && historicoNotificacoes.isNotEmpty()) {
                                             Box(modifier = Modifier.size(8.dp).background(Color.Red, CircleShape).align(Alignment.TopEnd))
                                         }
                                     }
                                 },
-                                label = { Text(tab.label) },
+                                label = { Text(stringResource(tab.labelRes)) },
                                 colors = NavigationBarItemDefaults.colors(
                                     selectedIconColor = DarkBlue, selectedTextColor = DarkBlue,
                                     indicatorColor = Color(0xFFE8EAF6), unselectedIconColor = Color.Gray, unselectedTextColor = Color.Gray
@@ -286,7 +289,7 @@ fun AlunoMainScreen(onLogout: () -> Unit) {
                         Text(notif.conteudo, fontSize = 13.sp, color = Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     IconButton(onClick = { mensagensViewModel.dispensarNotificacao() }, modifier = Modifier.size(24.dp)) {
-                        Icon(Icons.Default.Close, contentDescription = "Fechar", tint = Color.Gray, modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close), tint = Color.Gray, modifier = Modifier.size(16.dp))
                     }
                 }
             }

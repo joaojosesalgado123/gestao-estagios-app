@@ -15,15 +15,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.ui.aluno.PerfilCampo
 import pt.ligix.app.ui.aluno.PerfilCampoEditavel
 import pt.ligix.app.ui.aluno.PerfilSecao
 import pt.ligix.app.ui.auth.DarkBlue
+import pt.ligix.app.ui.common.LanguageSettingsCard
 import pt.ligix.app.ui.common.PhoneNumberInput
 import pt.ligix.app.ui.common.dismissDropdownsOnOutsideTap
 import pt.ligix.app.ui.common.rememberDropdownDismissController
@@ -107,7 +110,7 @@ fun InstituicaoPerfilScreen(
                         fontSize = 32.sp, fontWeight = FontWeight.Bold)
                 }
                 Spacer(Modifier.height(16.dp))
-                Text("INSTITUIÇÃO DE ENSINO", fontSize = 10.sp, color = Color.Gray,
+                Text(stringResource(R.string.education_institution_upper), fontSize = 10.sp, color = Color.Gray,
                     letterSpacing = 1.sp, fontWeight = FontWeight.Medium)
                 Spacer(Modifier.height(4.dp))
                 Text(instituicao?.nome ?: utilizador?.nome ?: "—",
@@ -133,14 +136,14 @@ fun InstituicaoPerfilScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Informações\nInstituição", fontSize = 20.sp,
+            Text(stringResource(R.string.institution_info_title), fontSize = 20.sp,
                 fontWeight = FontWeight.Bold, color = Color.Black, lineHeight = 26.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (modoEdicao) {
                     OutlinedButton(onClick = { modoEdicao = false },
                         shape = RoundedCornerShape(10.dp),
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
-                        Text("Cancelar", fontSize = 14.sp, color = Color.Gray)
+                        Text(stringResource(R.string.cancel), fontSize = 14.sp, color = Color.Gray)
                     }
                     Button(
                         onClick = { viewModel.guardarPerfil(editNome, editMorada, editTelefone, editEmail) },
@@ -154,7 +157,7 @@ fun InstituicaoPerfilScreen(
                         } else {
                             Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Guardar", fontSize = 14.sp)
+                            Text(stringResource(R.string.save), fontSize = 14.sp)
                         }
                     }
                 } else {
@@ -164,7 +167,7 @@ fun InstituicaoPerfilScreen(
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
                         Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(6.dp))
-                        Text("Editar", fontSize = 14.sp)
+                        Text(stringResource(R.string.edit), fontSize = 14.sp)
                     }
                 }
             }
@@ -178,11 +181,11 @@ fun InstituicaoPerfilScreen(
         Spacer(Modifier.height(12.dp))
 
         // Informações da Instituição
-        PerfilSecao(titulo = "Identificação", icon = Icons.Default.Business) {
-            PerfilCampo(label = "NOME DA INSTITUIÇÃO",
+        PerfilSecao(titulo = stringResource(R.string.identification), icon = Icons.Default.Business) {
+            PerfilCampo(label = stringResource(R.string.institution_name_upper),
                 valor = instituicao?.nome ?: "—", icon = Icons.Default.School)
             Spacer(Modifier.height(8.dp))
-            PerfilCampo(label = "SIGLA",
+            PerfilCampo(label = stringResource(R.string.acronym_upper),
                 valor = instituicao?.sigla ?: "—", icon = Icons.Default.Badge)
             Spacer(Modifier.height(8.dp))
             PerfilCampo(label = "NIPC",
@@ -191,13 +194,13 @@ fun InstituicaoPerfilScreen(
 
         Spacer(Modifier.height(12.dp))
 
-        PerfilSecao(titulo = "Contactos", icon = Icons.Default.ContactMail) {
+        PerfilSecao(titulo = stringResource(R.string.contacts), icon = Icons.Default.ContactMail) {
             if (modoEdicao) {
-                PerfilCampoEditavel(label = "EMAIL", valor = editEmail,
+                PerfilCampoEditavel(label = stringResource(R.string.email_upper), valor = editEmail,
                     onValorChange = { editEmail = it })
                 Spacer(Modifier.height(8.dp))
                 PhoneNumberInput(
-                    label = "TELEFONE",
+                    label = stringResource(R.string.phone_upper),
                     value = editTelefone,
                     onValueChange = { editTelefone = it },
                     containerColor = androidx.compose.ui.graphics.Color(0xFFF8F8F8),
@@ -205,16 +208,16 @@ fun InstituicaoPerfilScreen(
                     dropdownId = "inst_perfil_tel"
                 )
                 Spacer(Modifier.height(8.dp))
-                PerfilCampoEditavel(label = "MORADA", valor = editMorada,
+                PerfilCampoEditavel(label = stringResource(R.string.address_upper), valor = editMorada,
                     onValorChange = { editMorada = it })
             } else {
-                PerfilCampo(label = "EMAIL",
+                PerfilCampo(label = stringResource(R.string.email_upper),
                     valor = instituicao?.email ?: "—", icon = Icons.Default.Email)
                 Spacer(Modifier.height(8.dp))
-                PerfilCampo(label = "TELEFONE",
+                PerfilCampo(label = stringResource(R.string.phone_upper),
                     valor = instituicao?.telefone ?: "—", icon = Icons.Default.Phone)
                 Spacer(Modifier.height(8.dp))
-                PerfilCampo(label = "MORADA",
+                PerfilCampo(label = stringResource(R.string.address_upper),
                     valor = instituicao?.morada ?: "—", icon = Icons.Default.LocationOn)
             }
         }
@@ -222,18 +225,22 @@ fun InstituicaoPerfilScreen(
         Spacer(Modifier.height(12.dp))
 
         // Conta
-        PerfilSecao(titulo = "Conta", icon = Icons.Default.ManageAccounts) {
-            PerfilCampo(label = "EMAIL DE ACESSO",
+        PerfilSecao(titulo = stringResource(R.string.account), icon = Icons.Default.ManageAccounts) {
+            PerfilCampo(label = stringResource(R.string.email_access_upper),
                 valor = utilizador?.email ?: "—", icon = Icons.Default.Email)
             Spacer(Modifier.height(8.dp))
             if (modoEdicao) {
-                PerfilCampoEditavel(label = "NOME DE UTILIZADOR", valor = editNome,
+                PerfilCampoEditavel(label = stringResource(R.string.username_label_upper), valor = editNome,
                     onValorChange = { editNome = it })
             } else {
-                PerfilCampo(label = "NOME DE UTILIZADOR",
+                PerfilCampo(label = stringResource(R.string.username_label_upper),
                     valor = utilizador?.nome ?: "—", icon = Icons.Default.Person)
             }
         }
+
+        Spacer(Modifier.height(12.dp))
+
+        LanguageSettingsCard(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp))
 
         Spacer(Modifier.height(16.dp))
 
@@ -243,7 +250,7 @@ fun InstituicaoPerfilScreen(
         ) {
             Icon(Icons.Default.Logout, contentDescription = null, tint = Color.Red)
             Spacer(Modifier.width(8.dp))
-            Text("TERMINAR SESSÃO", color = Color.Red,
+            Text(stringResource(R.string.logout), color = Color.Red,
                 fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
         }
 
