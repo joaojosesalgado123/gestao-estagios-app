@@ -26,6 +26,8 @@ import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.viewmodel.AdminEditarUtilizadorViewModel
 import pt.ligix.app.viewmodel.AdminEditarUtilizadorViewModelFactory
 import androidx.compose.runtime.DisposableEffect
+import java.text.Normalizer
+import java.util.Locale
 
 @Composable
 fun AdminEditarUtilizadorScreen(
@@ -127,7 +129,7 @@ fun AdminEditarUtilizadorScreen(
 
                             u.camposExtras.forEach { (label, valor) ->
                                 Spacer(Modifier.height(16.dp))
-                                CampoSoLeitura(label, valor)
+                                CampoSoLeitura(labelAdminExtra(label), valor)
                             }
                         }
                     }
@@ -144,7 +146,7 @@ fun AdminEditarUtilizadorScreen(
                             Spacer(Modifier.height(20.dp))
                             CampoSoLeitura(
                                 stringResource(R.string.access_profile_upper),
-                                u.role.replaceFirstChar { it.uppercase() }
+                                roleAdminLabel(u.role)
                             )
                         }
                     }
@@ -180,6 +182,43 @@ fun AdminEditarUtilizadorScreen(
         }
     }
 }
+
+@Composable
+private fun labelAdminExtra(label: String): String {
+    return when (normalizarLabel(label)) {
+        "NUMERO DE ALUNO" -> stringResource(R.string.student_number_upper)
+        "CURSO" -> stringResource(R.string.course_upper)
+        "TELEMOVEL" -> stringResource(R.string.mobile_upper)
+        "AREA" -> stringResource(R.string.area_upper)
+        "ESTADO" -> stringResource(R.string.status_upper)
+        "NIPC" -> stringResource(R.string.nipc_upper)
+        "MORADA" -> stringResource(R.string.address_upper)
+        "DESCRICAO" -> stringResource(R.string.description_upper)
+        "SIGLA" -> stringResource(R.string.acronym_upper)
+        "TELEFONE" -> stringResource(R.string.phone_upper)
+        "EMAIL INSTITUCIONAL" -> stringResource(R.string.institutional_email_upper)
+        else -> label
+    }
+}
+
+@Composable
+private fun roleAdminLabel(role: String): String {
+    return when (normalizarLabel(role).replace(" ", "_")) {
+        "ALUNO" -> stringResource(R.string.role_student)
+        "DOCENTE" -> stringResource(R.string.role_teacher)
+        "ORIENTADOR", "ORIENTADOR_EMPRESA", "ORIENTADOR_DE_EMPRESA" ->
+            stringResource(R.string.company_supervisor_upper)
+        "EMPRESA" -> stringResource(R.string.role_company)
+        "ADMIN", "ADMINISTRADOR" -> stringResource(R.string.administrator_upper)
+        "INSTITUICAO" -> stringResource(R.string.institution_role)
+        else -> role.replaceFirstChar { it.uppercase() }
+    }
+}
+
+private fun normalizarLabel(label: String): String =
+    Normalizer.normalize(label.trim(), Normalizer.Form.NFD)
+        .replace(Regex("\\p{Mn}+"), "")
+        .uppercase(Locale.ROOT)
 
 @Composable
 private fun CabecalhoSeccao(titulo: String, icone: androidx.compose.ui.graphics.vector.ImageVector) {
