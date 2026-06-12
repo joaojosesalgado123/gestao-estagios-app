@@ -78,11 +78,14 @@
     <string name="messages">Mensagens</string>
     <string name="candidates">Candidatos</string>
     <string name="mentors">Orientadores</string>
+    <string name="institutions">Institui&#231;&#245;es</string>
     <string name="users">Utilizadores</string>
     <string name="approvals">Aprovações</string>
     <string name="companies">Empresas</string>
     <string name="chat">Chat</string>
     <string name="profile">Perfil</string>
+    <string name="unassigned">Por Atribuir</string>
+    <string name="assigned">Atribuídos</string>
     <string name="notifications">Notificações</string>
     <string name="no_notifications">Sem notificações</string>
 
@@ -105,6 +108,7 @@
     <string name="academic_data">Dados Académicos</string>
     <string name="professional_data">Dados Profissionais</string>
     <string name="institutional_info">Informações Institucionais</string>
+    <string name="create_institution">Criar Institui&#231;&#227;o</string>
     <string name="company_data">Dados da Empresa</string>
     <string name="identification">Identificação</string>
     <string name="contacts">Contactos</string>
@@ -348,9 +352,13 @@
     <string name="assignment">Atribui&#231;&#227;o</string>
     <string name="pending_count">%1$d Pendentes</string>
     <string name="all_internships_have_teacher">Todos os est&#225;gios t&#234;m docente atribu&#237;do</string>
+    <string name="no_assigned_internships_with_teacher">Nenhum est&#225;gio com docente atribu&#237;do</string>
     <string name="select_teacher_upper">SELECIONAR DOCENTE</string>
+    <string name="change_teacher_upper">TROCAR DOCENTE</string>
     <string name="select_teacher_placeholder">Selecionar um docente...</string>
     <string name="assign_teacher">Atribuir Docente</string>
+    <string name="change_teacher">Trocar Docente</string>
+    <string name="current_teacher">Docente atual: %1$s</string>
     <string name="delete_user">Eliminar Utilizador</string>
     <string name="delete_user_confirm">Tem a certeza que quer eliminar %1$s?</string>
     <string name="back">Voltar</string>
@@ -477,8 +485,12 @@
     <string name="mentor_assignment_subtitle">Faça a gestão e atribuição de orientadores aos estágios da sua empresa.</string>
     <string name="search_name_internship">Pesquisar por nome ou estágio...</string>
     <string name="all_internships_have_mentor">Todos os estágios têm orientador atribuído</string>
+    <string name="no_assigned_internships_with_mentor">Nenhum estágio com orientador atribuído</string>
     <string name="select_mentor_upper">SELECIONAR ORIENTADOR</string>
+    <string name="change_mentor_upper">TROCAR ORIENTADOR</string>
     <string name="select_mentor_placeholder">Selecionar um orientador...</string>
+    <string name="change_mentor">Trocar Orientador</string>
+    <string name="current_mentor">Orientador atual: %1$s</string>
     <string name="create_mentor">Criar Orientador</string>
     <string name="edit_mentor">Editar Orientador</string>
     <string name="back_to_mentors">Voltar para Orientadores</string>

@@ -40,6 +40,23 @@ data class UtilizadorEdicao(
 )
 
 /**
+ * Dados recolhidos pelo admin para criar uma nova conta institucional.
+ * A palavra-passe só é enviada ao Supabase Auth e não deve ser persistida
+ * nas tabelas públicas.
+ */
+data class NovaInstituicaoEnsino(
+    val idInstituicao: String?,
+    val nome: String,
+    val sigla: String,
+    val email: String,
+    val telefone: String?,
+    val morada: String?,
+    val nipc: String?,
+    val username: String,
+    val password: String
+)
+
+/**
  * Modelo de UI para um cartão na listagem de empresas. Combina dados
  * de `empresa` com o nome vindo de `utilizador`, e inclui o status
  * para mostrar o badge colorido na UI.

@@ -21,11 +21,14 @@ fun AdminMainScreen(onLogout: () -> Unit = {}) {
     var selectedTab by remember { mutableStateOf(0) }
     var idEmpresaEmDetalhe by remember { mutableStateOf<String?>(null) }
     var utilizadorEmEdicao by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var mostrarCriarInstituicao by remember { mutableStateOf(false) }
+    var utilizadoresKey by remember { mutableStateOf(0) }
 
     fun navegarParaPerfil() {
         selectedTab = 4
         idEmpresaEmDetalhe = null
         utilizadorEmEdicao = null
+        mostrarCriarInstituicao = false
     }
 
     CompositionLocalProvider(
@@ -34,7 +37,7 @@ fun AdminMainScreen(onLogout: () -> Unit = {}) {
         Scaffold(
         bottomBar = {
             // Esconde a bottom bar quando estamos num sub-ecrã (detalhe)
-            if (idEmpresaEmDetalhe == null && utilizadorEmEdicao == null) {
+            if (idEmpresaEmDetalhe == null && utilizadorEmEdicao == null && !mostrarCriarInstituicao) {
                 NavigationBar(containerColor = Color.White) {
                     NavigationBarItem(
                         selected = selectedTab == 0,
@@ -84,6 +87,14 @@ fun AdminMainScreen(onLogout: () -> Unit = {}) {
                     idEmpresa = empresaId,
                     onVoltar = { idEmpresaEmDetalhe = null }
                 )
+            } else if (mostrarCriarInstituicao) {
+                AdminCriarInstituicaoScreen(
+                    onVoltar = { mostrarCriarInstituicao = false },
+                    onCriada = {
+                        mostrarCriarInstituicao = false
+                        utilizadoresKey++
+                    }
+                )
             } else if (utilEdicao != null) {
                 AdminEditarUtilizadorScreen(
                     idUtilizador = utilEdicao.first,
@@ -95,9 +106,12 @@ fun AdminMainScreen(onLogout: () -> Unit = {}) {
                     0 -> AdminDashboardScreen(
                         onAbrirDetalheEmpresa = { id -> idEmpresaEmDetalhe = id }
                     )
-                    1 ->  AdminUtilizadoresScreen(
-                        onEditarUtilizador = { id, role -> utilizadorEmEdicao = id to role }
-                    )
+                    1 -> key(utilizadoresKey) {
+                        AdminUtilizadoresScreen(
+                            onEditarUtilizador = { id, role -> utilizadorEmEdicao = id to role },
+                            onCriarInstituicao = { mostrarCriarInstituicao = true }
+                        )
+                    }
                     2 -> AdminAprovacoesScreen(
                         onAbrirDetalheEmpresa = { id -> idEmpresaEmDetalhe = id }
                     )

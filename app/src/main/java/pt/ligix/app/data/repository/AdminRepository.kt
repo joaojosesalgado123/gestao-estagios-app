@@ -1,11 +1,15 @@
 package pt.ligix.app.data.repository
 
 import pt.ligix.app.data.remote.RetrofitClient
+import pt.ligix.app.data.remote.SupabaseAuthClient
+import pt.ligix.app.data.remote.SupabaseSignUpRequest
 import pt.ligix.app.model.Empresa
+import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.viewmodel.EmpresaDetalhe
 import pt.ligix.app.viewmodel.EmpresaListagem
 import pt.ligix.app.viewmodel.EmpresaPendenteCard
 import pt.ligix.app.viewmodel.EstatisticasDashboard
+import pt.ligix.app.viewmodel.NovaInstituicaoEnsino
 import pt.ligix.app.viewmodel.ResumoAtividadeEmpresas
 import pt.ligix.app.viewmodel.UtilizadorEdicao
 import java.text.SimpleDateFormat
@@ -174,6 +178,94 @@ class AdminRepository {
         }
     }
 
+    suspend fun getInstituicoesEnsino(): Result<List<InstituicaoEnsino>> {
+        return try {
+            val response = api.getInstituicoes(
+                select = "idinstituicao,idutilizador,nome,sigla,morada,email,telefone,nipc"
+            )
+            if (response.isSuccessful) {
+                Result.success(response.body().orEmpty())
+            } else {
+                Result.failure(Exception("Erro ao carregar instituições: ${response.code()}"))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception("Sem ligação à internet"))
+        }
+    }
+
+    suspend fun criarInstituicaoEnsino(nova: NovaInstituicaoEnsino): Result<Unit> {
+        return try {
+            val metadata = mutableMapOf(
+                "role" to "instituicao",
+                "nome" to nova.nome,
+                "username" to nova.username,
+                "sigla" to nova.sigla,
+                "email_institucional" to nova.email
+            )
+            nova.idInstituicao?.takeIf { it.isNotBlank() }?.let { metadata["idinstituicao"] = it }
+            nova.telefone?.takeIf { it.isNotBlank() }?.let { metadata["telefone"] = it }
+            nova.morada?.takeIf { it.isNotBlank() }?.let { metadata["morada"] = it }
+            nova.nipc?.takeIf { it.isNotBlank() }?.let { metadata["nipc"] = it }
+
+            val authResponse = SupabaseAuthClient.api.signUp(
+                SupabaseSignUpRequest(
+                    email = nova.email,
+                    password = nova.password,
+                    data = metadata
+                )
+            )
+
+            if (!authResponse.isSuccessful) {
+                return Result.failure(
+                    Exception(
+                        mensagemErroCriarContaInstituicao(
+                            statusCode = authResponse.code(),
+                            detalhe = detalheErro(authResponse)
+                        )
+                    )
+                )
+            }
+
+            val idNovoUtilizador = authResponse.body()?.user?.id?.takeIf { it.isNotBlank() }
+                ?: authResponse.body()?.id?.takeIf { it.isNotBlank() }
+                ?: return Result.failure(Exception("A conta foi criada, mas não foi possível obter o ID do utilizador."))
+
+            val body = mutableMapOf<String, Any?>(
+                "idutilizador" to idNovoUtilizador,
+                "nome" to nova.nome,
+                "sigla" to nova.sigla,
+                "email" to nova.email
+            )
+            nova.telefone?.takeIf { it.isNotBlank() }?.let { body["telefone"] = it }
+            nova.morada?.takeIf { it.isNotBlank() }?.let { body["morada"] = it }
+            nova.nipc?.takeIf { it.isNotBlank() }?.let { body["nipc"] = it }
+
+            val idInstituicao = nova.idInstituicao?.takeIf { it.isNotBlank() }
+            val instituicaoResponse = if (idInstituicao != null) {
+                api.updateInstituicaoMap(
+                    id = "eq.$idInstituicao",
+                    body = body
+                )
+            } else {
+                api.createInstituicaoEnsino(body = body)
+            }
+            if (instituicaoResponse.isSuccessful) {
+                Result.success(Unit)
+            } else {
+                Result.failure(
+                    Exception(
+                        mensagemErroCriarInstituicao(
+                            statusCode = instituicaoResponse.code(),
+                            detalhe = detalheErro(instituicaoResponse)
+                        )
+                    )
+                )
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception(e.message ?: "Sem ligação à internet"))
+        }
+    }
+
     suspend fun getUtilizadorParaEdicao(idutilizador: String, role: String): Result<UtilizadorEdicao> {
         return try {
             val utilResp = api.getUtilizadoresByIds(ids = inFilter(listOf(idutilizador)))
@@ -188,6 +280,7 @@ class AdminRepository {
                 "docente" -> fetchCamposDocente(idutilizador)
                 "orientador" -> fetchCamposOrientador(idutilizador)
                 "empresa" -> fetchCamposEmpresa(idutilizador)
+                "instituicao" -> fetchCamposInstituicao(idutilizador)
                 else -> emptyList()
             }
 
@@ -287,6 +380,22 @@ class AdminRepository {
                 "MORADA" to empresa.morada,
                 "TELEMÓVEL" to empresa.telemovel,
                 "DESCRIÇÃO" to empresa.descricao
+            )
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    private suspend fun fetchCamposInstituicao(id: String): List<Pair<String, String?>> {
+        return try {
+            val resp = api.getInstituicaoByIdUtilizador(idUtilizador = "eq.$id")
+            val instituicao = resp.body()?.firstOrNull() ?: return emptyList()
+            listOf(
+                "SIGLA" to instituicao.sigla,
+                "NIPC" to instituicao.nipc,
+                "MORADA" to instituicao.morada,
+                "TELEFONE" to instituicao.telefone,
+                "EMAIL INSTITUCIONAL" to instituicao.email
             )
         } catch (e: Exception) {
             emptyList()
@@ -526,6 +635,41 @@ class AdminRepository {
             code == 409 || detalhe.contains("foreign key", ignoreCase = true) ->
                 "Não foi possível eliminar uma das ofertas porque já tem candidaturas ou estágios associados."
             else -> "Erro ao eliminar oferta ($code)."
+        }
+    }
+
+    private fun mensagemErroCriarContaInstituicao(statusCode: Int, detalhe: String): String {
+        return when {
+            detalhe.contains("weak_password", ignoreCase = true) ||
+                detalhe.contains("at least 6 characters", ignoreCase = true) ->
+                "A palavra-passe deve ter pelo menos 6 caracteres."
+            detalhe.contains("invalid_email", ignoreCase = true) ||
+                detalhe.contains("invalid email", ignoreCase = true) ->
+                "Insira um email institucional válido."
+            detalhe.contains("already", ignoreCase = true) ||
+                detalhe.contains("registered", ignoreCase = true) ->
+                "Já existe uma conta com este email."
+            statusCode == 429 ->
+                "Demasiadas tentativas. Tente novamente dentro de alguns minutos."
+            statusCode in 500..599 ->
+                "O serviço de autenticação está temporariamente indisponível."
+            detalhe.isNotBlank() ->
+                "Não foi possível criar a conta institucional ($statusCode): $detalhe"
+            else ->
+                "Não foi possível criar a conta institucional. Tente novamente."
+        }
+    }
+
+    private fun mensagemErroCriarInstituicao(statusCode: Int, detalhe: String): String {
+        return when {
+            statusCode == 401 || statusCode == 403 ->
+                "A conta Auth foi criada, mas o admin não tem permissões para criar o registo da instituição. Aplique o script Supabase atualizado."
+            detalhe.contains("row-level security", ignoreCase = true) ->
+                "A conta Auth foi criada, mas a política RLS bloqueou o registo da instituição. Aplique o script Supabase atualizado."
+            detalhe.isNotBlank() ->
+                "A conta Auth foi criada, mas não foi possível criar o registo da instituição ($statusCode): $detalhe"
+            else ->
+                "A conta Auth foi criada, mas não foi possível criar o registo da instituição ($statusCode)."
         }
     }
 }

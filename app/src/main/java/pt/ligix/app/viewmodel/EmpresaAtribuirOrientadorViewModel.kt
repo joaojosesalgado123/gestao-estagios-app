@@ -23,6 +23,9 @@ class EmpresaAtribuirOrientadorViewModel(
     private val _estagiosPendentes = MutableStateFlow<List<EstagioParaAtribuir>>(emptyList())
     val estagiosPendentes: StateFlow<List<EstagioParaAtribuir>> = _estagiosPendentes
 
+    private val _estagiosAtribuidos = MutableStateFlow<List<EstagioParaAtribuir>>(emptyList())
+    val estagiosAtribuidos: StateFlow<List<EstagioParaAtribuir>> = _estagiosAtribuidos
+
     private val _orientadores = MutableStateFlow<List<OrientadorItem>>(emptyList())
     val orientadores: StateFlow<List<OrientadorItem>> = _orientadores
 
@@ -52,6 +55,7 @@ class EmpresaAtribuirOrientadorViewModel(
                 val ofertas = ofertasResp.body() ?: emptyList()
 
                 val lista = mutableListOf<EstagioParaAtribuir>()
+                val listaAtribuidos = mutableListOf<EstagioParaAtribuir>()
                 for (oferta in ofertas) {
                     val cands = api.getCandidaturasByOferta(idOferta = "eq.${oferta.idOferta}").body() ?: continue
                     val candsAceites = cands.filter { it.status == "aceite" }
@@ -59,16 +63,20 @@ class EmpresaAtribuirOrientadorViewModel(
                         val estagio = api.getEstagioByCandidatura(
                             idCandidatura = "eq.${cand.idCandidatura}"
                         ).body()?.firstOrNull() ?: continue
-                        if (!estagio.idOrientador.isNullOrBlank()) continue
                         val nomeAluno = api.getUtilizadorById(id = "eq.${cand.idAluno}").body()?.firstOrNull()?.nome ?: "Aluno"
-                        lista.add(EstagioParaAtribuir(
+                        val item = EstagioParaAtribuir(
                             idEstagio = estagio.idEstagio,
                             nomeAluno = nomeAluno,
-                            tituloOferta = oferta.titulo
-                        ))
+                            tituloOferta = oferta.titulo,
+                            idDocente = estagio.idOrientador
+                        )
+                        if (estagio.idOrientador.isNullOrBlank()) lista.add(item)
+                        else listaAtribuidos.add(item)
                     }
                 }
+                android.util.Log.d("EmpresaAtribuir", "Pendentes: ${lista.size}, Atribuidos: ${listaAtribuidos.size}")
                 _estagiosPendentes.value = lista
+                _estagiosAtribuidos.value = listaAtribuidos
 
                 // Orientadores desta empresa
                 val orientadoresResp = api.getOrientadoresByEmpresa(idEmpresa = "eq.$idEmpresa")

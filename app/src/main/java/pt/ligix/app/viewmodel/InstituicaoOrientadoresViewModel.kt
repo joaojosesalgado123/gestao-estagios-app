@@ -30,6 +30,9 @@ class InstituicaoOrientadoresViewModel(
     private val _estagiosPendentes = MutableStateFlow<List<EstagioParaAtribuir>>(emptyList())
     val estagiosPendentes: StateFlow<List<EstagioParaAtribuir>> = _estagiosPendentes
 
+    private val _estagiosAtribuidos = MutableStateFlow<List<EstagioParaAtribuir>>(emptyList())
+    val estagiosAtribuidos: StateFlow<List<EstagioParaAtribuir>> = _estagiosAtribuidos
+
     private val _docentes = MutableStateFlow<List<DocenteItem>>(emptyList())
     val docentes: StateFlow<List<DocenteItem>> = _docentes
 
@@ -77,7 +80,8 @@ class InstituicaoOrientadoresViewModel(
                 val estagios = todosEstagios.filter { it.idDocente.isNullOrBlank() }
 
                 val lista = mutableListOf<EstagioParaAtribuir>()
-                for (estagio in estagios) {
+                val listaAtribuidos = mutableListOf<EstagioParaAtribuir>()
+                for (estagio in todosEstagios) {
                     try {
                         val cand = api.getCandidaturaById(
                             idCandidatura = "eq.${estagio.idCandidatura}"
@@ -88,14 +92,18 @@ class InstituicaoOrientadoresViewModel(
                         val nomeAluno = cand?.idAluno?.let {
                             api.getUtilizadorById(id = "eq.$it").body()?.firstOrNull()?.nome
                         } ?: "Aluno"
-                        lista.add(EstagioParaAtribuir(
+                        val item = EstagioParaAtribuir(
                             idEstagio = estagio.idEstagio,
                             nomeAluno = nomeAluno,
-                            tituloOferta = oferta?.titulo ?: "Estágio"
-                        ))
+                            tituloOferta = oferta?.titulo ?: "Estágio",
+                            idDocente = estagio.idDocente
+                        )
+                        if (estagio.idDocente.isNullOrBlank()) lista.add(item)
+                        else listaAtribuidos.add(item)
                     } catch (e: Exception) { e.printStackTrace() }
                 }
                 _estagiosPendentes.value = lista
+                _estagiosAtribuidos.value = listaAtribuidos
 
                 // Carrega docentes da instituição
                 val docentesResp = api.getDocentesByInstituicao(idInstituicao = "eq.$idInstituicao")

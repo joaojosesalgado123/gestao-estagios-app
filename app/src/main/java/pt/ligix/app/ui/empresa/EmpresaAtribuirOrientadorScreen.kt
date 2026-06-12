@@ -37,16 +37,19 @@ fun EmpresaAtribuirOrientadorScreen(modifier: Modifier = Modifier, onVoltar: () 
     )
 
     val estagiosPendentes by viewModel.estagiosPendentes.collectAsState()
+    val estagiosAtribuidos by viewModel.estagiosAtribuidos.collectAsState()
     val orientadores by viewModel.orientadores.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val sucesso by viewModel.sucesso.collectAsState()
     val erro by viewModel.erro.collectAsState()
     val pesquisa by viewModel.pesquisa.collectAsState()
 
-    val estagiosFiltrados = if (pesquisa.isEmpty()) estagiosPendentes
-    else estagiosPendentes.filter {
+    var abaAtiva by remember { mutableStateOf(0) }
+    val listaAtual = if (abaAtiva == 0) estagiosPendentes else estagiosAtribuidos
+    val estagiosFiltrados = if (pesquisa.isEmpty()) listaAtual
+    else listaAtual.filter {
         it.nomeAluno.contains(pesquisa, ignoreCase = true) ||
-        it.tituloOferta.contains(pesquisa, ignoreCase = true)
+                it.tituloOferta.contains(pesquisa, ignoreCase = true)
     }
 
     LaunchedEffect(Unit) { viewModel.carregar() }
@@ -111,6 +114,41 @@ fun EmpresaAtribuirOrientadorScreen(modifier: Modifier = Modifier, onVoltar: () 
 
             Divider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFEEEEEE))
 
+            Row(
+                modifier = Modifier.fillMaxWidth()
+                    .background(Color.White, RoundedCornerShape(12.dp))
+                    .padding(4.dp)
+            ) {
+                listOf(
+                    stringResource(R.string.unassigned),
+                    stringResource(R.string.assigned)
+                ).forEachIndexed { index, label ->
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(
+                                if (abaAtiva == index) DarkBlue else Color.Transparent,
+                                RoundedCornerShape(10.dp)
+                            )
+                            .clickable {
+                                abaAtiva = index
+                                viewModel.setPesquisa("")
+                            }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            label,
+                            color = if (abaAtiva == index) Color.White else Color.Gray,
+                            fontWeight = if (abaAtiva == index) FontWeight.Bold else FontWeight.Normal,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
+
             OutlinedTextField(
                 value = pesquisa,
                 onValueChange = { viewModel.setPesquisa(it) },
@@ -163,7 +201,9 @@ fun EmpresaAtribuirOrientadorScreen(modifier: Modifier = Modifier, onVoltar: () 
                     Icon(Icons.Default.CheckCircle, contentDescription = null,
                         tint = Color.LightGray, modifier = Modifier.size(48.dp))
                     Spacer(Modifier.height(8.dp))
-                    Text(stringResource(R.string.all_internships_have_mentor),
+                    Text(
+                        if (abaAtiva == 0) stringResource(R.string.all_internships_have_mentor)
+                        else stringResource(R.string.no_assigned_internships_with_mentor),
                         color = Color.Gray, fontSize = 14.sp)
                 }
             } else {
@@ -172,6 +212,8 @@ fun EmpresaAtribuirOrientadorScreen(modifier: Modifier = Modifier, onVoltar: () 
                         nomeAluno = estagio.nomeAluno,
                         tituloOferta = estagio.tituloOferta,
                         orientadores = orientadores,
+                        orientadorAtualId = estagio.idDocente,
+                        modoTroca = abaAtiva == 1,
                         onAtribuir = { idOrientador ->
                             viewModel.atribuirOrientador(estagio.idEstagio, idOrientador)
                         }
@@ -189,9 +231,12 @@ fun AtribuicaoOrientadorCard(
     nomeAluno: String,
     tituloOferta: String,
     orientadores: List<OrientadorItem>,
+    orientadorAtualId: String? = null,
+    modoTroca: Boolean = false,
     onAtribuir: (String) -> Unit
 ) {
-    var orientadorSelecionado by remember { mutableStateOf<OrientadorItem?>(null) }
+    val orientadorAtual = orientadores.firstOrNull { it.idUtilizador == orientadorAtualId }
+    var orientadorSelecionado by remember(orientadorAtualId) { mutableStateOf(orientadorAtual) }
     var expandido by remember { mutableStateOf(false) }
 
     val iniciais = nomeAluno.split(" ")
@@ -230,10 +275,26 @@ fun AtribuicaoOrientadorCard(
                 }
             }
 
+            if (modoTroca && orientadorAtual != null) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.CheckCircle, contentDescription = null,
+                        tint = Color(0xFF2E7D32), modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(stringResource(R.string.current_mentor, orientadorAtual.nome),
+                        fontSize = 13.sp, color = Color(0xFF2E7D32))
+                }
+            }
+
             Divider(color = Color(0xFFF0F0F0))
 
             Column(modifier = Modifier.padding(16.dp)) {
-                Text(stringResource(R.string.select_mentor_upper), fontSize = 11.sp,
+                Text(
+                    if (modoTroca) stringResource(R.string.change_mentor_upper)
+                    else stringResource(R.string.select_mentor_upper),
+                    fontSize = 11.sp,
                     color = Color.Gray, letterSpacing = 0.5.sp,
                     fontWeight = FontWeight.Medium)
                 Spacer(Modifier.height(8.dp))
@@ -279,12 +340,19 @@ fun AtribuicaoOrientadorCard(
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
                     shape = RoundedCornerShape(8.dp),
-                    enabled = orientadorSelecionado != null
+                    enabled = orientadorSelecionado != null &&
+                        (!modoTroca || orientadorSelecionado?.idUtilizador != orientadorAtualId)
                 ) {
-                    Icon(Icons.Default.PersonAdd, contentDescription = null,
+                    Icon(
+                        if (modoTroca) Icons.Default.SwapHoriz else Icons.Default.PersonAdd,
+                        contentDescription = null,
                         modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.assign_mentor), fontWeight = FontWeight.SemiBold)
+                    Text(
+                        if (modoTroca) stringResource(R.string.change_mentor)
+                        else stringResource(R.string.assign_mentor),
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
             }
         }

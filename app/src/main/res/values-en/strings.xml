@@ -78,11 +78,14 @@
     <string name="messages">Messages</string>
     <string name="candidates">Candidates</string>
     <string name="mentors">Supervisors</string>
+    <string name="institutions">Institutions</string>
     <string name="users">Users</string>
     <string name="approvals">Approvals</string>
     <string name="companies">Companies</string>
     <string name="chat">Chat</string>
     <string name="profile">Profile</string>
+    <string name="unassigned">Unassigned</string>
+    <string name="assigned">Assigned</string>
     <string name="notifications">Notifications</string>
     <string name="no_notifications">No notifications</string>
 
@@ -105,6 +108,7 @@
     <string name="academic_data">Academic Data</string>
     <string name="professional_data">Professional Data</string>
     <string name="institutional_info">Institutional Information</string>
+    <string name="create_institution">Create Institution</string>
     <string name="company_data">Company Data</string>
     <string name="identification">Identification</string>
     <string name="contacts">Contacts</string>
@@ -348,9 +352,13 @@
     <string name="assignment">Assignment</string>
     <string name="pending_count">%1$d Pending</string>
     <string name="all_internships_have_teacher">All internships have an assigned teacher</string>
+    <string name="no_assigned_internships_with_teacher">No internships with an assigned teacher</string>
     <string name="select_teacher_upper">SELECT TEACHER</string>
+    <string name="change_teacher_upper">CHANGE TEACHER</string>
     <string name="select_teacher_placeholder">Select a teacher...</string>
     <string name="assign_teacher">Assign Teacher</string>
+    <string name="change_teacher">Change Teacher</string>
+    <string name="current_teacher">Current teacher: %1$s</string>
     <string name="delete_user">Delete User</string>
     <string name="delete_user_confirm">Are you sure you want to delete %1$s?</string>
     <string name="back">Back</string>
@@ -477,8 +485,12 @@
     <string name="mentor_assignment_subtitle">Manage and assign supervisors to your company internships.</string>
     <string name="search_name_internship">Search by name or internship...</string>
     <string name="all_internships_have_mentor">All internships have an assigned supervisor</string>
+    <string name="no_assigned_internships_with_mentor">No internships with an assigned supervisor</string>
     <string name="select_mentor_upper">SELECT SUPERVISOR</string>
+    <string name="change_mentor_upper">CHANGE SUPERVISOR</string>
     <string name="select_mentor_placeholder">Select a supervisor...</string>
+    <string name="change_mentor">Change Supervisor</string>
+    <string name="current_mentor">Current supervisor: %1$s</string>
     <string name="create_mentor">Create Supervisor</string>
     <string name="edit_mentor">Edit Supervisor</string>
     <string name="back_to_mentors">Back to Supervisors</string>

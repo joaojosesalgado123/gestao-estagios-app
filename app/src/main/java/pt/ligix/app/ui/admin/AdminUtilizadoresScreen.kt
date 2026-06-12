@@ -8,6 +8,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
@@ -35,7 +36,8 @@ import androidx.compose.material3.TextButton
 @Composable
 fun AdminUtilizadoresScreen(
     modifier: Modifier = Modifier,
-    onEditarUtilizador: (String, String) -> Unit = { _, _ -> }
+    onEditarUtilizador: (String, String) -> Unit = { _, _ -> },
+    onCriarInstituicao: () -> Unit = {}
 ) {
     val viewModel: AdminUtilizadoresViewModel = viewModel(
         factory = AdminUtilizadoresViewModelFactory(AdminRepository())
@@ -93,6 +95,20 @@ fun AdminUtilizadoresScreen(
                 color = Color.Gray,
                 lineHeight = 20.sp
             )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = onCriarInstituicao,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
+                shape = RoundedCornerShape(12.dp),
+                contentPadding = PaddingValues(vertical = 12.dp)
+            ) {
+                Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(stringResource(R.string.create_institution), fontWeight = FontWeight.Bold)
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -362,6 +378,7 @@ private fun BadgeRole(role: String) {
         "docente"    -> Triple(stringResource(R.string.teacher_upper),    Color(0xFFE8F5E9),              Color(0xFF2E7D32))
         "orientador" -> Triple(stringResource(R.string.mentor_upper), Color(0xFFEDE7F6),              Color(0xFF5E35B1))
         "empresa"    -> Triple(stringResource(R.string.company_upper),    Color(0xFFE3F2FD),              Color(0xFF1565C0))
+        "instituicao" -> Triple(stringResource(R.string.institution_upper), Color(0xFFE3F2FD), Color(0xFF1565C0))
         else         -> Triple(role.uppercase(), Color.LightGray,            Color.DarkGray)
     }
     Box(
@@ -385,6 +402,7 @@ private fun filtroRoleLabel(filtro: FiltroRole): String = when (filtro) {
     FiltroRole.DOCENTES -> stringResource(R.string.role_teacher)
     FiltroRole.ORIENTADORES -> stringResource(R.string.mentors)
     FiltroRole.EMPRESAS -> stringResource(R.string.companies)
+    FiltroRole.INSTITUICOES -> stringResource(R.string.institutions)
 }
 
 private fun matchPesquisa(u: Utilizador, termo: String): Boolean {
