@@ -35,14 +35,18 @@ fun EmpresaAtribuirOrientadorScreen(modifier: Modifier = Modifier, onVoltar: () 
     )
 
     val estagiosPendentes by viewModel.estagiosPendentes.collectAsState()
+    val estagiosAtribuidos by viewModel.estagiosAtribuidos.collectAsState()
     val orientadores by viewModel.orientadores.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val sucesso by viewModel.sucesso.collectAsState()
     val erro by viewModel.erro.collectAsState()
     val pesquisa by viewModel.pesquisa.collectAsState()
 
-    val estagiosFiltrados = if (pesquisa.isEmpty()) estagiosPendentes
-    else estagiosPendentes.filter {
+    var abaAtiva by remember { mutableStateOf(0) } // 0 = Por Atribuir, 1 = Atribuídos
+
+    val listaAtual = if (abaAtiva == 0) estagiosPendentes else estagiosAtribuidos
+    val estagiosFiltrados = if (pesquisa.isEmpty()) listaAtual
+    else listaAtual.filter {
         it.nomeAluno.contains(pesquisa, ignoreCase = true) ||
         it.tituloOferta.contains(pesquisa, ignoreCase = true)
     }
@@ -81,34 +85,37 @@ fun EmpresaAtribuirOrientadorScreen(modifier: Modifier = Modifier, onVoltar: () 
 
             Spacer(Modifier.height(20.dp))
 
+            // Separadores
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                modifier = Modifier.fillMaxWidth()
+                    .background(Color.White, RoundedCornerShape(12.dp))
+                    .padding(4.dp)
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.PendingActions, contentDescription = null,
-                        tint = Color.Gray, modifier = Modifier.size(24.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Column {
-                        Text("Pendentes de", fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp, color = Color.Black)
-                        Text("Atribuição", fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp, color = Color.Black)
+                listOf("Por Atribuir", "Atribuídos").forEachIndexed { index, label ->
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .background(
+                                if (abaAtiva == index) DarkBlue else Color.Transparent,
+                                RoundedCornerShape(10.dp)
+                            )
+                            .clickable { abaAtiva = index; viewModel.setPesquisa("") }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            label,
+                            color = if (abaAtiva == index) Color.White else Color.Gray,
+                            fontWeight = if (abaAtiva == index) FontWeight.Bold else FontWeight.Normal,
+                            fontSize = 14.sp
+                        )
                     }
-                }
-                Button(
-                    onClick = {},
-                    colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("${estagiosPendentes.size} Pendentes",
-                        fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
                 }
             }
 
-            Divider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFEEEEEE))
+            Spacer(Modifier.height(16.dp))
 
+            // Pesquisa
             OutlinedTextField(
                 value = pesquisa,
                 onValueChange = { viewModel.setPesquisa(it) },
@@ -161,8 +168,11 @@ fun EmpresaAtribuirOrientadorScreen(modifier: Modifier = Modifier, onVoltar: () 
                     Icon(Icons.Default.CheckCircle, contentDescription = null,
                         tint = Color.LightGray, modifier = Modifier.size(48.dp))
                     Spacer(Modifier.height(8.dp))
-                    Text("Todos os estágios têm orientador atribuído",
-                        color = Color.Gray, fontSize = 14.sp)
+                    Text(
+                        if (abaAtiva == 0) "Todos os estágios têm orientador atribuído"
+                        else "Nenhum estágio com orientador atribuído",
+                        color = Color.Gray, fontSize = 14.sp
+                    )
                 }
             } else {
                 estagiosFiltrados.forEach { estagio ->
@@ -170,6 +180,8 @@ fun EmpresaAtribuirOrientadorScreen(modifier: Modifier = Modifier, onVoltar: () 
                         nomeAluno = estagio.nomeAluno,
                         tituloOferta = estagio.tituloOferta,
                         orientadores = orientadores,
+                        orientadorAtualId = estagio.idDocente,
+                        modoTroca = abaAtiva == 1,
                         onAtribuir = { idOrientador ->
                             viewModel.atribuirOrientador(estagio.idEstagio, idOrientador)
                         }
@@ -187,9 +199,14 @@ fun AtribuicaoOrientadorCard(
     nomeAluno: String,
     tituloOferta: String,
     orientadores: List<OrientadorItem>,
+    orientadorAtualId: String? = null,
+    modoTroca: Boolean = false,
     onAtribuir: (String) -> Unit
 ) {
-    var orientadorSelecionado by remember { mutableStateOf<OrientadorItem?>(null) }
+    val orientadorAtual = orientadores.firstOrNull { it.idUtilizador == orientadorAtualId }
+    var orientadorSelecionado by remember(orientadorAtualId) {
+        mutableStateOf(orientadorAtual)
+    }
     var expandido by remember { mutableStateOf(false) }
 
     val iniciais = nomeAluno.split(" ")
@@ -228,12 +245,27 @@ fun AtribuicaoOrientadorCard(
                 }
             }
 
+            if (modoTroca && orientadorAtual != null) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 16.dp).padding(bottom = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(Icons.Default.CheckCircle, contentDescription = null,
+                        tint = Color(0xFF2E7D32), modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Orientador atual: ${orientadorAtual.nome}",
+                        fontSize = 13.sp, color = Color(0xFF2E7D32))
+                }
+            }
+
             Divider(color = Color(0xFFF0F0F0))
 
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("SELECIONAR ORIENTADOR", fontSize = 11.sp,
-                    color = Color.Gray, letterSpacing = 0.5.sp,
-                    fontWeight = FontWeight.Medium)
+                Text(
+                    if (modoTroca) "TROCAR ORIENTADOR" else "SELECIONAR ORIENTADOR",
+                    fontSize = 11.sp, color = Color.Gray, letterSpacing = 0.5.sp,
+                    fontWeight = FontWeight.Medium
+                )
                 Spacer(Modifier.height(8.dp))
 
                 Box {
@@ -277,12 +309,18 @@ fun AtribuicaoOrientadorCard(
                     modifier = Modifier.fillMaxWidth().height(48.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = DarkBlue),
                     shape = RoundedCornerShape(8.dp),
-                    enabled = orientadorSelecionado != null
+                    enabled = orientadorSelecionado != null &&
+                        (!modoTroca || orientadorSelecionado?.idUtilizador != orientadorAtualId)
                 ) {
-                    Icon(Icons.Default.PersonAdd, contentDescription = null,
-                        modifier = Modifier.size(18.dp))
+                    Icon(
+                        if (modoTroca) Icons.Default.SwapHoriz else Icons.Default.PersonAdd,
+                        contentDescription = null, modifier = Modifier.size(18.dp)
+                    )
                     Spacer(Modifier.width(8.dp))
-                    Text("Atribuir Orientador", fontWeight = FontWeight.SemiBold)
+                    Text(
+                        if (modoTroca) "Trocar Orientador" else "Atribuir Orientador",
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
             }
         }
