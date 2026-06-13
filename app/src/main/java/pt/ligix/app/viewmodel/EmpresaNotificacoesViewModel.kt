@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import pt.ligix.app.data.remote.RetrofitClient
+import pt.ligix.app.util.AppLanguage
 import pt.ligix.app.util.SessionManager
 
 data class NotificacaoEmpresa(
@@ -93,10 +94,15 @@ class EmpresaNotificacoesViewModel(
 
                 for (nova in novas) {
                     idsVistas.add(nova.idCandidatura)
+                    val english = sessionManager.language.first() == AppLanguage.EN
                     val notif = NotificacaoEmpresa(
                         id = nova.idCandidatura,
-                        titulo = "Nova Candidatura",
-                        mensagem = "Nova candidatura recebida para \"${oferta.titulo}\"",
+                        titulo = if (english) "New application" else "Nova candidatura",
+                        mensagem = if (english) {
+                            "New application received for \"${oferta.titulo}\""
+                        } else {
+                            "Nova candidatura recebida para \"${oferta.titulo}\""
+                        },
                         tipo = "candidatura"
                     )
                     _notificacoes.value = (_notificacoes.value + notif).takeLast(20)
