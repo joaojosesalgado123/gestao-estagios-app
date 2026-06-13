@@ -15,10 +15,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.data.repository.AdminRepository
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.auth.LigixGold
@@ -57,14 +59,14 @@ fun AdminAprovacoesScreen(
 
         Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
             Text(
-                text = "Aprovações de Empresas",
+                text = stringResource(R.string.company_approvals),
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkBlue
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Analise os pedidos de adesão à rede académica. Confirme a idoneidade institucional antes de permitir o acesso à plataforma.",
+                text = stringResource(R.string.company_approvals_subtitle),
                 fontSize = 14.sp,
                 color = Color.Gray,
                 lineHeight = 20.sp
@@ -100,7 +102,7 @@ fun AdminAprovacoesScreen(
                         colors = CardDefaults.cardColors(containerColor = Color.White)
                     ) {
                         Text(
-                            text = "Sem empresas pendentes neste momento.",
+                            text = stringResource(R.string.no_pending_companies_now),
                             modifier = Modifier.fillMaxWidth().padding(24.dp),
                             color = Color.Gray,
                             fontSize = 14.sp
@@ -182,7 +184,7 @@ private fun CardAprovacaoEmpresa(
                         )
                         if (dataFormatada.isNotBlank()) {
                             Text(
-                                text = "Registado a $dataFormatada",
+                                text = stringResource(R.string.registered_on, dataFormatada),
                                 fontSize = 12.sp,
                                 color = Color.Gray
                             )
@@ -194,7 +196,7 @@ private fun CardAprovacaoEmpresa(
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "AGUARDAR",
+                            text = stringResource(R.string.awaiting_upper),
                             color = Color(0xFFB8860B),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
@@ -224,7 +226,7 @@ private fun CardAprovacaoEmpresa(
                     ) {
                         Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Aprovar", color = Color.White, fontSize = 11.sp)
+                        Text(stringResource(R.string.approve), color = Color.White, fontSize = 11.sp)
                     }
                     Spacer(modifier = Modifier.width(6.dp))
                     OutlinedButton(
@@ -236,7 +238,7 @@ private fun CardAprovacaoEmpresa(
                     ) {
                         Icon(Icons.Default.Cancel, contentDescription = null, tint = Color(0xFFE53935), modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Rejeitar", color = Color(0xFFE53935), fontSize = 11.sp)
+                        Text(stringResource(R.string.reject), color = Color(0xFFE53935), fontSize = 11.sp)
                     }
                     Spacer(modifier = Modifier.width(6.dp))
                     OutlinedButton(
@@ -247,7 +249,7 @@ private fun CardAprovacaoEmpresa(
                     ) {
                         Icon(Icons.Default.Visibility, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text("Detalhes", color = DarkBlue, fontSize = 11.sp)
+                        Text(stringResource(R.string.view_details), color = DarkBlue, fontSize = 11.sp)
                     }
                 }
             }
@@ -263,25 +265,25 @@ private fun CardResumoAtividade(resumo: ResumoAtividadeEmpresas?) {
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Text(
-                text = "Resumo de Atividade",
+                text = stringResource(R.string.activity_summary),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkBlue
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Panorama atual das avaliações institucionais.",
+                text = stringResource(R.string.activity_summary_subtitle),
                 fontSize = 12.sp,
                 color = Color.Gray
             )
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            LinhaResumo("Pendentes", resumo?.pendentes)
+            LinhaResumo(stringResource(R.string.pending_plural), resumo?.pendentes)
             Spacer(modifier = Modifier.height(12.dp))
-            LinhaResumo("Aprovadas", resumo?.aprovadasNoMes)
+            LinhaResumo(stringResource(R.string.approved_plural), resumo?.aprovadasNoMes)
             Spacer(modifier = Modifier.height(12.dp))
-            LinhaResumo("Rejeitadas", resumo?.rejeitadas)
+            LinhaResumo(stringResource(R.string.rejected_plural), resumo?.rejeitadas)
         }
     }
 }
@@ -312,7 +314,7 @@ private fun formatarData(createdAt: String?): String {
     return try {
         val dataParte = createdAt.substringBefore("T")
         val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val outputFormat = SimpleDateFormat("dd MMM yyyy", Locale("pt", "PT"))
+        val outputFormat = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
         val date = inputFormat.parse(dataParte)
         if (date != null) outputFormat.format(date) else ""
     } catch (e: Exception) {

@@ -12,49 +12,62 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
+import pt.ligix.app.R
 
 @Composable
 fun AdminMainScreen(onLogout: () -> Unit = {}) {
     var selectedTab by remember { mutableStateOf(0) }
     var idEmpresaEmDetalhe by remember { mutableStateOf<String?>(null) }
     var utilizadorEmEdicao by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var mostrarCriarInstituicao by remember { mutableStateOf(false) }
+    var utilizadoresKey by remember { mutableStateOf(0) }
 
+    fun navegarParaPerfil() {
+        selectedTab = 4
+        idEmpresaEmDetalhe = null
+        utilizadorEmEdicao = null
+        mostrarCriarInstituicao = false
+    }
 
-    Scaffold(
+    CompositionLocalProvider(
+        LocalAdminPerfilClick provides { navegarParaPerfil() }
+    ) {
+        Scaffold(
         bottomBar = {
             // Esconde a bottom bar quando estamos num sub-ecrã (detalhe)
-            if (idEmpresaEmDetalhe == null && utilizadorEmEdicao == null) {
+            if (idEmpresaEmDetalhe == null && utilizadorEmEdicao == null && !mostrarCriarInstituicao) {
                 NavigationBar(containerColor = Color.White) {
                     NavigationBarItem(
                         selected = selectedTab == 0,
                         onClick = { selectedTab = 0 },
-                        icon = { Icon(Icons.Default.Home, contentDescription = "Início") },
-                        label = { Text("Início", fontSize = 10.sp) }
+                        icon = { Icon(Icons.Default.Home, contentDescription = stringResource(R.string.home)) },
+                        label = { Text(stringResource(R.string.home), fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 1,
                         onClick = { selectedTab = 1 },
-                        icon = { Icon(Icons.Default.People, contentDescription = "Utilizadores") },
-                        label = { Text("Utilizadores", fontSize = 10.sp) }
+                        icon = { Icon(Icons.Default.People, contentDescription = stringResource(R.string.users)) },
+                        label = { Text(stringResource(R.string.users), fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 2,
                         onClick = { selectedTab = 2 },
-                        icon = { Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = "Aprovações") },
-                        label = { Text("Aprovações", fontSize = 10.sp) }
+                        icon = { Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = stringResource(R.string.approvals)) },
+                        label = { Text(stringResource(R.string.approvals), fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 3,
                         onClick = { selectedTab = 3 },
-                        icon = { Icon(Icons.Default.Business, contentDescription = "Empresas") },
-                        label = { Text("Empresas", fontSize = 10.sp) }
+                        icon = { Icon(Icons.Default.Business, contentDescription = stringResource(R.string.companies)) },
+                        label = { Text(stringResource(R.string.companies), fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 4,
-                        onClick = { selectedTab = 4 },
-                        icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
-                        label = { Text("Perfil", fontSize = 10.sp) }
+                        onClick = { navegarParaPerfil() },
+                        icon = { Icon(Icons.Default.Person, contentDescription = stringResource(R.string.profile)) },
+                        label = { Text(stringResource(R.string.profile), fontSize = 10.sp) }
                     )
                 }
             }
@@ -74,6 +87,14 @@ fun AdminMainScreen(onLogout: () -> Unit = {}) {
                     idEmpresa = empresaId,
                     onVoltar = { idEmpresaEmDetalhe = null }
                 )
+            } else if (mostrarCriarInstituicao) {
+                AdminCriarInstituicaoScreen(
+                    onVoltar = { mostrarCriarInstituicao = false },
+                    onCriada = {
+                        mostrarCriarInstituicao = false
+                        utilizadoresKey++
+                    }
+                )
             } else if (utilEdicao != null) {
                 AdminEditarUtilizadorScreen(
                     idUtilizador = utilEdicao.first,
@@ -85,9 +106,12 @@ fun AdminMainScreen(onLogout: () -> Unit = {}) {
                     0 -> AdminDashboardScreen(
                         onAbrirDetalheEmpresa = { id -> idEmpresaEmDetalhe = id }
                     )
-                    1 ->  AdminUtilizadoresScreen(
-                        onEditarUtilizador = { id, role -> utilizadorEmEdicao = id to role }
-                    )
+                    1 -> key(utilizadoresKey) {
+                        AdminUtilizadoresScreen(
+                            onEditarUtilizador = { id, role -> utilizadorEmEdicao = id to role },
+                            onCriarInstituicao = { mostrarCriarInstituicao = true }
+                        )
+                    }
                     2 -> AdminAprovacoesScreen(
                         onAbrirDetalheEmpresa = { id -> idEmpresaEmDetalhe = id }
                     )
@@ -98,6 +122,6 @@ fun AdminMainScreen(onLogout: () -> Unit = {}) {
                 }
             }
         }
+        }
     }
 }
-

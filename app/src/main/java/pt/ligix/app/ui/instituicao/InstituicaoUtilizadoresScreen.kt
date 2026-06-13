@@ -15,10 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.auth.LigixGold
 import pt.ligix.app.util.SessionManager
@@ -51,22 +53,22 @@ fun InstituicaoUtilizadoresScreen(
         }
     }
 
-    if (confirmarEliminar != null) {
+    confirmarEliminar?.let { utilizador ->
         AlertDialog(
             onDismissRequest = { confirmarEliminar = null },
-            title = { Text("Eliminar Utilizador") },
-            text = { Text("Tem a certeza que quer eliminar ${confirmarEliminar!!.nome}?") },
+            title = { Text(stringResource(R.string.delete_user)) },
+            text = { Text(stringResource(R.string.delete_user_confirm, utilizador.nome)) },
             confirmButton = {
                 Button(
                     onClick = {
-                        viewModel.eliminarUtilizador(confirmarEliminar!!.idUtilizador)
+                        viewModel.eliminarUtilizador(utilizador.idUtilizador)
                         confirmarEliminar = null
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
-                ) { Text("Eliminar") }
+                ) { Text(stringResource(R.string.delete)) }
             },
             dismissButton = {
-                OutlinedButton(onClick = { confirmarEliminar = null }) { Text("Cancelar") }
+                OutlinedButton(onClick = { confirmarEliminar = null }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }
@@ -81,9 +83,9 @@ fun InstituicaoUtilizadoresScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
-            Text("Utilizadores", fontSize = 28.sp,
+            Text(stringResource(R.string.users), fontSize = 28.sp,
                 fontWeight = FontWeight.Bold, color = DarkBlue)
-            Text("Gerir acessos e perfis da plataforma curatorial.",
+            Text(stringResource(R.string.supervisors_management_subtitle),
                 fontSize = 14.sp, color = Color.Gray,
                 modifier = Modifier.padding(top = 6.dp))
 
@@ -93,7 +95,7 @@ fun InstituicaoUtilizadoresScreen(
                 value = pesquisa,
                 onValueChange = { viewModel.setPesquisa(it) },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Pesquisar por nome ou e-mail...", color = Color.Gray) },
+                placeholder = { Text(stringResource(R.string.search_name_email), color = Color.Gray) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -148,12 +150,12 @@ fun UtilizadorCard(
         .take(2).joinToString("").uppercase()
 
     val (roleCor, roleLabel) = when (utilizador.role) {
-        "aluno" -> LigixGold to "ALUNO"
-        "docente" -> Color(0xFF7B1FA2) to "DOCENTE"
-        "empresa" -> Color(0xFF1565C0) to "EMPRESA"
-        "orientador" -> Color(0xFF2E7D32) to "ORIENTADOR"
+        "aluno" -> LigixGold to stringResource(R.string.student_upper)
+        "docente" -> Color(0xFF7B1FA2) to stringResource(R.string.teacher_upper)
+        "empresa" -> Color(0xFF1565C0) to stringResource(R.string.company_upper)
+        "orientador" -> Color(0xFF2E7D32) to stringResource(R.string.mentor_upper)
         "admin" -> Color(0xFFD32F2F) to "ADMIN"
-        "instituicao" -> DarkBlue to "INSTITUIÇÃO"
+        "instituicao" -> DarkBlue to stringResource(R.string.institution_upper)
         else -> Color.Gray to utilizador.role.uppercase()
     }
 
@@ -206,7 +208,7 @@ fun UtilizadorCard(
                     Icon(Icons.Default.Edit, contentDescription = null,
                         modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("Editar", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.edit), fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                 }
                 OutlinedButton(
                     onClick = onEliminar,
@@ -218,7 +220,7 @@ fun UtilizadorCard(
                     Icon(Icons.Default.Cancel, contentDescription = null,
                         modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("Eliminar", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.delete), fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
         }

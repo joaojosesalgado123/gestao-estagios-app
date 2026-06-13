@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -23,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.flow.first
+import pt.ligix.app.R
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.util.SessionManager
 import pt.ligix.app.viewmodel.EmpresaNotificacoesViewModel
@@ -96,14 +98,14 @@ fun EmpresaTopBar(
                     Row(modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically) {
-                        Text("Notificações", fontSize = 18.sp,
+                        Text(stringResource(R.string.notifications), fontSize = 18.sp,
                             fontWeight = FontWeight.Bold, color = DarkBlue)
                         if (todasNotificacoes.isNotEmpty()) {
                             TextButton(onClick = {
                                 mensVm.limparHistoricoNotificacoes()
                                 notifVm.limparNotificacoes()
                             }) {
-                                Text("Limpar", fontSize = 13.sp, color = Color.Gray)
+                                Text(stringResource(R.string.clear), fontSize = 13.sp, color = Color.Gray)
                             }
                         }
                     }
@@ -114,7 +116,7 @@ fun EmpresaTopBar(
                             Icon(Icons.Default.NotificationsNone, contentDescription = null,
                                 tint = Color.LightGray, modifier = Modifier.size(48.dp))
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Sem notificações", color = Color.Gray, fontSize = 14.sp)
+                            Text(stringResource(R.string.no_notifications), color = Color.Gray, fontSize = 14.sp)
                         }
                     } else {
                         LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
@@ -161,7 +163,7 @@ fun EmpresaTopBar(
         if (!empresaRejeitada) {
             Box(contentAlignment = Alignment.TopEnd) {
                 IconButton(onClick = { mostrarSininho = true }) {
-                    Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = DarkBlue)
+                    Icon(Icons.Default.Notifications, contentDescription = stringResource(R.string.cd_notifications), tint = DarkBlue)
                 }
                 if (todasNotificacoes.isNotEmpty()) {
                     Box(modifier = Modifier.size(8.dp).background(Color.Red, CircleShape)

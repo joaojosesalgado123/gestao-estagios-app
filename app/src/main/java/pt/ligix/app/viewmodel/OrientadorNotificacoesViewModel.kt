@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import pt.ligix.app.data.remote.RetrofitClient
+import pt.ligix.app.util.AppLanguage
 import pt.ligix.app.util.SessionManager
 
 data class NotificacaoOrientador(
@@ -54,8 +55,7 @@ class OrientadorNotificacoesViewModel(
                 val atividades = atividadesResp.body() ?: continue
                 atividades.forEach { idsAtividadesVistas.add(it.idAtividade) }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (_: Exception) {
         }
     }
 
@@ -86,24 +86,28 @@ class OrientadorNotificacoesViewModel(
 
                 for (nova in novas) {
                     idsAtividadesVistas.add(nova.idAtividade)
+                    val english = sessionManager.language.first() == AppLanguage.EN
 
                     // Busca nome do aluno
                     val candResp = api.getCandidaturaById(idCandidatura = "eq.${estagio.idCandidatura}")
                     val idAluno = candResp.body()?.firstOrNull()?.idAluno ?: ""
-                    val nomeAluno = repository.getNomeUtilizador(idAluno).getOrNull() ?: "Aluno"
+                    val nomeAluno = repository.getNomeUtilizador(idAluno).getOrNull() ?: if (english) "Student" else "Aluno"
 
                     val notif = NotificacaoOrientador(
                         id = nova.idAtividade,
-                        titulo = "Nova Atividade",
-                        mensagem = "$nomeAluno registou uma nova atividade: \"${nova.titulo}\"",
+                        titulo = if (english) "New activity" else "Nova atividade",
+                        mensagem = if (english) {
+                            "$nomeAluno registered a new activity: \"${nova.titulo}\""
+                        } else {
+                            "$nomeAluno registou uma nova atividade: \"${nova.titulo}\""
+                        },
                         tipo = "atividade"
                     )
                     _notificacoes.value = (_notificacoes.value + notif).takeLast(20)
                     _novaNotificacao.value = notif
                 }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (_: Exception) {
         }
     }
 

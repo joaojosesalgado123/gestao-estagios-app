@@ -66,6 +66,7 @@ as $$
 declare
     metadata jsonb := coalesce(new.raw_user_meta_data, '{}'::jsonb);
     profile_role text := coalesce(metadata->>'role', 'aluno');
+    selected_instituicao_id uuid := nullif(metadata->>'idinstituicao', '')::uuid;
 begin
     insert into public.utilizador (
         idutilizador,
@@ -147,6 +148,48 @@ begin
             telemovel = excluded.telemovel,
             descricao = excluded.descricao,
             status = excluded.status;
+    elsif profile_role = 'instituicao' then
+        if selected_instituicao_id is not null then
+            update public.instituicao_ensino
+            set idutilizador = new.id,
+                nome = coalesce(nullif(metadata->>'nome_instituicao', ''), nullif(metadata->>'nome', ''), nome),
+                sigla = coalesce(nullif(metadata->>'sigla', ''), sigla),
+                morada = coalesce(nullif(metadata->>'morada', ''), morada),
+                email = coalesce(nullif(metadata->>'email_institucional', ''), new.email, email),
+                telefone = coalesce(nullif(metadata->>'telefone', ''), telefone),
+                nipc = coalesce(nullif(metadata->>'nipc', ''), nipc)
+            where idinstituicao = selected_instituicao_id;
+        else
+            update public.instituicao_ensino
+            set nome = coalesce(nullif(metadata->>'nome_instituicao', ''), nullif(metadata->>'nome', ''), ''),
+                sigla = nullif(metadata->>'sigla', ''),
+                morada = nullif(metadata->>'morada', ''),
+                email = coalesce(nullif(metadata->>'email_institucional', ''), new.email),
+                telefone = nullif(metadata->>'telefone', ''),
+                nipc = nullif(metadata->>'nipc', '')
+            where idutilizador = new.id;
+        end if;
+
+        if not found then
+            insert into public.instituicao_ensino (
+                idutilizador,
+                nome,
+                sigla,
+                morada,
+                email,
+                telefone,
+                nipc
+            )
+            values (
+                new.id,
+                coalesce(nullif(metadata->>'nome_instituicao', ''), nullif(metadata->>'nome', ''), ''),
+                nullif(metadata->>'sigla', ''),
+                nullif(metadata->>'morada', ''),
+                coalesce(nullif(metadata->>'email_institucional', ''), new.email),
+                nullif(metadata->>'telefone', ''),
+                nullif(metadata->>'nipc', '')
+            );
+        end if;
     end if;
 
     return new;
@@ -264,7 +307,8 @@ alter table public.avaliacao enable row level security;
 alter table public.item_avaliacao enable row level security;
 alter table public.relatorio_final enable row level security;
 
-grant select on public.instituicao_ensino to anon, authenticated;
+grant select on public.instituicao_ensino to anon;
+grant select, insert, update on public.instituicao_ensino to authenticated;
 grant select, update on public.utilizador to authenticated;
 grant select, update on public.aluno to authenticated;
 grant select, update on public.docente to authenticated;
@@ -373,6 +417,19 @@ create policy "instituicao_select_all"
 on public.instituicao_ensino for select
 to anon, authenticated
 using (true);
+
+drop policy if exists "instituicao_insert_admin" on public.instituicao_ensino;
+create policy "instituicao_insert_admin"
+on public.instituicao_ensino for insert
+to authenticated
+with check (public.is_admin());
+
+drop policy if exists "instituicao_update_own_or_admin" on public.instituicao_ensino;
+create policy "instituicao_update_own_or_admin"
+on public.instituicao_ensino for update
+to authenticated
+using (idutilizador = auth.uid() or public.is_admin())
+with check (idutilizador = auth.uid() or public.is_admin());
 
 drop policy if exists "orientador_empresa_select_own_company_admin" on public.orientador_empresa;
 create policy "orientador_empresa_select_own_company_admin"

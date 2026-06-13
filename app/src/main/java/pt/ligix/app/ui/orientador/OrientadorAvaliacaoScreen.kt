@@ -8,6 +8,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -17,11 +19,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.ui.aluno.Amarelo
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.util.SessionManager
@@ -79,9 +83,9 @@ fun OrientadorAvaliacaoScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onVoltar) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Voltar", tint = DarkBlue)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_back), tint = DarkBlue)
             }
-            Text("Avaliação Final", fontSize = 18.sp,
+            Text(stringResource(R.string.final_evaluation), fontSize = 18.sp,
                 fontWeight = FontWeight.Bold, color = DarkBlue)
         }
 
@@ -98,11 +102,14 @@ fun OrientadorAvaliacaoScreen(
                     Icon(Icons.Default.CheckCircle, contentDescription = null,
                         tint = Color(0xFF2E7D32), modifier = Modifier.size(64.dp))
                     Spacer(Modifier.height(16.dp))
-                    Text("Avaliação já submetida", fontSize = 20.sp,
+                    Text(stringResource(R.string.evaluation_already_submitted), fontSize = 20.sp,
                         fontWeight = FontWeight.Bold, color = DarkBlue)
-                    Text("A sua avaliação de $nomeAluno já foi registada como um item de avaliação com a classificação de ${
-                        minhaAvaliacao!!.classificacao?.let { String.format(java.util.Locale.US, "%.1f", it.coerceIn(0.0, 20.0)) } ?: "—"
-                    } valores. A nota final do aluno só é calculada quando existirem também as avaliações da empresa e do docente.",
+                    Text(
+                        stringResource(
+                            R.string.evaluation_already_submitted_message,
+                            nomeAluno,
+                            minhaAvaliacao?.classificacao?.let { String.format(java.util.Locale.US, "%.1f", it.coerceIn(0.0, 20.0)) } ?: "—"
+                        ),
                         fontSize = 14.sp, color = Color.Gray, textAlign = TextAlign.Center,
                         modifier = Modifier.padding(top = 8.dp))
                 }
@@ -146,16 +153,22 @@ fun OrientadorAvaliacaoScreen(
                         elevation = CardDefaults.cardElevation(2.dp)
                     ) {
                         Column(modifier = Modifier.padding(20.dp)) {
-                            Text("Critérios de Avaliação", fontSize = 18.sp,
+                            Text(stringResource(R.string.evaluation_criteria), fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold, color = DarkBlue)
                             Spacer(Modifier.height(8.dp))
-                            Text("Utilize a escala de 1 a 5, onde:",
+                            Text(stringResource(R.string.scale_1_to_5),
                                 fontSize = 13.sp, color = Color.Gray)
-                            Text("Estes critérios servem como apoio à classificação escrita de 0 a 20.",
+                            Text(stringResource(R.string.criteria_support_note),
                                 fontSize = 12.sp, color = Color.Gray,
                                 modifier = Modifier.padding(top = 2.dp))
                             Spacer(Modifier.height(10.dp))
-                            listOf("Insuficiente", "Suficiente", "Bom", "Muito Bom", "Excelente")
+                            listOf(
+                                stringResource(R.string.scale_insufficient),
+                                stringResource(R.string.scale_sufficient),
+                                stringResource(R.string.scale_good),
+                                stringResource(R.string.scale_very_good),
+                                stringResource(R.string.scale_excellent)
+                            )
                                 .forEachIndexed { index, label ->
                                     Row(verticalAlignment = Alignment.CenterVertically,
                                         modifier = Modifier.padding(vertical = 2.dp)) {
@@ -175,29 +188,29 @@ fun OrientadorAvaliacaoScreen(
 
                     Spacer(Modifier.height(16.dp))
 
-                    Text("Avaliação de Desempenho Final", fontSize = 20.sp,
+                    Text(stringResource(R.string.final_performance_evaluation), fontSize = 20.sp,
                         fontWeight = FontWeight.Bold, color = Color.Black,
                         modifier = Modifier.padding(horizontal = 16.dp))
-                    Text("Registe a sua avaliação final para o aluno concluinte.",
+                    Text(stringResource(R.string.final_performance_evaluation_subtitle),
                         fontSize = 13.sp, color = Color.Gray,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp))
 
                     Spacer(Modifier.height(12.dp))
 
-                    CriterioAvaliacaoCard(titulo = "Pontualidade",
-                        descricao = "Cumprimento de horários e prazos estabelecidos.",
+                    CriterioAvaliacaoCard(titulo = stringResource(R.string.punctuality),
+                        descricao = stringResource(R.string.punctuality_description),
                         icon = Icons.Default.Schedule, valor = pontualidade,
                         onValorChange = { pontualidade = it })
-                    CriterioAvaliacaoCard(titulo = "Proatividade",
-                        descricao = "Iniciativa na resolução de problemas e antecipação de necessidades.",
+                    CriterioAvaliacaoCard(titulo = stringResource(R.string.proactivity),
+                        descricao = stringResource(R.string.proactivity_description),
                         icon = Icons.Default.Lightbulb, valor = proatividade,
                         onValorChange = { proatividade = it })
-                    CriterioAvaliacaoCard(titulo = "Competência Técnica",
-                        descricao = "Aplicação de conhecimentos teóricos na prática e qualidade técnica.",
+                    CriterioAvaliacaoCard(titulo = stringResource(R.string.technical_competence),
+                        descricao = stringResource(R.string.technical_competence_description),
                         icon = Icons.Default.Code, valor = competenciaTecnica,
                         onValorChange = { competenciaTecnica = it })
-                    CriterioAvaliacaoCard(titulo = "Trabalho em Equipa",
-                        descricao = "Capacidade de integração, colaboração e comunicação.",
+                    CriterioAvaliacaoCard(titulo = stringResource(R.string.teamwork),
+                        descricao = stringResource(R.string.teamwork_description),
                         icon = Icons.Default.Group, valor = trabalhoEquipa,
                         onValorChange = { trabalhoEquipa = it })
 
@@ -213,10 +226,10 @@ fun OrientadorAvaliacaoScreen(
                                 Icon(Icons.Default.Star, contentDescription = null,
                                     tint = DarkBlue, modifier = Modifier.size(22.dp))
                                 Spacer(Modifier.width(10.dp))
-                                Text("Nota da Avaliação", fontSize = 16.sp,
+                                Text(stringResource(R.string.evaluation_grade), fontSize = 16.sp,
                                     fontWeight = FontWeight.Bold, color = Color.Black)
                             }
-                            Text("Insira a sua nota de 0 a 20 valores.",
+                            Text(stringResource(R.string.evaluation_grade_hint),
                                 fontSize = 12.sp, color = Color.Gray,
                                 modifier = Modifier.padding(top = 4.dp, bottom = 12.dp))
                             OutlinedTextField(
@@ -227,7 +240,7 @@ fun OrientadorAvaliacaoScreen(
                                     }
                                 },
                                 modifier = Modifier.fillMaxWidth().height(60.dp),
-                                placeholder = { Text("Ex: 16.5", color = Color.LightGray) },
+                                placeholder = { Text(stringResource(R.string.evaluation_grade_placeholder), color = Color.LightGray) },
                                 shape = RoundedCornerShape(10.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = DarkBlue,
@@ -251,16 +264,16 @@ fun OrientadorAvaliacaoScreen(
                         elevation = CardDefaults.cardElevation(2.dp)
                     ) {
                         Column(modifier = Modifier.padding(20.dp)) {
-                            Text("Comentários Qualitativos", fontSize = 16.sp,
+                            Text(stringResource(R.string.qualitative_comments), fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold, color = Color.Black)
-                            Text("Descreva os pontos fortes, áreas de melhoria e outras observações.",
+                            Text(stringResource(R.string.qualitative_comments_description),
                                 fontSize = 13.sp, color = Color.Gray,
                                 modifier = Modifier.padding(vertical = 8.dp))
                             OutlinedTextField(
                                 value = comentario,
                                 onValueChange = { comentario = it },
                                 modifier = Modifier.fillMaxWidth().height(120.dp),
-                                placeholder = { Text("Escreva aqui a sua apreciação qualitativa...",
+                                placeholder = { Text(stringResource(R.string.qualitative_comments_placeholder),
                                     color = Color.LightGray, fontSize = 13.sp) },
                                 shape = RoundedCornerShape(10.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
@@ -285,16 +298,16 @@ fun OrientadorAvaliacaoScreen(
                                 tint = Amarelo, modifier = Modifier.size(20.dp))
                             Spacer(Modifier.width(10.dp))
                             Column {
-                                Text("NOTA IMPORTANTE", color = Amarelo, fontSize = 11.sp,
+                                Text(stringResource(R.string.important_note_upper), color = Amarelo, fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold)
                                 Spacer(Modifier.height(4.dp))
                                 Text(
                                     if (!horasCompletas)
-                                        "A submissão da avaliação só estará disponível quando o aluno completar as horas de estágio."
+                                        stringResource(R.string.evaluation_available_after_hours)
                                     else if (!relatorioSubmetido)
-                                        "A submissão da avaliação só estará disponível após o aluno submeter o relatório final."
+                                        stringResource(R.string.evaluation_available_after_report)
                                     else
-                                        "Preencha todos os critérios antes de enviar a avaliação.",
+                                        stringResource(R.string.fill_all_criteria_before_submit),
                                     fontSize = 13.sp, color = Color(0xFF5F6270), lineHeight = 19.sp
                                 )
                             }
@@ -330,9 +343,9 @@ fun OrientadorAvaliacaoScreen(
                         if (isSaving) {
                             CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
                         } else {
-                            Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Enviar Avaliação", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.submit_evaluation), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
 

@@ -111,8 +111,7 @@ class OrientadorHomeViewModel(
                 _atividadesRecentes.value = todasAtividades.sortedByDescending { it[2] }.take(3)
                 dadosCarregados = true
 
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
             } finally {
                 if (primeiraCarga) {
                     _isLoading.value = false

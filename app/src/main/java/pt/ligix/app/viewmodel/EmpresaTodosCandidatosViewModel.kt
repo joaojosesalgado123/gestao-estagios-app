@@ -75,8 +75,7 @@ class EmpresaTodosCandidatosViewModel(
                     it.candidatura.status == "pendente" || it.candidatura.status == "entrevista"
                 }
 
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
             } finally {
                 _isLoading.value = false
             }
@@ -105,8 +104,7 @@ class EmpresaTodosCandidatosViewModel(
                         it.candidatura.status == "pendente" || it.candidatura.status == "entrevista"
                     }
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
             }
         }
     }
@@ -133,8 +131,7 @@ class EmpresaTodosCandidatosViewModel(
                         it.candidatura.status == "pendente" || it.candidatura.status == "entrevista"
                     }
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
             }
         }
     }

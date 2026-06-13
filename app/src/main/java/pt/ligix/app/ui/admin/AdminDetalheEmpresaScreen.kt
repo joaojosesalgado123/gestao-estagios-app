@@ -15,10 +15,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.data.repository.AdminRepository
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.auth.LigixGold
@@ -72,12 +74,12 @@ fun AdminDetalheEmpresaScreen(
             IconButton(onClick = onVoltar) {
                 Icon(
                     Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Voltar",
+                    contentDescription = stringResource(R.string.back),
                     tint = DarkBlue
                 )
             }
             Text(
-                text = "Voltar",
+                text = stringResource(R.string.back),
                 color = DarkBlue,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium
@@ -108,11 +110,13 @@ fun AdminDetalheEmpresaScreen(
                     }
                 }
                 empresa != null -> {
-                    ConteudoDetalhe(
-                        empresa = empresa!!,
-                        onAprovar = { viewModel.aprovar() },
-                        onRejeitar = { viewModel.rejeitar() }
-                    )
+                    empresa?.let { empresaDetalhe ->
+                        ConteudoDetalhe(
+                            empresa = empresaDetalhe,
+                            onAprovar = { viewModel.aprovar() },
+                            onRejeitar = { viewModel.rejeitar() }
+                        )
+                    }
                 }
             }
         }
@@ -134,7 +138,7 @@ private fun ConteudoDetalhe(
     )
     Spacer(modifier = Modifier.height(8.dp))
     Text(
-        text = "Revisão de candidatura para integração na rede académica.",
+        text = stringResource(R.string.company_review_subtitle),
         fontSize = 13.sp,
         color = Color.Gray,
         lineHeight = 18.sp
@@ -151,20 +155,20 @@ private fun ConteudoDetalhe(
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Text(
-                "Dados da Empresa",
+                stringResource(R.string.company_data),
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkBlue
             )
             HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
 
-            CampoDetalhe("RAZÃO SOCIAL", empresa.nome)
+            CampoDetalhe(stringResource(R.string.legal_name_upper), empresa.nome)
             CampoDetalhe("NIPC", empresa.nipc)
-            CampoDetalhe("MORADA", empresa.morada)
-            CampoDetalhe("TELEMÓVEL", empresa.telemovel)
-            CampoDetalhe("DATA DE REGISTO", formatarDataLonga(empresa.createdAt))
+            CampoDetalhe(stringResource(R.string.address_upper), empresa.morada)
+            CampoDetalhe(stringResource(R.string.mobile_upper), empresa.telemovel)
+            CampoDetalhe(stringResource(R.string.registration_date_upper), formatarDataLonga(empresa.createdAt))
             CampoDetalhe(
-                "DESCRIÇÃO",
+                stringResource(R.string.description_upper),
                 empresa.descricao,
                 multilinha = true
             )
@@ -176,14 +180,14 @@ private fun ConteudoDetalhe(
     // Secção de decisão (só faz sentido se ainda estiver pendente)
     if (empresa.status == "pendente") {
         Text(
-            text = "Decisão",
+            text = stringResource(R.string.decision),
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             color = DarkBlue
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "Confirme os dados antes de aprovar a entrada na rede académica.",
+            text = stringResource(R.string.decision_help),
             fontSize = 13.sp,
             color = Color.Gray,
             lineHeight = 18.sp
@@ -200,7 +204,7 @@ private fun ConteudoDetalhe(
         ) {
             Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Aprovar Registo", color = Color.White, fontSize = 14.sp)
+            Text(stringResource(R.string.approve_registration), color = Color.White, fontSize = 14.sp)
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -217,7 +221,7 @@ private fun ConteudoDetalhe(
         ) {
             Icon(Icons.Default.Cancel, contentDescription = null, tint = Color(0xFFE53935), modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Rejeitar Registo", color = Color(0xFFE53935), fontSize = 14.sp)
+            Text(stringResource(R.string.reject_registration), color = Color(0xFFE53935), fontSize = 14.sp)
         }
     } else {
         // Já foi decidida — apenas mostra estado, sem botões
@@ -227,9 +231,9 @@ private fun ConteudoDetalhe(
         ) {
             Text(
                 text = when (empresa.status) {
-                    "aprovada" -> "Esta empresa já foi aprovada."
-                    "rejeitada" -> "Esta empresa já foi rejeitada."
-                    else -> "Estado atual: ${empresa.status}"
+                    "aprovada" -> stringResource(R.string.company_already_approved)
+                    "rejeitada" -> stringResource(R.string.company_already_rejected)
+                    else -> stringResource(R.string.current_status, empresa.status)
                 },
                 modifier = Modifier.padding(20.dp),
                 color = Color.DarkGray,
@@ -263,9 +267,9 @@ private fun CampoDetalhe(label: String, valor: String?, multilinha: Boolean = fa
 @Composable
 private fun BadgeStatus(status: String) {
     val (label, corFundo, corTexto) = when (status) {
-        "pendente"  -> Triple("PENDENTE", LigixGold.copy(alpha = 0.2f), Color(0xFFB8860B))
-        "aprovada"  -> Triple("APROVADA", Color(0xFFE8F5E9), Color(0xFF2E7D32))
-        "rejeitada" -> Triple("REJEITADA", Color(0xFFFFEBEE), Color(0xFFE53935))
+        "pendente"  -> Triple(stringResource(R.string.company_status_pending_upper), LigixGold.copy(alpha = 0.2f), Color(0xFFB8860B))
+        "aprovada"  -> Triple(stringResource(R.string.company_status_approved_upper), Color(0xFFE8F5E9), Color(0xFF2E7D32))
+        "rejeitada" -> Triple(stringResource(R.string.rejected_upper), Color(0xFFFFEBEE), Color(0xFFE53935))
         else        -> Triple(status.uppercase(), Color.LightGray, Color.DarkGray)
     }
     Box(
@@ -287,7 +291,7 @@ private fun formatarDataLonga(createdAt: String?): String? {
     return try {
         val dataParte = createdAt.substringBefore("T")
         val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val outputFormat = SimpleDateFormat("dd 'de' MMMM 'de' yyyy", Locale("pt", "PT"))
+        val outputFormat = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
         val date = inputFormat.parse(dataParte)
         if (date != null) outputFormat.format(date) else null
     } catch (e: Exception) {

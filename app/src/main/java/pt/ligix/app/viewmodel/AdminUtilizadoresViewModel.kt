@@ -17,7 +17,8 @@ enum class FiltroRole(val label: String, val role: String?) {
     ALUNOS("Alunos", "aluno"),
     DOCENTES("Docentes", "docente"),
     ORIENTADORES("Orientadores", "orientador"),
-    EMPRESAS("Empresas", "empresa")
+    EMPRESAS("Empresas", "empresa"),
+    INSTITUICOES("Instituições", "instituicao")
 }
 
 class AdminUtilizadoresViewModel(

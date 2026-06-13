@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -27,6 +28,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import pt.ligix.app.R
 import pt.ligix.app.data.repository.AlunoRepository
 import pt.ligix.app.data.repository.OfertasRepository
 import pt.ligix.app.model.OfertaEstagio
@@ -90,13 +92,13 @@ fun AlunoOfertaDetalheScreen(
     if (sucesso) {
         AlertDialog(
             onDismissRequest = {},
-            title = { Text("Candidatura Enviada!", fontWeight = FontWeight.Bold, color = DarkBlue) },
-            text = { Text("A tua candidatura foi submetida com sucesso! Aguarda a resposta da empresa.") },
+            title = { Text(stringResource(R.string.application_sent_title), fontWeight = FontWeight.Bold, color = DarkBlue) },
+            text = { Text(stringResource(R.string.application_sent_message)) },
             confirmButton = {
                 Button(
                     onClick = onCandidaturaSubmetida,
                     colors = ButtonDefaults.buttonColors(containerColor = DarkBlue)
-                ) { Text("Ok") }
+                ) { Text("OK") }
             },
             shape = RoundedCornerShape(16.dp)
         )
@@ -115,10 +117,10 @@ fun AlunoOfertaDetalheScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onVoltar) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Voltar", tint = DarkBlue)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.back), tint = DarkBlue)
             }
             Text(
-                "Detalhe da Oferta",
+                stringResource(R.string.offer_detail),
                 modifier = Modifier.weight(1f),
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
@@ -126,7 +128,7 @@ fun AlunoOfertaDetalheScreen(
             )
             Box(contentAlignment = Alignment.TopEnd) {
                 IconButton(onClick = onSininho) {
-                    Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = DarkBlue)
+                    Icon(Icons.Default.Notifications, contentDescription = stringResource(R.string.notifications), tint = DarkBlue)
                 }
                 if (historicoNotificacoes.isNotEmpty()) {
                     Box(
@@ -176,7 +178,7 @@ fun AlunoOfertaDetalheScreen(
             oferta.descricao?.let { desc ->
                 Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Sobre a Função", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                        Text(stringResource(R.string.about_role), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(desc, fontSize = 14.sp, color = Color.DarkGray, lineHeight = 22.sp)
                     }
@@ -185,18 +187,18 @@ fun AlunoOfertaDetalheScreen(
 
             Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Detalhes do Contrato", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
+                    Text(stringResource(R.string.contract_details), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
                     Spacer(modifier = Modifier.height(12.dp))
                     oferta.localizacao?.let { DetalheRow(icon = Icons.Default.LocationOn, label = it); Spacer(modifier = Modifier.height(8.dp)) }
-                    oferta.duracao?.let { DetalheRow(icon = Icons.Default.Schedule, label = "Duração: ${it}h"); Spacer(modifier = Modifier.height(8.dp)) }
-                    DetalheRow(icon = Icons.Default.WorkOutline, label = "${oferta.numeroVagas} vaga${if (oferta.numeroVagas != 1) "s" else ""} disponível${if (oferta.numeroVagas != 1) "is" else ""}")
+                    oferta.duracao?.let { DetalheRow(icon = Icons.Default.Schedule, label = stringResource(R.string.duration_value, it)); Spacer(modifier = Modifier.height(8.dp)) }
+                    DetalheRow(icon = Icons.Default.WorkOutline, label = stringResource(R.string.vacancies_available_count, oferta.numeroVagas))
                 }
             }
 
             if (nomeEmpresa.isNotBlank()) {
                 Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color.White)) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Empresa", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
+                        Text(stringResource(R.string.company), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DarkBlue)
                         Spacer(modifier = Modifier.height(12.dp))
                         DetalheRow(icon = Icons.Default.Business, label = nomeEmpresa)
                     }
@@ -218,8 +220,8 @@ fun AlunoOfertaDetalheScreen(
                             Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF2E7D32), modifier = Modifier.size(24.dp))
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
-                                Text("Candidatura já submetida", fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32), fontSize = 14.sp)
-                                Text("Já te candidataste a esta oferta. Aguarda a resposta da empresa.", fontSize = 12.sp, color = Color(0xFF388E3C))
+                                Text(stringResource(R.string.application_already_submitted), fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32), fontSize = 14.sp)
+                                Text(stringResource(R.string.application_already_submitted_message), fontSize = 12.sp, color = Color(0xFF388E3C))
                             }
                         }
                     } else if (verificouVagas && !temVagas) {
@@ -233,24 +235,24 @@ fun AlunoOfertaDetalheScreen(
                             Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFFE65100), modifier = Modifier.size(24.dp))
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
-                                Text("Oferta sem vagas disponíveis", fontWeight = FontWeight.Bold, color = Color(0xFFE65100), fontSize = 14.sp)
-                                Text("Esta oferta já atingiu o número de vagas definido pela empresa.", fontSize = 12.sp, color = Color(0xFFE65100))
+                                Text(stringResource(R.string.offer_no_vacancies), fontWeight = FontWeight.Bold, color = Color(0xFFE65100), fontSize = 14.sp)
+                                Text(stringResource(R.string.offer_no_vacancies_message), fontSize = 12.sp, color = Color(0xFFE65100))
                             }
                         }
                     } else {
-                        Text("Candidatar-se à Vaga", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                        Text("Preenche os campos abaixo para iniciar a tua jornada profissional.", fontSize = 13.sp, color = Color.Gray)
+                        Text(stringResource(R.string.apply_to_vacancy), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                        Text(stringResource(R.string.fill_fields_start_journey), fontSize = 13.sp, color = Color.Gray)
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        Text("CURRÍCULO (PDF)", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.Black, letterSpacing = 1.sp)
+                        Text(stringResource(R.string.cv_pdf_upper), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.Black, letterSpacing = 1.sp)
                         Spacer(modifier = Modifier.height(8.dp))
-                        UploadBox(uri = cvUri, label = "Clique para anexar o Currículo", onClick = { cvLauncher.launch("application/pdf") })
+                        UploadBox(uri = cvUri, label = stringResource(R.string.click_attach_cv), onClick = { cvLauncher.launch("application/pdf") })
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        Text("CARTA DE MOTIVAÇÃO (PDF)", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.Black, letterSpacing = 1.sp)
+                        Text(stringResource(R.string.motivation_letter_pdf_upper), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.Black, letterSpacing = 1.sp)
                         Spacer(modifier = Modifier.height(8.dp))
-                        UploadBox(uri = cartaUri, label = "Clique para anexar a Carta de Motivação", onClick = { cartaLauncher.launch("application/pdf") })
+                        UploadBox(uri = cartaUri, label = stringResource(R.string.click_attach_motivation_letter), onClick = { cartaLauncher.launch("application/pdf") })
 
                         erro?.let {
                             Spacer(modifier = Modifier.height(8.dp))
@@ -259,18 +261,27 @@ fun AlunoOfertaDetalheScreen(
 
                         Spacer(modifier = Modifier.height(20.dp))
 
+                        val attachCvLetterError = stringResource(R.string.attach_cv_letter_error)
+                        val invalidSessionError = stringResource(R.string.invalid_session)
+                        val noVacanciesError = stringResource(R.string.offer_no_vacancies_short)
+                        val fileReadError = stringResource(R.string.file_read_error)
+                        val filesSizeLimitError = stringResource(R.string.files_size_limit_error)
+                        val uploadFilesError = stringResource(R.string.upload_files_error)
+
                         Button(
                             onClick = {
                                 scope.launch {
-                                    if (cvUri == null || cartaUri == null) {
-                                        erro = "Por favor anexa o CV e a Carta de Motivação."
+                                    val cvSelecionado = cvUri
+                                    val cartaSelecionada = cartaUri
+                                    if (cvSelecionado == null || cartaSelecionada == null) {
+                                        erro = attachCvLetterError
                                         return@launch
                                     }
                                     isLoading = true
                                     erro = null
 
                                     val idAluno = sessionManager.idUtilizador.first() ?: run {
-                                        erro = "Sessão inválida."
+                                        erro = invalidSessionError
                                         isLoading = false
                                         return@launch
                                     }
@@ -290,26 +301,26 @@ fun AlunoOfertaDetalheScreen(
                                     }
                                     if (vagaDisponivel.getOrDefault(false).not()) {
                                         temVagas = false
-                                        erro = "Esta oferta já não tem vagas disponíveis."
+                                        erro = noVacanciesError
                                         isLoading = false
                                         return@launch
                                     }
 
                                     val cvBytes = withContext(Dispatchers.IO) {
-                                        context.contentResolver.openInputStream(cvUri!!)?.use { it.readBytes() }
+                                        context.contentResolver.openInputStream(cvSelecionado)?.use { it.readBytes() }
                                     }
                                     val cartaBytes = withContext(Dispatchers.IO) {
-                                        context.contentResolver.openInputStream(cartaUri!!)?.use { it.readBytes() }
+                                        context.contentResolver.openInputStream(cartaSelecionada)?.use { it.readBytes() }
                                     }
 
                                     if (cvBytes == null || cartaBytes == null) {
-                                        erro = "Erro ao ler os ficheiros."
+                                        erro = fileReadError
                                         isLoading = false
                                         return@launch
                                     }
 
                                     if (cvBytes.size > 25L * 1024L * 1024L || cartaBytes.size > 25L * 1024L * 1024L) {
-                                        erro = "Os ficheiros não podem ultrapassar 25MB."
+                                        erro = filesSizeLimitError
                                         isLoading = false
                                         return@launch
                                     }
@@ -322,7 +333,7 @@ fun AlunoOfertaDetalheScreen(
                                     val cartaUpload = repository.uploadFicheiro("candidaturas", cartaPath, cartaBytes)
 
                                     if (cvUpload.isFailure || cartaUpload.isFailure) {
-                                        erro = "Erro no upload dos ficheiros. Tenta novamente."
+                                        erro = uploadFilesError
                                         isLoading = false
                                         return@launch
                                     }
@@ -348,7 +359,7 @@ fun AlunoOfertaDetalheScreen(
                             if (isLoading) {
                                 CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                             } else {
-                                Text("Enviar Candidatura", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.send_application), fontSize = 16.sp, fontWeight = FontWeight.Bold)
                             }
                         }
                     }
@@ -384,7 +395,7 @@ fun UploadBox(uri: Uri?, label: String, onClick: () -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Default.CheckCircle, contentDescription = null, tint = DarkBlue)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Ficheiro anexado", color = DarkBlue, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.attached_file), color = DarkBlue, fontWeight = FontWeight.SemiBold)
             }
         } else {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {

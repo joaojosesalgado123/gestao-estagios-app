@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import pt.ligix.app.data.remote.RetrofitClient
+import pt.ligix.app.util.AppLanguage
 import pt.ligix.app.util.SessionManager
 
 data class NotificacaoEmpresa(
@@ -56,8 +57,7 @@ class EmpresaNotificacoesViewModel(
                 val candidaturas = candResp.body() ?: continue
                 candidaturas.forEach { idsVistas.add(it.idCandidatura) }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (_: Exception) {
         }
     }
 
@@ -75,36 +75,33 @@ class EmpresaNotificacoesViewModel(
         try {
             val idEmpresa = sessionManager.idUtilizador.first() ?: return
             val api = RetrofitClient.api
-            android.util.Log.d("EmpresaNotif", "Verificando candidaturas para empresa: $idEmpresa")
 
             val ofertasResp = api.getOfertasByEmpresa(idEmpresa = "eq.$idEmpresa")
-            val ofertas = ofertasResp.body() ?: run {
-                android.util.Log.d("EmpresaNotif", "Sem ofertas ou erro: ${ofertasResp.code()}")
-                return
-            }
-            android.util.Log.d("EmpresaNotif", "Ofertas encontradas: ${ofertas.size}")
+            val ofertas = ofertasResp.body() ?: return
 
             for (oferta in ofertas) {
                 val candResp = api.getCandidaturasByOferta(idOferta = "eq.${oferta.idOferta}")
                 val candidaturas = candResp.body() ?: continue
-                android.util.Log.d("EmpresaNotif", "Candidaturas para ${oferta.titulo}: ${candidaturas.size}, vistas: ${idsVistas.size}")
                 val novas = candidaturas.filter { it.idCandidatura !in idsVistas }
-                android.util.Log.d("EmpresaNotif", "Novas: ${novas.size}")
 
                 for (nova in novas) {
                     idsVistas.add(nova.idCandidatura)
+                    val english = sessionManager.language.first() == AppLanguage.EN
                     val notif = NotificacaoEmpresa(
                         id = nova.idCandidatura,
-                        titulo = "Nova Candidatura",
-                        mensagem = "Nova candidatura recebida para \"${oferta.titulo}\"",
+                        titulo = if (english) "New application" else "Nova candidatura",
+                        mensagem = if (english) {
+                            "New application received for \"${oferta.titulo}\""
+                        } else {
+                            "Nova candidatura recebida para \"${oferta.titulo}\""
+                        },
                         tipo = "candidatura"
                     )
                     _notificacoes.value = (_notificacoes.value + notif).takeLast(20)
                     _novaNotificacao.value = notif
                 }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (_: Exception) {
         }
     }
 

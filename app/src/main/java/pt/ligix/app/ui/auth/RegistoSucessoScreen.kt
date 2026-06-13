@@ -12,18 +12,30 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import pt.ligix.app.R
 
 @Composable
 fun RegistoSucessoScreen(
     email: String,
-    mensagem: String,
     isPendente: Boolean,
     onIrParaLogin: () -> Unit
 ) {
+    val titulo = if (isPendente) {
+        stringResource(R.string.registration_submitted_title)
+    } else {
+        stringResource(R.string.account_created_title)
+    }
+    val mensagemTraduzida = if (isPendente) {
+        stringResource(R.string.register_success_pending_message)
+    } else {
+        stringResource(R.string.register_success_created_message)
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -69,7 +81,7 @@ fun RegistoSucessoScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
-                    text = if (isPendente) "Registo Submetido!" else "Conta Criada!",
+                    text = titulo,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
@@ -78,7 +90,7 @@ fun RegistoSucessoScreen(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = mensagem,
+                    text = mensagemTraduzida,
                     fontSize = 14.sp,
                     color = TextGrey,
                     textAlign = TextAlign.Center,
@@ -88,7 +100,7 @@ fun RegistoSucessoScreen(
                 if (!isPendente) {
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Email: $email",
+                        text = stringResource(R.string.email_value, email),
                         fontSize = 13.sp,
                         color = DarkBlue,
                         fontWeight = FontWeight.SemiBold
@@ -106,7 +118,7 @@ fun RegistoSucessoScreen(
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        text = "Ir para Login",
+                        text = stringResource(R.string.go_to_login),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )

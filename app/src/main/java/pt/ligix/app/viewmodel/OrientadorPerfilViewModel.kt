@@ -60,7 +60,7 @@ class OrientadorPerfilViewModel(
                 }
 
             } catch (e: Exception) {
-                e.printStackTrace()
+                _erroGuardar.value = e.message ?: "Erro ao carregar perfil."
             } finally {
                 _isLoading.value = false
             }

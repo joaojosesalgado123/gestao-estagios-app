@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -31,6 +33,7 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.delay
 import androidx.compose.runtime.CompositionLocalProvider
+import pt.ligix.app.R
 import pt.ligix.app.model.OfertaEstagio
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.util.SessionManager
@@ -103,7 +106,6 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
         }
     }
     LaunchedEffect(novaNotificacaoCandidatura) {
-        android.util.Log.d("EmpresaMain", "novaNotificacaoCandidatura: $novaNotificacaoCandidatura, todas: ${todasNotificacoesCandidaturas.size}")
         if (novaNotificacaoCandidatura != null) {
             delay(5000)
             notificacoesViewModel.dispensarNotificacao()
@@ -119,11 +121,11 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                     Row(modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically) {
-                        Text("Notificações", fontSize = 18.sp,
+                        Text(stringResource(R.string.notifications), fontSize = 18.sp,
                             fontWeight = FontWeight.Bold, color = DarkBlue)
                         if (historicoNotificacoes.isNotEmpty() || todasNotificacoesCandidaturas.isNotEmpty()) {
                             TextButton(onClick = { mensagensViewModel.limparHistoricoNotificacoes(); notificacoesViewModel.limparNotificacoes() }) {
-                                Text("Limpar", fontSize = 13.sp, color = Color.Gray)
+                                Text(stringResource(R.string.clear), fontSize = 13.sp, color = Color.Gray)
                             }
                         }
                     }
@@ -140,7 +142,7 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                             Icon(Icons.Default.NotificationsNone, contentDescription = null,
                                 tint = Color.LightGray, modifier = Modifier.size(48.dp))
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("Sem notificações", color = Color.Gray, fontSize = 14.sp)
+                            Text(stringResource(R.string.no_notifications), color = Color.Gray, fontSize = 14.sp)
                         }
                     } else {
                         LazyColumn(modifier = Modifier.heightIn(max = 400.dp)) {
@@ -165,7 +167,7 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                                             maxLines = 1, overflow = TextOverflow.Ellipsis)
                                     }
                                 }
-                                Divider(color = Color(0xFFEEEEEE))
+                                HorizontalDivider(color = Color(0xFFEEEEEE))
                             }
                         }
                     }
@@ -187,35 +189,35 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                         selected = selectedTab == 0,
                         onClick = { navegarParaAba(0) },
                         enabled = !empresaRejeitada,
-                        icon = { Icon(Icons.Default.Home, contentDescription = "Início") },
-                        label = { Text("Início", fontSize = 10.sp) }
+                        icon = { Icon(Icons.Default.Home, contentDescription = stringResource(R.string.home)) },
+                        label = { Text(stringResource(R.string.home), fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 1,
                         onClick = { navegarParaAba(1) },
                         enabled = !empresaRejeitada,
-                        icon = { Icon(Icons.Default.Work, contentDescription = "Estágios") },
-                        label = { Text("Estágios", fontSize = 10.sp) }
+                        icon = { Icon(Icons.Default.Work, contentDescription = stringResource(R.string.internships)) },
+                        label = { Text(stringResource(R.string.internships), fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 2,
                         onClick = { navegarParaAba(2) },
                         enabled = !empresaRejeitada,
-                        icon = { Icon(Icons.Default.People, contentDescription = "Candidatos") },
-                        label = { Text("Candidatos", fontSize = 10.sp) }
+                        icon = { Icon(Icons.Default.People, contentDescription = stringResource(R.string.candidates)) },
+                        label = { Text(stringResource(R.string.candidates), fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 3,
                         onClick = { navegarParaAba(3) },
                         enabled = !empresaRejeitada,
-                        icon = { Icon(Icons.Default.School, contentDescription = "Orientadores") },
-                        label = { Text("Orientadores", fontSize = 10.sp) }
+                        icon = { Icon(Icons.Default.School, contentDescription = stringResource(R.string.mentors)) },
+                        label = { Text(stringResource(R.string.mentors), fontSize = 10.sp) }
                     )
                     NavigationBarItem(
                         selected = selectedTab == 4,
                         onClick = { navegarParaAba(4) },
-                        icon = { Icon(Icons.Default.Business, contentDescription = "Perfil") },
-                        label = { Text("Perfil", fontSize = 10.sp) }
+                        icon = { Icon(Icons.Default.Business, contentDescription = stringResource(R.string.profile)) },
+                        label = { Text(stringResource(R.string.profile), fontSize = 10.sp) }
                     )
                 }
             }
@@ -223,12 +225,14 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
             if (empresaRejeitada) {
                 EmpresaPerfilScreen(modifier = Modifier.padding(innerPadding), onLogout = onLogout)
             } else if (ofertaAEditar != null) {
-                EmpresaEditarOfertaScreen(
-                    modifier = Modifier.padding(innerPadding),
-                    oferta = ofertaAEditar!!,
-                    onVoltar = { ofertaAEditar = null },
-                    onGuardado = { ofertaAEditar = null }
-                )
+                ofertaAEditar?.let { oferta ->
+                    EmpresaEditarOfertaScreen(
+                        modifier = Modifier.padding(innerPadding),
+                        oferta = oferta,
+                        onVoltar = { ofertaAEditar = null },
+                        onGuardado = { ofertaAEditar = null }
+                    )
+                }
             } else if (mostrarNovaOferta) {
                 key(novaOfertaKey) {
                     EmpresaNovaOfertaScreen(
@@ -238,11 +242,13 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                     )
                 }
             } else if (idCandidaturaSelecionada != null) {
-                EmpresaDetalhesCandidaturaScreen(
-                    modifier = Modifier.padding(innerPadding),
-                    idCandidatura = idCandidaturaSelecionada!!,
-                    onVoltar = { idCandidaturaSelecionada = null }
-                )
+                idCandidaturaSelecionada?.let { idCandidatura ->
+                    EmpresaDetalhesCandidaturaScreen(
+                        modifier = Modifier.padding(innerPadding),
+                        idCandidatura = idCandidatura,
+                        onVoltar = { idCandidaturaSelecionada = null }
+                    )
+                }
             } else if (mostrarCandidatos) {
                 EmpresaCandidatosScreen(
                     modifier = Modifier.padding(innerPadding),
@@ -258,12 +264,14 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                     onCriado = { mostrarCriarOrientador = false; orientadoresKey++ }
                 )
             } else if (orientadorAEditar != null) {
-                EmpresaEditarOrientadorScreen(
-                    modifier = Modifier.padding(innerPadding),
-                    orientador = orientadorAEditar!!,
-                    onVoltar = { orientadorAEditar = null },
-                    onGuardado = { orientadorAEditar = null; orientadoresKey++ }
-                )
+                orientadorAEditar?.let { orientador ->
+                    EmpresaEditarOrientadorScreen(
+                        modifier = Modifier.padding(innerPadding),
+                        orientador = orientador,
+                        onVoltar = { orientadorAEditar = null },
+                        onGuardado = { orientadorAEditar = null; orientadoresKey++ }
+                    )
+                }
             } else if (mostrarAtribuirOrientador) {
                 EmpresaAtribuirOrientadorScreen(
                     modifier = Modifier.padding(innerPadding),
@@ -307,8 +315,8 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
         } // CompositionLocalProvider
 
         // Banner notificação candidatura
-        if (!empresaRejeitada && novaNotificacaoCandidatura != null) {
-            val notif = novaNotificacaoCandidatura!!
+        if (!empresaRejeitada) {
+            novaNotificacaoCandidatura?.let { notif ->
             Box(modifier = Modifier.align(Alignment.TopCenter).zIndex(11f)
                 .padding(top = 8.dp, start = 12.dp, end = 12.dp)) {
                 Row(
@@ -333,7 +341,7 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                     }
                     IconButton(onClick = { notificacoesViewModel.dispensarNotificacao() },
                         modifier = Modifier.size(24.dp)) {
-                        Icon(Icons.Default.Close, contentDescription = "Fechar",
+                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close),
                             tint = Color.Gray, modifier = Modifier.size(16.dp))
                     }
                 }
@@ -359,7 +367,7 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                 ) {
                     Box(modifier = Modifier.size(40.dp).clip(RoundedCornerShape(10.dp))
                         .background(DarkBlue), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Message, contentDescription = null,
+                        Icon(Icons.AutoMirrored.Filled.Message, contentDescription = null,
                             tint = Color.White, modifier = Modifier.size(20.dp))
                     }
                     Spacer(modifier = Modifier.width(12.dp))
@@ -371,10 +379,11 @@ fun EmpresaMainScreen(onLogout: () -> Unit = {}) {
                     }
                     IconButton(onClick = { mensagensViewModel.dispensarNotificacao() },
                         modifier = Modifier.size(24.dp)) {
-                        Icon(Icons.Default.Close, contentDescription = "Fechar",
+                        Icon(Icons.Default.Close, contentDescription = stringResource(R.string.close),
                             tint = Color.Gray, modifier = Modifier.size(16.dp))
                     }
                 }
+            }
             }
         }
     }

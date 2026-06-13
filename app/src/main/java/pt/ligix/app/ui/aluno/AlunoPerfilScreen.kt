@@ -20,13 +20,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.model.InstituicaoEnsino
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.common.DropdownDismissController
+import pt.ligix.app.ui.common.LanguageSettingsCard
 import pt.ligix.app.ui.common.PhoneNumberInput
 import pt.ligix.app.ui.common.dismissDropdownsOnOutsideTap
 import pt.ligix.app.ui.common.dropdownDismissBounds
@@ -55,8 +58,6 @@ fun AlunoPerfilScreen(
     val guardadoComSucesso by viewModel.guardadoComSucesso.collectAsState()
 
     var modoEdicao by remember { mutableStateOf(false) }
-    var idioma by remember { mutableStateOf("Português") }
-    var expandedIdioma by remember { mutableStateOf(false) }
     val dropdownDismissController = rememberDropdownDismissController()
 
     // Campos editáveis
@@ -98,7 +99,7 @@ fun AlunoPerfilScreen(
             Spacer(modifier = Modifier.weight(1f))
             Box(contentAlignment = Alignment.TopEnd) {
                 IconButton(onClick = onSininho) {
-                    Icon(Icons.Default.Notifications, contentDescription = "Notificações", tint = DarkBlue)
+                    Icon(Icons.Default.Notifications, contentDescription = stringResource(R.string.cd_notifications), tint = DarkBlue)
                 }
                 if (historicoNotificacoes.isNotEmpty()) {
                     Box(
@@ -130,7 +131,7 @@ fun AlunoPerfilScreen(
                     Text(utilizador?.nome?.firstOrNull()?.toString() ?: "A", color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Bold)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Text("NOME DE UTILIZADOR", fontSize = 10.sp, color = Color.Gray, letterSpacing = 1.sp, fontWeight = FontWeight.Medium)
+                Text(stringResource(R.string.username_label_upper), fontSize = 10.sp, color = Color.Gray, letterSpacing = 1.sp, fontWeight = FontWeight.Medium)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(utilizador?.nome ?: "—", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                 aluno?.curso?.let { Text(it, fontSize = 14.sp, color = DarkBlue, fontWeight = FontWeight.SemiBold) }
@@ -149,7 +150,7 @@ fun AlunoPerfilScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Informações\nUtilizador", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Black, lineHeight = 26.sp)
+            Text(stringResource(R.string.user_info_title), fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Black, lineHeight = 26.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (modoEdicao) {
                     OutlinedButton(
@@ -157,7 +158,7 @@ fun AlunoPerfilScreen(
                         shape = RoundedCornerShape(10.dp),
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                     ) {
-                        Text("Cancelar", fontSize = 14.sp, color = Color.Gray)
+                        Text(stringResource(R.string.cancel), fontSize = 14.sp, color = Color.Gray)
                     }
                     Button(
                         onClick = { viewModel.guardarPerfil(editNome, editIdInstituicao, editCurso, editNumeroAluno, editTelemovel) },
@@ -171,7 +172,7 @@ fun AlunoPerfilScreen(
                         } else {
                             Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Guardar", fontSize = 14.sp)
+                            Text(stringResource(R.string.save), fontSize = 14.sp)
                         }
                     }
                 } else {
@@ -183,7 +184,7 @@ fun AlunoPerfilScreen(
                     ) {
                         Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Editar", fontSize = 14.sp)
+                        Text(stringResource(R.string.edit), fontSize = 14.sp)
                     }
                 }
             }
@@ -196,18 +197,18 @@ fun AlunoPerfilScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         // Informações Pessoais
-        PerfilSecao(titulo = "Informações Pessoais", icon = Icons.Default.Person) {
+        PerfilSecao(titulo = stringResource(R.string.personal_info), icon = Icons.Default.Person) {
             if (modoEdicao) {
-                PerfilCampoEditavel(label = "NOME COMPLETO", valor = editNome, onValorChange = { editNome = it })
+                PerfilCampoEditavel(label = stringResource(R.string.full_name_upper), valor = editNome, onValorChange = { editNome = it })
             } else {
-                PerfilCampo(label = "NOME COMPLETO", valor = utilizador?.nome ?: "—", icon = Icons.Default.Badge)
+                PerfilCampo(label = stringResource(R.string.full_name_upper), valor = utilizador?.nome ?: "—", icon = Icons.Default.Badge)
             }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
         // Dados Académicos
-        PerfilSecao(titulo = "Dados Académicos", icon = Icons.Default.School) {
+        PerfilSecao(titulo = stringResource(R.string.academic_data), icon = Icons.Default.School) {
             if (modoEdicao) {
                 CampoInstituicaoAlunoPerfil(
                     instituicoes = instituicoes,
@@ -217,31 +218,31 @@ fun AlunoPerfilScreen(
                     onSelecionar = { editIdInstituicao = it }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                PerfilCampoEditavel(label = "CURSO", valor = editCurso, onValorChange = { editCurso = it })
+                PerfilCampoEditavel(label = stringResource(R.string.course_upper), valor = editCurso, onValorChange = { editCurso = it })
                 Spacer(modifier = Modifier.height(8.dp))
-                PerfilCampoEditavel(label = "NÚMERO DE ALUNO", valor = editNumeroAluno, onValorChange = { editNumeroAluno = it })
+                PerfilCampoEditavel(label = stringResource(R.string.student_number_upper), valor = editNumeroAluno, onValorChange = { editNumeroAluno = it })
             } else {
                 PerfilCampo(
-                    label = "INSTITUIÇÃO DE ENSINO",
+                    label = stringResource(R.string.education_institution_upper),
                     valor = instituicaoNome.ifEmpty { "—" },
                     icon = Icons.Default.School
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                aluno?.curso?.let { PerfilCampo(label = "CURSO", valor = it, icon = Icons.AutoMirrored.Filled.MenuBook) }
+                aluno?.curso?.let { PerfilCampo(label = stringResource(R.string.course_upper), valor = it, icon = Icons.AutoMirrored.Filled.MenuBook) }
                 Spacer(modifier = Modifier.height(8.dp))
-                aluno?.numeroAluno?.let { PerfilCampo(label = "NÚMERO DE ALUNO", valor = it, icon = Icons.Default.Numbers) }
+                aluno?.numeroAluno?.let { PerfilCampo(label = stringResource(R.string.student_number_upper), valor = it, icon = Icons.Default.Numbers) }
             }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
         // Contacto
-        PerfilSecao(titulo = "Informações de Contacto", icon = Icons.Default.ContactMail) {
-            utilizador?.email?.let { PerfilCampo(label = "E-MAIL INSTITUCIONAL", valor = it, icon = Icons.Default.Email) }
+        PerfilSecao(titulo = stringResource(R.string.contact_info), icon = Icons.Default.ContactMail) {
+            utilizador?.email?.let { PerfilCampo(label = stringResource(R.string.institutional_email_upper), valor = it, icon = Icons.Default.Email) }
             Spacer(modifier = Modifier.height(8.dp))
             if (modoEdicao) {
                 PhoneNumberInput(
-                    label = "TELEMÓVEL",
+                    label = stringResource(R.string.mobile_upper),
                     value = editTelemovel,
                     onValueChange = { editTelemovel = it },
                     containerColor = Color(0xFFF8F8F8),
@@ -251,7 +252,7 @@ fun AlunoPerfilScreen(
             } else {
                 aluno?.telemovel?.let {
                     PerfilCampo(
-                        label = "TELEMÓVEL",
+                        label = stringResource(R.string.mobile_upper),
                         valor = PhoneNumberValidator.formatForDisplay(it),
                         icon = Icons.Default.Phone
                     )
@@ -261,47 +262,14 @@ fun AlunoPerfilScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Configurações
-        Card(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Tune, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Configurações", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Language, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(20.dp))
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Idioma", fontSize = 14.sp, color = Color.DarkGray)
-                    }
-                    Box {
-                        OutlinedButton(onClick = { expandedIdioma = true }, shape = RoundedCornerShape(8.dp), contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)) {
-                            Text(idioma, fontSize = 13.sp, color = DarkBlue)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = DarkBlue, modifier = Modifier.size(16.dp))
-                        }
-                        DropdownMenu(expanded = expandedIdioma, onDismissRequest = { expandedIdioma = false }) {
-                            DropdownMenuItem(text = { Text("Português") }, onClick = { idioma = "Português"; expandedIdioma = false })
-                            DropdownMenuItem(text = { Text("English") }, onClick = { idioma = "English"; expandedIdioma = false })
-                        }
-                    }
-                }
-            }
-        }
+        LanguageSettingsCard(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp))
 
         Spacer(modifier = Modifier.height(16.dp))
 
         TextButton(onClick = onLogout, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
             Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = Color.Red)
             Spacer(modifier = Modifier.width(8.dp))
-            Text("TERMINAR SESSÃO", color = Color.Red, fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
+            Text(stringResource(R.string.logout), color = Color.Red, fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
         }
 
         Text("Ligix v1.0.0", modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp), color = Color.LightGray, fontSize = 12.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
@@ -396,7 +364,7 @@ private fun CampoInstituicaoAlunoPerfil(
 
     Column {
         Text(
-            "INSTITUIÇÃO DE ENSINO",
+            stringResource(R.string.education_institution_upper),
             fontSize = 10.sp,
             color = Color.Gray,
             letterSpacing = 0.5.sp,
@@ -422,7 +390,7 @@ private fun CampoInstituicaoAlunoPerfil(
                 shape = RoundedCornerShape(10.dp)
             ) {
                 Text(
-                    texto.ifBlank { "Selecionar instituição" },
+                    texto.ifBlank { stringResource(R.string.select_institution) },
                     color = if (texto.isBlank()) Color.Gray else Color.Black,
                     modifier = Modifier.weight(1f),
                     fontSize = 14.sp
@@ -445,7 +413,7 @@ private fun CampoInstituicaoAlunoPerfil(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 8.dp),
-                    placeholder = { Text("Pesquisar por nome ou sigla", color = Color.Gray) },
+                    placeholder = { Text(stringResource(R.string.search_by_name_or_acronym), color = Color.Gray) },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
                     singleLine = true,
                     colors = OutlinedTextFieldDefaults.colors(
@@ -466,7 +434,7 @@ private fun CampoInstituicaoAlunoPerfil(
                             .height(96.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("Sem instituições encontradas", color = Color.Gray, fontSize = 14.sp)
+                        Text(stringResource(R.string.no_institutions_found), color = Color.Gray, fontSize = 14.sp)
                     }
                 } else {
                     val alturaLista = (opcoes.size.coerceAtMost(5) * 52).dp

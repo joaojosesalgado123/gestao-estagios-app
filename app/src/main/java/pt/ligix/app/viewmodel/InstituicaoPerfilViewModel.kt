@@ -49,7 +49,7 @@ class InstituicaoPerfilViewModel(
                 _instituicao.value = instResp.body()?.firstOrNull()
 
             } catch (e: Exception) {
-                e.printStackTrace()
+                _erro.value = e.message ?: "Erro ao carregar perfil."
             } finally {
                 _isLoading.value = false
             }

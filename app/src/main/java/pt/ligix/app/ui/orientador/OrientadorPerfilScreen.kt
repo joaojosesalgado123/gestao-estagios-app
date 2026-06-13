@@ -15,15 +15,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.ui.aluno.PerfilCampo
 import pt.ligix.app.ui.aluno.PerfilCampoEditavel
 import pt.ligix.app.ui.aluno.PerfilSecao
 import pt.ligix.app.ui.auth.DarkBlue
+import pt.ligix.app.ui.common.LanguageSettingsCard
 import pt.ligix.app.ui.common.PhoneNumberInput
 import pt.ligix.app.ui.common.dismissDropdownsOnOutsideTap
 import pt.ligix.app.ui.common.rememberDropdownDismissController
@@ -52,8 +55,6 @@ fun OrientadorPerfilScreen(
     val telemovelBD by viewModel.telemovel.collectAsState()
 
     var modoEdicao by remember { mutableStateOf(false) }
-    var idioma by remember { mutableStateOf("Português") }
-    var expandedIdioma by remember { mutableStateOf(false) }
     var editNome by remember { mutableStateOf("") }
     var editArea by remember { mutableStateOf("") }
     var editTelemovel by remember { mutableStateOf("") }
@@ -111,7 +112,7 @@ fun OrientadorPerfilScreen(
                     Text(iniciais, color = Color.White, fontSize = 36.sp, fontWeight = FontWeight.Bold)
                 }
                 Spacer(Modifier.height(16.dp))
-                Text("NOME DE UTILIZADOR", fontSize = 10.sp, color = Color.Gray,
+                Text(stringResource(R.string.username_label_upper), fontSize = 10.sp, color = Color.Gray,
                     letterSpacing = 1.sp, fontWeight = FontWeight.Medium)
                 Spacer(Modifier.height(4.dp))
                 Text(utilizador?.nome ?: "—", fontSize = 22.sp,
@@ -126,7 +127,7 @@ fun OrientadorPerfilScreen(
                         Icon(Icons.Default.Verified, contentDescription = null,
                             tint = DarkBlue, modifier = Modifier.size(14.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text("ORIENTADOR DE EMPRESA", fontSize = 11.sp,
+                        Text(stringResource(R.string.company_supervisor_upper), fontSize = 11.sp,
                             color = DarkBlue, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
                     }
                 }
@@ -139,7 +140,7 @@ fun OrientadorPerfilScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Informações\nUtilizador", fontSize = 20.sp,
+            Text(stringResource(R.string.user_info_title), fontSize = 20.sp,
                 fontWeight = FontWeight.Bold, color = Color.Black, lineHeight = 26.sp)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (modoEdicao) {
@@ -148,7 +149,7 @@ fun OrientadorPerfilScreen(
                         shape = RoundedCornerShape(10.dp),
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                     ) {
-                        Text("Cancelar", fontSize = 14.sp, color = Color.Gray)
+                        Text(stringResource(R.string.cancel), fontSize = 14.sp, color = Color.Gray)
                     }
                     Button(
                         onClick = { viewModel.guardarPerfil(editNome, editArea, editTelemovel) },
@@ -162,7 +163,7 @@ fun OrientadorPerfilScreen(
                         } else {
                             Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Guardar", fontSize = 14.sp)
+                            Text(stringResource(R.string.save), fontSize = 14.sp)
                         }
                     }
                 } else {
@@ -174,7 +175,7 @@ fun OrientadorPerfilScreen(
                     ) {
                         Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(Modifier.width(6.dp))
-                        Text("Editar", fontSize = 14.sp)
+                        Text(stringResource(R.string.edit), fontSize = 14.sp)
                     }
                 }
             }
@@ -188,12 +189,12 @@ fun OrientadorPerfilScreen(
         Spacer(Modifier.height(12.dp))
 
         // Informações Pessoais
-        PerfilSecao(titulo = "Informações", icon = Icons.Default.Person) {
+        PerfilSecao(titulo = stringResource(R.string.information), icon = Icons.Default.Person) {
             if (modoEdicao) {
-                PerfilCampoEditavel(label = "NOME COMPLETO", valor = editNome,
+                PerfilCampoEditavel(label = stringResource(R.string.full_name_upper), valor = editNome,
                     onValorChange = { editNome = it })
             } else {
-                PerfilCampo(label = "NOME COMPLETO", valor = utilizador?.nome ?: "—",
+                PerfilCampo(label = stringResource(R.string.full_name_upper), valor = utilizador?.nome ?: "—",
                     icon = Icons.Default.Badge)
             }
         }
@@ -201,13 +202,13 @@ fun OrientadorPerfilScreen(
         Spacer(Modifier.height(12.dp))
 
         // Informações de Contacto
-        PerfilSecao(titulo = "Informações de Contacto", icon = Icons.Default.ContactMail) {
-            PerfilCampo(label = "EMAIL CORPORATIVO", valor = utilizador?.email ?: "—",
+        PerfilSecao(titulo = stringResource(R.string.contact_info), icon = Icons.Default.ContactMail) {
+            PerfilCampo(label = stringResource(R.string.corporate_email_upper), valor = utilizador?.email ?: "—",
                 icon = Icons.Default.Email)
             Spacer(Modifier.height(8.dp))
             if (modoEdicao) {
                 PhoneNumberInput(
-                    label = "TELEMÓVEL",
+                    label = stringResource(R.string.mobile_upper),
                     value = editTelemovel,
                     onValueChange = { editTelemovel = it },
                     containerColor = Color(0xFFF8F8F8),
@@ -216,69 +217,23 @@ fun OrientadorPerfilScreen(
                 )
             } else {
                 PerfilCampo(
-                    label = "TELEMÓVEL",
+                    label = stringResource(R.string.mobile_upper),
                     valor = PhoneNumberValidator.formatForDisplay(telemovelBD),
                     icon = Icons.Default.Phone
                 )
             }
             Spacer(Modifier.height(8.dp))
             if (modoEdicao) {
-                PerfilCampoEditavel(label = "ÁREA DE TRABALHO", valor = editArea,
+                PerfilCampoEditavel(label = stringResource(R.string.work_area_upper), valor = editArea,
                     onValorChange = { editArea = it })
             } else {
-                PerfilCampo(label = "ÁREA DE TRABALHO", valor = areaBD.ifEmpty { "—" }, icon = Icons.Default.Work)
+                PerfilCampo(label = stringResource(R.string.work_area_upper), valor = areaBD.ifEmpty { "—" }, icon = Icons.Default.Work)
             }
         }
 
         Spacer(Modifier.height(12.dp))
 
-        // Configurações
-        Card(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(1.dp)
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Tune, contentDescription = null,
-                        tint = DarkBlue, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text("Configurações", fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold, color = Color.Black)
-                }
-                Spacer(Modifier.height(16.dp))
-                Row(modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Language, contentDescription = null,
-                            tint = Color.Gray, modifier = Modifier.size(20.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text("Idioma", fontSize = 14.sp, color = Color.DarkGray)
-                    }
-                    Box {
-                        OutlinedButton(
-                            onClick = { expandedIdioma = true },
-                            shape = RoundedCornerShape(8.dp),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
-                        ) {
-                            Text(idioma, fontSize = 13.sp, color = DarkBlue)
-                            Spacer(Modifier.width(4.dp))
-                            Icon(Icons.Default.KeyboardArrowDown, contentDescription = null,
-                                tint = DarkBlue, modifier = Modifier.size(16.dp))
-                        }
-                        DropdownMenu(expanded = expandedIdioma,
-                            onDismissRequest = { expandedIdioma = false }) {
-                            DropdownMenuItem(text = { Text("Português") },
-                                onClick = { idioma = "Português"; expandedIdioma = false })
-                            DropdownMenuItem(text = { Text("English") },
-                                onClick = { idioma = "English"; expandedIdioma = false })
-                        }
-                    }
-                }
-            }
-        }
+        LanguageSettingsCard(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp))
 
         Spacer(Modifier.height(16.dp))
 
@@ -288,7 +243,7 @@ fun OrientadorPerfilScreen(
         ) {
             Icon(Icons.Default.Logout, contentDescription = null, tint = Color.Red)
             Spacer(Modifier.width(8.dp))
-            Text("TERMINAR SESSÃO", color = Color.Red,
+            Text(stringResource(R.string.logout), color = Color.Red,
                 fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)
         }
 

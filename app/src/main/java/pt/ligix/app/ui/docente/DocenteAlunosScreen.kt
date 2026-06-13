@@ -31,10 +31,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import pt.ligix.app.R
 import pt.ligix.app.data.repository.DocenteRepository
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.util.SessionManager
@@ -75,13 +77,13 @@ fun DocenteAlunosScreen(
                 .padding(horizontal = 20.dp, vertical = 24.dp)
         ) {
             Text(
-                "Meus Orientandos",
+                stringResource(R.string.my_orientees),
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkBlue
             )
             Text(
-                "Gerencie o progresso académico e profissional dos alunos sob sua supervisão direta.",
+                stringResource(R.string.my_orientees_subtitle),
                 fontSize = 14.sp,
                 color = Color.Gray,
                 lineHeight = 21.sp,
@@ -94,7 +96,7 @@ fun DocenteAlunosScreen(
                 value = pesquisa,
                 onValueChange = { pesquisa = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("Filtrar por nome ou curso...", color = Color.LightGray) },
+                placeholder = { Text(stringResource(R.string.filter_name_course), color = Color.LightGray) },
                 leadingIcon = {
                     Icon(Icons.Default.Search, contentDescription = null, tint = Color.LightGray)
                 },
@@ -132,7 +134,7 @@ fun DocenteAlunosScreen(
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        "Sem orientandos",
+                        stringResource(R.string.no_orientees),
                         color = Color.Gray,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold
@@ -203,7 +205,7 @@ fun DocenteOrientandoCard(
                         color = Color.Black
                     )
                     Text(
-                        orientando.curso.ifBlank { "Curso não definido" },
+                        orientando.curso.ifBlank { stringResource(R.string.course_not_defined) },
                         fontSize = 13.sp,
                         color = Color.Gray,
                         modifier = Modifier.padding(top = 2.dp)
@@ -223,14 +225,14 @@ fun DocenteOrientandoCard(
                 Spacer(Modifier.width(8.dp))
                 Column {
                     Text(
-                        "EMPRESA DE ACOLHIMENTO",
+                        stringResource(R.string.host_company_upper),
                         fontSize = 10.sp,
                         color = Color.Gray,
                         letterSpacing = 0.5.sp,
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        orientando.nomeEmpresa.ifBlank { "Empresa não definida" },
+                        orientando.nomeEmpresa.ifBlank { stringResource(R.string.company_not_defined) },
                         fontSize = 14.sp,
                         color = DarkBlue,
                         fontWeight = FontWeight.Bold
@@ -247,7 +249,7 @@ fun DocenteOrientandoCard(
                 shape = RoundedCornerShape(10.dp)
             ) {
                 Text(
-                    "Ver Detalhes/Diário",
+                    stringResource(R.string.view_details_diary),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color.White

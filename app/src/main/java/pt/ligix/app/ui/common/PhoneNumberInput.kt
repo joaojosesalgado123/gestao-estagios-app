@@ -35,10 +35,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import pt.ligix.app.R
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.ui.auth.FieldGrey
 import pt.ligix.app.util.PhoneCountry
@@ -220,7 +222,7 @@ private fun CountryPicker(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 8.dp),
-            placeholder = { Text("Pesquisar país ou indicativo", color = Color.Gray) },
+            placeholder = { Text(stringResource(R.string.search_country_or_code), color = Color.Gray) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray) },
             singleLine = true,
             colors = OutlinedTextFieldDefaults.colors(
@@ -241,7 +243,7 @@ private fun CountryPicker(
                     .height(80.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Sem países encontrados", color = Color.Gray, fontSize = 14.sp)
+                Text(stringResource(R.string.no_countries_found), color = Color.Gray, fontSize = 14.sp)
             }
         } else {
             LazyColumn(

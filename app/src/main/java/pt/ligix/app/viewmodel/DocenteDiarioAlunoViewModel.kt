@@ -86,8 +86,7 @@ class DocenteDiarioAlunoViewModel(
                 caminhoRelatorio = relatorio?.ficheiro
                     ?.removePrefix("relatorios/")
                     ?.takeIf { it.isNotBlank() }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
             }
         }
     }
@@ -107,8 +106,7 @@ class DocenteDiarioAlunoViewModel(
                 val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 context.startActivity(intent)
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
                 Toast.makeText(context, "Não foi possível abrir o relatório.", Toast.LENGTH_SHORT).show()
             }
         }
@@ -143,8 +141,7 @@ class DocenteDiarioAlunoViewModel(
                     else -> "${Constants.SUPABASE_URL}/$signedUrl"
                 }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (_: Exception) {
             null
         }
     }

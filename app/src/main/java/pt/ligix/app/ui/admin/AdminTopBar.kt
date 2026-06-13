@@ -1,6 +1,7 @@
 package pt.ligix.app.ui.admin
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -13,10 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.first
+import pt.ligix.app.R
 import pt.ligix.app.data.repository.AdminRepository
 import pt.ligix.app.ui.auth.DarkBlue
 import pt.ligix.app.util.SessionManager
@@ -26,6 +29,7 @@ fun AdminTopBar() {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }
     val repository = remember { AdminRepository() }
+    val onPerfilClick = LocalAdminPerfilClick.current
 
     var nomeAdmin by remember { mutableStateOf("") }
     var pendentes by remember { mutableStateOf(0) }
@@ -47,18 +51,18 @@ fun AdminTopBar() {
         AlertDialog(
             onDismissRequest = { mostrarDialog = false },
             title = {
-                Text("Notificações", fontWeight = FontWeight.Bold, color = DarkBlue)
+                Text(stringResource(R.string.notifications), fontWeight = FontWeight.Bold, color = DarkBlue)
             },
             text = {
                 if (pendentes > 0) {
                     Column {
                         Text(
-                            text = "Tem $pendentes empresa(s) pendente(s) de aprovação.",
+                            text = stringResource(R.string.admin_pending_company_approvals, pendentes),
                             fontSize = 14.sp
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = "Aceda à aba \"Aprovações\" para as analisar.",
+                            text = stringResource(R.string.admin_go_to_approvals_tab),
                             fontSize = 12.sp,
                             color = Color.Gray
                         )
@@ -75,13 +79,13 @@ fun AdminTopBar() {
                             modifier = Modifier.size(48.dp)
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Sem notificações", color = Color.Gray, fontSize = 14.sp)
+                        Text(stringResource(R.string.no_notifications), color = Color.Gray, fontSize = 14.sp)
                     }
                 }
             },
             confirmButton = {
                 TextButton(onClick = { mostrarDialog = false }) {
-                    Text("Fechar", color = DarkBlue, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.close), color = DarkBlue, fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = Color.White
@@ -119,7 +123,7 @@ fun AdminTopBar() {
             IconButton(onClick = { mostrarDialog = true }) {
                 Icon(
                     Icons.Default.Notifications,
-                    contentDescription = "Notificações",
+                    contentDescription = stringResource(R.string.cd_notifications),
                     tint = DarkBlue
                 )
             }
@@ -128,7 +132,11 @@ fun AdminTopBar() {
         Spacer(modifier = Modifier.width(4.dp))
 
         Box(
-            modifier = Modifier.size(36.dp).clip(CircleShape).background(DarkBlue),
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(DarkBlue)
+                .clickable(onClick = onPerfilClick),
             contentAlignment = Alignment.Center
         ) {
             Text(
