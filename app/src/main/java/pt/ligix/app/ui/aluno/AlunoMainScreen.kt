@@ -80,7 +80,7 @@ sealed class AlunoTab(val route: String, @StringRes val labelRes: Int, val icon:
     object Inicio : AlunoTab("aluno_inicio", R.string.home, Icons.Default.Home)
     object Procurar : AlunoTab("aluno_procurar", R.string.search, Icons.Default.Search)
     object Estagio : AlunoTab("aluno_estagio", R.string.internship, Icons.Default.Assignment)
-    object Mensagens : AlunoTab("aluno_mensagens", R.string.messages, Icons.Default.Message)
+    object Mensagens : AlunoTab("aluno_mensagens", R.string.chat, Icons.Default.Message)
     object Perfil : AlunoTab("aluno_perfil", R.string.profile, Icons.Default.Person)
 }
 
