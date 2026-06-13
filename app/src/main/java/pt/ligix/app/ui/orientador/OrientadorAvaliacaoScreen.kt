@@ -8,6 +8,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -81,7 +83,7 @@ fun OrientadorAvaliacaoScreen(
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = onVoltar) {
-                Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.cd_back), tint = DarkBlue)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_back), tint = DarkBlue)
             }
             Text(stringResource(R.string.final_evaluation), fontSize = 18.sp,
                 fontWeight = FontWeight.Bold, color = DarkBlue)
@@ -106,7 +108,7 @@ fun OrientadorAvaliacaoScreen(
                         stringResource(
                             R.string.evaluation_already_submitted_message,
                             nomeAluno,
-                            minhaAvaliacao!!.classificacao?.let { String.format(java.util.Locale.US, "%.1f", it.coerceIn(0.0, 20.0)) } ?: "—"
+                            minhaAvaliacao?.classificacao?.let { String.format(java.util.Locale.US, "%.1f", it.coerceIn(0.0, 20.0)) } ?: "—"
                         ),
                         fontSize = 14.sp, color = Color.Gray, textAlign = TextAlign.Center,
                         modifier = Modifier.padding(top = 8.dp))
@@ -341,7 +343,7 @@ fun OrientadorAvaliacaoScreen(
                         if (isSaving) {
                             CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp))
                         } else {
-                            Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
                             Text(stringResource(R.string.submit_evaluation), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                         }

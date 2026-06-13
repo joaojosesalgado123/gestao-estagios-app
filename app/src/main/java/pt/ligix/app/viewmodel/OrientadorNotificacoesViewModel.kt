@@ -55,8 +55,7 @@ class OrientadorNotificacoesViewModel(
                 val atividades = atividadesResp.body() ?: continue
                 atividades.forEach { idsAtividadesVistas.add(it.idAtividade) }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (_: Exception) {
         }
     }
 
@@ -108,8 +107,7 @@ class OrientadorNotificacoesViewModel(
                     _novaNotificacao.value = notif
                 }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (_: Exception) {
         }
     }
 

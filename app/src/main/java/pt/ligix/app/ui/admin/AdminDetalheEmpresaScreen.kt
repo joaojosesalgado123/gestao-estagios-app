@@ -110,11 +110,13 @@ fun AdminDetalheEmpresaScreen(
                     }
                 }
                 empresa != null -> {
-                    ConteudoDetalhe(
-                        empresa = empresa!!,
-                        onAprovar = { viewModel.aprovar() },
-                        onRejeitar = { viewModel.rejeitar() }
-                    )
+                    empresa?.let { empresaDetalhe ->
+                        ConteudoDetalhe(
+                            empresa = empresaDetalhe,
+                            onAprovar = { viewModel.aprovar() },
+                            onRejeitar = { viewModel.rejeitar() }
+                        )
+                    }
                 }
             }
         }

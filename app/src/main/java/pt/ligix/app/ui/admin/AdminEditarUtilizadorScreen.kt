@@ -109,10 +109,10 @@ fun AdminEditarUtilizadorScreen(
                     ) { CircularProgressIndicator(color = DarkBlue) }
                 }
                 utilizador == null && erro != null -> {
-                    CardErro(erro!!)
+                    CardErro(erro.orEmpty())
                 }
                 utilizador != null -> {
-                    val u = utilizador!!
+                    utilizador?.let { u ->
 
                     // Card: Informação Pessoal
                     Card(
@@ -154,7 +154,7 @@ fun AdminEditarUtilizadorScreen(
                     Spacer(Modifier.height(20.dp))
 
                     if (erro != null) {
-                        CardErro(erro!!)
+                        CardErro(erro.orEmpty())
                         Spacer(Modifier.height(12.dp))
                     }
 
@@ -177,6 +177,7 @@ fun AdminEditarUtilizadorScreen(
                     }
 
                     Spacer(Modifier.height(24.dp))
+                    }
                 }
             }
         }

@@ -58,11 +58,15 @@ fun InstituicaoMainScreen(onLogout: () -> Unit = {}) {
     ) { innerPadding ->
         when {
             selectedTab == 0 -> InstituicaoHomeScreen(modifier = Modifier.padding(innerPadding), onVerOrientadores = { selectedTab = 2 })
-            selectedTab == 1 && utilizadorAEditar != null -> InstituicaoEditarUtilizadorScreen(
-                modifier = Modifier.padding(innerPadding),
-                utilizador = utilizadorAEditar!!,
-                onVoltar = { utilizadorAEditar = null; utilizadoresKey++ }
-            )
+            selectedTab == 1 && utilizadorAEditar != null -> {
+                utilizadorAEditar?.let { utilizador ->
+                    InstituicaoEditarUtilizadorScreen(
+                        modifier = Modifier.padding(innerPadding),
+                        utilizador = utilizador,
+                        onVoltar = { utilizadorAEditar = null; utilizadoresKey++ }
+                    )
+                }
+            }
             selectedTab == 1 -> key(utilizadoresKey) { InstituicaoUtilizadoresScreen(modifier = Modifier.padding(innerPadding), onEditar = { utilizadorAEditar = it }) }
             selectedTab == 2 -> InstituicaoOrientadoresScreen(modifier = Modifier.padding(innerPadding))
             selectedTab == 3 -> InstituicaoPerfilScreen(modifier = Modifier.padding(innerPadding), onLogout = onLogout)

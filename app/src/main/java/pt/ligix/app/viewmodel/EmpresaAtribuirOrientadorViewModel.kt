@@ -68,13 +68,12 @@ class EmpresaAtribuirOrientadorViewModel(
                             idEstagio = estagio.idEstagio,
                             nomeAluno = nomeAluno,
                             tituloOferta = oferta.titulo,
-                            idDocente = estagio.idOrientador
+                            idResponsavel = estagio.idOrientador
                         )
                         if (estagio.idOrientador.isNullOrBlank()) lista.add(item)
                         else listaAtribuidos.add(item)
                     }
                 }
-                android.util.Log.d("EmpresaAtribuir", "Pendentes: ${lista.size}, Atribuidos: ${listaAtribuidos.size}")
                 _estagiosPendentes.value = lista
                 _estagiosAtribuidos.value = listaAtribuidos
 
@@ -92,7 +91,7 @@ class EmpresaAtribuirOrientadorViewModel(
                 _orientadores.value = orientadoresLista
 
             } catch (e: Exception) {
-                e.printStackTrace()
+                _erro.value = e.message ?: "Erro ao carregar estágios e orientadores."
             } finally {
                 _isLoading.value = false
             }

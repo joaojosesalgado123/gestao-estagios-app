@@ -52,7 +52,7 @@ class InstituicaoEditarUtilizadorViewModel(
                     }
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                _erro.value = e.message ?: "Erro ao carregar utilizador."
             } finally {
                 _isLoading.value = false
             }

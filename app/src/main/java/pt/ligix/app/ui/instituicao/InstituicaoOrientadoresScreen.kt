@@ -107,7 +107,7 @@ fun InstituicaoOrientadoresScreen(modifier: Modifier = Modifier) {
                 }
             }
 
-            Divider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFEEEEEE))
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFEEEEEE))
 
             Row(
                 modifier = Modifier.fillMaxWidth()
@@ -208,7 +208,7 @@ fun InstituicaoOrientadoresScreen(modifier: Modifier = Modifier) {
                         nomeAluno = estagio.nomeAluno,
                         tituloOferta = estagio.tituloOferta,
                         docentes = docentes,
-                        docenteAtualId = estagio.idDocente,
+                        docenteAtualId = estagio.idResponsavel,
                         modoTroca = abaAtiva == 1,
                         onAtribuir = { idDocente ->
                             viewModel.atribuirDocente(estagio.idEstagio, idDocente)
@@ -271,7 +271,7 @@ fun AtribuicaoDocenteCard(
                 }
             }
 
-            Divider(color = Color(0xFFF0F0F0))
+            HorizontalDivider(color = Color(0xFFF0F0F0))
 
             Column(modifier = Modifier.padding(16.dp)) {
                 if (modoTroca && docenteAtual != null) {

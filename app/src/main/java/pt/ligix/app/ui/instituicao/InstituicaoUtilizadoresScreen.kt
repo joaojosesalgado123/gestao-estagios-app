@@ -53,15 +53,15 @@ fun InstituicaoUtilizadoresScreen(
         }
     }
 
-    if (confirmarEliminar != null) {
+    confirmarEliminar?.let { utilizador ->
         AlertDialog(
             onDismissRequest = { confirmarEliminar = null },
             title = { Text(stringResource(R.string.delete_user)) },
-            text = { Text(stringResource(R.string.delete_user_confirm, confirmarEliminar!!.nome)) },
+            text = { Text(stringResource(R.string.delete_user_confirm, utilizador.nome)) },
             confirmButton = {
                 Button(
                     onClick = {
-                        viewModel.eliminarUtilizador(confirmarEliminar!!.idUtilizador)
+                        viewModel.eliminarUtilizador(utilizador.idUtilizador)
                         confirmarEliminar = null
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Red)

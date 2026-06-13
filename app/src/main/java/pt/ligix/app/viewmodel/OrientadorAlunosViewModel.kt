@@ -86,8 +86,7 @@ class OrientadorAlunosViewModel(
                 _orientandos.value = detalhes
                 _orientandosFiltrados.value = detalhes
 
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
             } finally {
                 _isLoading.value = false
             }

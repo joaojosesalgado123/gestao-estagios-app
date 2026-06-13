@@ -193,7 +193,7 @@ class MensagensViewModel : ViewModel() {
                 }
                 aplicarConversasCarregadas(resumos)
             } catch (e: Exception) {
-                e.printStackTrace()
+                _erro.value = e.message ?: "Erro ao carregar conversas."
             }
             _isLoading.value = false
         }
@@ -221,7 +221,7 @@ class MensagensViewModel : ViewModel() {
                 }
                 aplicarConversasCarregadas(resumos)
             } catch (e: Exception) {
-                e.printStackTrace()
+                _erro.value = e.message ?: "Erro ao carregar conversas."
             }
             _isLoading.value = false
         }
@@ -509,8 +509,7 @@ class MensagensViewModel : ViewModel() {
                     addCategory(Intent.CATEGORY_BROWSABLE)
                 }
                 context.startActivity(intent)
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
                 _erro.value = "Não foi possível abrir o ficheiro."
                 Toast.makeText(context, "Não foi possível abrir o ficheiro.", Toast.LENGTH_SHORT).show()
             }
@@ -561,8 +560,7 @@ class MensagensViewModel : ViewModel() {
                     ?: return@withContext null
                 normalizarUrlStorage(signedUrl)
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (_: Exception) {
             null
         }
     }

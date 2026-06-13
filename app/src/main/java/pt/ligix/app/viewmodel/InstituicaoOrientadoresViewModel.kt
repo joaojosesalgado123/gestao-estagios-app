@@ -14,7 +14,7 @@ data class EstagioParaAtribuir(
     val idEstagio: String,
     val nomeAluno: String,
     val tituloOferta: String,
-    val idDocente: String? = null
+    val idResponsavel: String? = null
 )
 
 data class DocenteItem(
@@ -76,9 +76,6 @@ class InstituicaoOrientadoresViewModel(
                     todosEstagios.add(estagio)
                 }
 
-                // Filtra estágios sem docente
-                val estagios = todosEstagios.filter { it.idDocente.isNullOrBlank() }
-
                 val lista = mutableListOf<EstagioParaAtribuir>()
                 val listaAtribuidos = mutableListOf<EstagioParaAtribuir>()
                 for (estagio in todosEstagios) {
@@ -96,11 +93,12 @@ class InstituicaoOrientadoresViewModel(
                             idEstagio = estagio.idEstagio,
                             nomeAluno = nomeAluno,
                             tituloOferta = oferta?.titulo ?: "Estágio",
-                            idDocente = estagio.idDocente
+                            idResponsavel = estagio.idDocente
                         )
                         if (estagio.idDocente.isNullOrBlank()) lista.add(item)
                         else listaAtribuidos.add(item)
-                    } catch (e: Exception) { e.printStackTrace() }
+                    } catch (_: Exception) {
+                    }
                 }
                 _estagiosPendentes.value = lista
                 _estagiosAtribuidos.value = listaAtribuidos
@@ -120,12 +118,13 @@ class InstituicaoOrientadoresViewModel(
                                 email = util.email
                             ))
                         }
-                    } catch (e: Exception) { e.printStackTrace() }
+                    } catch (_: Exception) {
+                    }
                 }
                 _docentes.value = docentesLista
 
             } catch (e: Exception) {
-                e.printStackTrace()
+                _erro.value = e.message ?: "Erro ao carregar orientações."
             } finally {
                 _isLoading.value = false
             }
@@ -137,18 +136,15 @@ class InstituicaoOrientadoresViewModel(
             try {
                 val api = RetrofitClient.api
                 val body: Map<String, String> = mapOf("iddocente" to idDocente)
-                android.util.Log.d("InstituicaoOrient", "Atribuindo docente $idDocente ao estágio $idEstagio")
                 val resp = api.updateEstagio(id = "eq.$idEstagio", estagio = body)
-                android.util.Log.d("InstituicaoOrient", "Resposta: ${resp.code()} - ${resp.errorBody()?.string()}")
                 if (resp.isSuccessful) {
                     _sucesso.value = "Docente atribuído com sucesso!"
                     carregar()
                 } else {
-                    _erro.value = "Erro ${resp.code()}: ${resp.errorBody()?.string()}"
+                    _erro.value = "Erro ${resp.code()}"
                 }
             } catch (e: Exception) {
                 _erro.value = "Erro ao atribuir docente: ${e.message}"
-                android.util.Log.e("InstituicaoOrient", "Erro: ${e.message}")
             }
         }
     }

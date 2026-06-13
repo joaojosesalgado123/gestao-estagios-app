@@ -68,10 +68,8 @@ class InstituicaoHomeViewModel(
                     todosEstagios.add(estagio)
                 }
 
-                android.util.Log.d("InstituicaoHome", "Alunos IPVC: ${alunos.size}, Estagios: ${todosEstagios.size}")
                 _estagiariosAtivos.value = todosEstagios.size
                 val semDocente = todosEstagios.filter { it.idDocente.isNullOrBlank() }
-                android.util.Log.d("InstituicaoHome", "Pendentes sem docente: ${semDocente.size}")
                 _pendentes.value = semDocente.size
 
                 val lista = mutableListOf<InstituicaoEstagioDetalhe>()
@@ -91,13 +89,12 @@ class InstituicaoHomeViewModel(
                             nomeEmpresa = empresa?.nome ?: "Empresa",
                             tituloOferta = oferta?.titulo ?: "Estágio"
                         ))
-                    } catch (e: Exception) { e.printStackTrace() }
+                    } catch (_: Exception) {
+                    }
                 }
-                android.util.Log.d("InstituicaoHome", "Lista estagios pendentes: ${lista.size}")
                 _estagiosPendentes.value = lista
 
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
             } finally {
                 _isLoading.value = false
             }

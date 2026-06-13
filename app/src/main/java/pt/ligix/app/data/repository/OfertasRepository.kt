@@ -1,6 +1,4 @@
 package pt.ligix.app.data.repository
-
-import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -95,7 +93,6 @@ class OfertasRepository {
     ): Result<String> = withContext(Dispatchers.IO) {
         try {
             val url = "${pt.ligix.app.util.Constants.SUPABASE_URL}/storage/v1/object/$bucket/$path"
-            Log.d("UPLOAD", "A fazer upload para: $url (${bytes.size} bytes)")
 
             val requestBody = bytes.toRequestBody(contentType.toMediaType())
             val requestBuilder = okhttp3.Request.Builder()
@@ -112,7 +109,6 @@ class OfertasRepository {
 
             val response = uploadClient.newCall(request).execute()
             val responseBody = response.body?.string()
-            Log.d("UPLOAD", "Resposta ${response.code}: $responseBody")
 
             if (response.isSuccessful) {
                 Result.success("$bucket/$path")
@@ -120,7 +116,6 @@ class OfertasRepository {
                 Result.failure(Exception("Erro no upload: ${response.code} - $responseBody"))
             }
         } catch (e: Exception) {
-            Log.e("UPLOAD", "Exceção: ${e.message}", e)
             Result.failure(Exception("Erro no upload: ${e.message}"))
         }
     }

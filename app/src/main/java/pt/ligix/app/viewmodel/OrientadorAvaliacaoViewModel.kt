@@ -77,7 +77,7 @@ class OrientadorAvaliacaoViewModel(
                 _horasCompletas.value = horasFeitas >= 480
 
             } catch (e: Exception) {
-                e.printStackTrace()
+                _erro.value = e.message ?: "Não foi possível carregar a avaliação."
             } finally {
                 _isLoading.value = false
             }
@@ -133,7 +133,6 @@ class OrientadorAvaliacaoViewModel(
                 val itemResp = api.createItemAvaliacaoMap(body = itemMap)
                 if (!itemResp.isSuccessful) {
                     val errorBody = itemResp.errorBody()?.string().orEmpty()
-                    android.util.Log.e("OrientadorAvaliacao", "Erro item: ${itemResp.code()} - $errorBody")
                     _erro.value = mensagemErroAvaliacao(itemResp.code(), errorBody)
                     return@launch
                 }
@@ -181,7 +180,6 @@ class OrientadorAvaliacaoViewModel(
         val criarResp = api.createAvaliacaoMap(body = avaliacaoMap)
         if (!criarResp.isSuccessful) {
             val errorBody = criarResp.errorBody()?.string().orEmpty()
-            android.util.Log.e("OrientadorAvaliacao", "Erro avaliação: ${criarResp.code()} - $errorBody")
             throw IllegalStateException(mensagemErroAvaliacao(criarResp.code(), errorBody))
         }
 

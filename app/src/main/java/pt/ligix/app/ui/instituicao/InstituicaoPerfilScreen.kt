@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -123,8 +124,13 @@ fun InstituicaoPerfilScreen(
                             .background(DarkBlue.copy(alpha = 0.1f), RoundedCornerShape(20.dp))
                             .padding(horizontal = 14.dp, vertical = 5.dp)
                     ) {
-                        Text(instituicao!!.sigla!!, fontSize = 12.sp,
-                            color = DarkBlue, fontWeight = FontWeight.Bold, letterSpacing = 0.5.sp)
+                        Text(
+                            instituicao?.sigla.orEmpty(),
+                            fontSize = 12.sp,
+                            color = DarkBlue,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
+                        )
                     }
                 }
             }
@@ -248,7 +254,7 @@ fun InstituicaoPerfilScreen(
             onClick = onLogout,
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
         ) {
-            Icon(Icons.Default.Logout, contentDescription = null, tint = Color.Red)
+            Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = Color.Red)
             Spacer(Modifier.width(8.dp))
             Text(stringResource(R.string.logout), color = Color.Red,
                 fontWeight = FontWeight.Bold, fontSize = 14.sp, letterSpacing = 1.sp)

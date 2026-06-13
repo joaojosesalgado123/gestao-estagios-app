@@ -271,7 +271,9 @@ fun AlunoOfertaDetalheScreen(
                         Button(
                             onClick = {
                                 scope.launch {
-                                    if (cvUri == null || cartaUri == null) {
+                                    val cvSelecionado = cvUri
+                                    val cartaSelecionada = cartaUri
+                                    if (cvSelecionado == null || cartaSelecionada == null) {
                                         erro = attachCvLetterError
                                         return@launch
                                     }
@@ -305,10 +307,10 @@ fun AlunoOfertaDetalheScreen(
                                     }
 
                                     val cvBytes = withContext(Dispatchers.IO) {
-                                        context.contentResolver.openInputStream(cvUri!!)?.use { it.readBytes() }
+                                        context.contentResolver.openInputStream(cvSelecionado)?.use { it.readBytes() }
                                     }
                                     val cartaBytes = withContext(Dispatchers.IO) {
-                                        context.contentResolver.openInputStream(cartaUri!!)?.use { it.readBytes() }
+                                        context.contentResolver.openInputStream(cartaSelecionada)?.use { it.readBytes() }
                                     }
 
                                     if (cvBytes == null || cartaBytes == null) {

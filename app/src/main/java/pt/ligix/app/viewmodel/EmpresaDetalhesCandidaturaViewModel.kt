@@ -49,16 +49,7 @@ class EmpresaDetalhesCandidaturaViewModel(
             try {
                 val api = RetrofitClient.api
 
-                // Carrega candidatura
-                val responseCandidatura = api.getCandidaturasByOferta(idOferta = "")
-                val candidaturas = api.getCandidaturasByAluno(idAluno = "")
-
-                // Busca candidatura por id
-                val response = api.getCandidaturasByOferta(idOferta = "")
-                val todasCandidaturas = response.body() ?: emptyList()
-
-                // Busca diretamente pelo id
-                val candidaturaResponse = RetrofitClient.api.getCandidaturaById(
+                val candidaturaResponse = api.getCandidaturaById(
                     idCandidatura = "eq.$idCandidatura"
                 )
                 val candidatura = candidaturaResponse.body()?.firstOrNull() ?: return@launch
@@ -78,8 +69,7 @@ class EmpresaDetalhesCandidaturaViewModel(
                 val oferta = repository.getOferta(candidatura.idOferta).getOrNull()
                 _tituloOferta.value = oferta?.titulo ?: ""
 
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
             } finally {
                 _isLoading.value = false
             }
@@ -94,8 +84,7 @@ class EmpresaDetalhesCandidaturaViewModel(
                     status = mapOf("status" to "aceite")
                 )
                 _candidatura.value = _candidatura.value?.copy(status = "aceite")
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
             }
         }
     }
@@ -108,8 +97,7 @@ class EmpresaDetalhesCandidaturaViewModel(
                     status = mapOf("status" to "rejeitada")
                 )
                 _candidatura.value = _candidatura.value?.copy(status = "rejeitada")
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
             }
         }
     }
@@ -122,8 +110,7 @@ class EmpresaDetalhesCandidaturaViewModel(
                 api.updateCandidaturaStatus(id = "eq.$idCandidatura", status = body)
                 _notas.value = notas
                 _notasGuardadas.value = true
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
             }
         }
     }
@@ -138,8 +125,7 @@ class EmpresaDetalhesCandidaturaViewModel(
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(urlCompleta))
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             context.startActivity(intent)
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (_: Exception) {
         }
     }
 }

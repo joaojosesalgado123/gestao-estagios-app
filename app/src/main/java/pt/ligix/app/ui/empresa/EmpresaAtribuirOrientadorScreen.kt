@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -67,7 +68,7 @@ fun EmpresaAtribuirOrientadorScreen(modifier: Modifier = Modifier, onVoltar: () 
             onClick = onVoltar,
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            Icon(Icons.Default.ArrowBack, contentDescription = null,
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null,
                 tint = DarkBlue, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(4.dp))
             Text(stringResource(R.string.back), color = DarkBlue, fontSize = 13.sp)
@@ -112,7 +113,7 @@ fun EmpresaAtribuirOrientadorScreen(modifier: Modifier = Modifier, onVoltar: () 
                 }
             }
 
-            Divider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFEEEEEE))
+            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp), color = Color(0xFFEEEEEE))
 
             Row(
                 modifier = Modifier.fillMaxWidth()
@@ -212,7 +213,7 @@ fun EmpresaAtribuirOrientadorScreen(modifier: Modifier = Modifier, onVoltar: () 
                         nomeAluno = estagio.nomeAluno,
                         tituloOferta = estagio.tituloOferta,
                         orientadores = orientadores,
-                        orientadorAtualId = estagio.idDocente,
+                        orientadorAtualId = estagio.idResponsavel,
                         modoTroca = abaAtiva == 1,
                         onAtribuir = { idOrientador ->
                             viewModel.atribuirOrientador(estagio.idEstagio, idOrientador)
@@ -288,7 +289,7 @@ fun AtribuicaoOrientadorCard(
                 }
             }
 
-            Divider(color = Color(0xFFF0F0F0))
+            HorizontalDivider(color = Color(0xFFF0F0F0))
 
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(

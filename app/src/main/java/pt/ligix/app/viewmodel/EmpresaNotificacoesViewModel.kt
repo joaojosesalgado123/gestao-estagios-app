@@ -57,8 +57,7 @@ class EmpresaNotificacoesViewModel(
                 val candidaturas = candResp.body() ?: continue
                 candidaturas.forEach { idsVistas.add(it.idCandidatura) }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (_: Exception) {
         }
     }
 
@@ -76,21 +75,14 @@ class EmpresaNotificacoesViewModel(
         try {
             val idEmpresa = sessionManager.idUtilizador.first() ?: return
             val api = RetrofitClient.api
-            android.util.Log.d("EmpresaNotif", "Verificando candidaturas para empresa: $idEmpresa")
 
             val ofertasResp = api.getOfertasByEmpresa(idEmpresa = "eq.$idEmpresa")
-            val ofertas = ofertasResp.body() ?: run {
-                android.util.Log.d("EmpresaNotif", "Sem ofertas ou erro: ${ofertasResp.code()}")
-                return
-            }
-            android.util.Log.d("EmpresaNotif", "Ofertas encontradas: ${ofertas.size}")
+            val ofertas = ofertasResp.body() ?: return
 
             for (oferta in ofertas) {
                 val candResp = api.getCandidaturasByOferta(idOferta = "eq.${oferta.idOferta}")
                 val candidaturas = candResp.body() ?: continue
-                android.util.Log.d("EmpresaNotif", "Candidaturas para ${oferta.titulo}: ${candidaturas.size}, vistas: ${idsVistas.size}")
                 val novas = candidaturas.filter { it.idCandidatura !in idsVistas }
-                android.util.Log.d("EmpresaNotif", "Novas: ${novas.size}")
 
                 for (nova in novas) {
                     idsVistas.add(nova.idCandidatura)
@@ -109,8 +101,7 @@ class EmpresaNotificacoesViewModel(
                     _novaNotificacao.value = notif
                 }
             }
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (_: Exception) {
         }
     }
 

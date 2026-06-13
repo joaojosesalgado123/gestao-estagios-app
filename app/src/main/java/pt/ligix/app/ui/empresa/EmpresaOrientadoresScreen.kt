@@ -32,9 +32,9 @@ import pt.ligix.app.viewmodel.OrientadorDetalhe
 
 @Composable
 fun EmpresaOrientadoresScreen(
+    modifier: Modifier = Modifier,
     onEditarOrientador: (OrientadorDetalhe) -> Unit = {},
-    onCriarOrientador: () -> Unit = {},
-    modifier: Modifier = Modifier
+    onCriarOrientador: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val sessionManager = remember { SessionManager(context) }

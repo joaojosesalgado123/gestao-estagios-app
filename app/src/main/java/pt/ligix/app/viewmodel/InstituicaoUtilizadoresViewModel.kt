@@ -73,9 +73,6 @@ class InstituicaoUtilizadoresViewModel(
                 val docentesResp = api.getDocentesByInstituicao(idInstituicao = "eq.$idInstituicao")
                 val docentes = docentesResp.body() ?: emptyList()
 
-                android.util.Log.d("InstituicaoUtils", "Alunos: ${alunos.size}, Docentes: ${docentes.size}")
-                alunos.forEach { android.util.Log.d("InstituicaoUtils", "Aluno: ${it.idUtilizador}") }
-                docentes.forEach { android.util.Log.d("InstituicaoUtils", "Docente: ${it.idUtilizador}") }
                 val idsAlunos = alunos.map { it.idUtilizador }
                 val idsDocentes = docentes.map { it.idUtilizador }
                 val todosIds = idsAlunos + idsDocentes
@@ -95,7 +92,7 @@ class InstituicaoUtilizadoresViewModel(
                 _utilizadores.value = lista
                 _utilizadoresFiltrados.value = lista
             } catch (e: Exception) {
-                e.printStackTrace()
+                _erro.value = e.message ?: "Erro ao carregar utilizadores."
             } finally {
                 _isLoading.value = false
             }

@@ -59,8 +59,7 @@ class EmpresaOrientadoresViewModel(
                     _orientadores.value = detalhes
                     _orientadoresFiltrados.value = detalhes
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
             } finally {
                 _isLoading.value = false
             }
@@ -79,10 +78,6 @@ class EmpresaOrientadoresViewModel(
         }
     }
 
-    fun editarOrientador(id: String) {
-        // implementar conforme navegação do projeto
-    }
-
     fun eliminarOrientador(id: String) {
         viewModelScope.launch {
             try {
@@ -90,14 +85,9 @@ class EmpresaOrientadoresViewModel(
                 api.deleteOrientadorEmpresa(idOrientador = "eq.$id")
                 _orientadores.value = _orientadores.value.filter { it.id != id }
                 _orientadoresFiltrados.value = _orientadoresFiltrados.value.filter { it.id != id }
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
             }
         }
-    }
-
-    fun adicionarOrientador() {
-        // implementar conforme navegação do projeto
     }
 }
 
